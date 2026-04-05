@@ -9,6 +9,9 @@ lerna-debug.log*
 
 node_modules
 dist
+
+# Orval — regenerate with npm run gen:api
+src/api/generated/
 dist-ssr
 *.local
 .env
