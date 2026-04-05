@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+# Appends a Git trailer (same idea as: git commit --trailer "Made-with: Cursor").
+# Skips if the message already contains a Made-with line (e.g. amend).
+MSG_FILE="$1"
+
+if [ ! -f "$MSG_FILE" ]; then
+  exit 0
+fi
+
+if grep -q '^Made-with:' "$MSG_FILE" 2>/dev/null; then
+  exit 0
+fi
+
+# Ensure a blank line before the footer when the file is non-empty text.
+if [ -s "$MSG_FILE" ]; then
+  printf '\n' >>"$MSG_FILE"
+fi
+printf '%s\n' 'Made-with: Cursor' >>"$MSG_FILE"
