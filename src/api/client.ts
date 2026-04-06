@@ -1,4 +1,5 @@
 import { authStore } from '@/stores/auth-store';
+import { useTenantStore } from '@/stores/tenantStore';
 
 /** Public login route; change if routing uses a different path. */
 export const LOGIN_PATH = '/login';
@@ -51,21 +52,9 @@ export function getApiBaseUrl(): string {
   return raw.replace(/\/$/, '');
 }
 
-/**
- * First subdomain label when present (e.g. acme.localhost → acme).
- * Plain `localhost` / single-label hosts → no tenant slug.
- */
-export function getTenantSlugFromHostname(hostname: string): string | null {
-  const host = hostname.split(':')[0]?.toLowerCase() ?? '';
-  const parts = host.split('.').filter(Boolean);
-  if (parts.length <= 1) return null;
-  if (parts[0] === 'www' && parts.length > 2) return parts[1] ?? null;
-  return parts[0] ?? null;
-}
-
 function getTenantHostHeaderValue(): string | null {
   if (typeof window === 'undefined') return null;
-  const slug = getTenantSlugFromHostname(window.location.hostname);
+  const slug = useTenantStore.getState().slug;
   if (!slug) return null;
   return window.location.hostname;
 }

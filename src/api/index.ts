@@ -6,8 +6,8 @@ export {
   apiFetch,
   ApiError,
   getApiBaseUrl,
-  getTenantSlugFromHostname,
   LOGIN_PATH,
   parseApiErrorBody,
   type ApiErrorEnvelope,
 } from './client';
+export { extractTenantSlug, getAppDomain } from '@/lib/tenant';
