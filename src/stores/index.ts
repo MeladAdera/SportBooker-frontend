@@ -1,4 +1,4 @@
 /**
- * Zustand stores: auth, tenant, theme, locale (add slices as you implement them).
+ * Stores: auth, tenant, theme, locale (add slices as you implement them).
  */
-export {};
+export { authStore, type AuthState } from './auth-store';
