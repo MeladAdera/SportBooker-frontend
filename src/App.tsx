@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,19 +27,50 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { useRTL } from '@/shared/hooks/useRTL';
+import { useLocaleStore } from '@/stores/localeStore';
 
 function App() {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const { t } = useTranslation('common');
+  const { t: tAuth } = useTranslation('auth');
+  const dir = useRTL();
+  const locale = useLocaleStore((s) => s.locale);
+  const setLocale = useLocaleStore((s) => s.setLocale);
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-8 bg-background p-6 text-foreground">
       <div className="space-y-2 text-center">
         <h1 className="text-4xl font-bold tracking-tight text-primary">
-          Tailwind + shadcn (Base UI)
+          {t('sample.title')} · {t('appName')}
         </h1>
         <p className="text-balance text-sm text-muted-foreground">
-          Utilities + Base UI primitives (not Radix).
+          {t('sample.description')}
         </p>
+        <p className="text-xs text-muted-foreground">
+          {tAuth('login')} / {tAuth('register')} ·{' '}
+          <span className="font-mono">
+            dir={dir} · locale={locale}
+          </span>
+        </p>
+        <div className="flex flex-wrap justify-center gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant={locale === 'en' ? 'default' : 'outline'}
+            onClick={() => setLocale('en')}
+          >
+            English
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={locale === 'ar' ? 'default' : 'outline'}
+            onClick={() => setLocale('ar')}
+          >
+            العربية
+          </Button>
+        </div>
         <div className="flex justify-center gap-2">
           <Badge>New</Badge>
           <Badge variant="secondary">secondary</Badge>

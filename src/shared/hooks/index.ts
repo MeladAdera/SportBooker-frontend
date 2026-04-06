@@ -1,4 +1,4 @@
 /**
  * Shared React hooks.
  */
-export {};
+export { useRTL } from './useRTL';
