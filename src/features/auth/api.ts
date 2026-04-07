@@ -156,3 +156,32 @@ export async function forgotPasswordRequest(
   });
   await res.text().catch(() => '');
 }
+
+export type ResetPasswordRequestBody = {
+  token: string;
+  newPassword: string;
+};
+
+export async function resetPasswordRequest(
+  body: ResetPasswordRequestBody,
+): Promise<void> {
+  const res = await apiFetch('/auth/reset-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      token: body.token,
+      newPassword: body.newPassword,
+    }),
+  });
+
+  const json: unknown = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const envelope = parseApiErrorBody(json);
+    if (envelope) throw new ApiError(envelope);
+    throw new ApiError({
+      statusCode: res.status,
+      message: 'Password reset failed',
+    });
+  }
+}

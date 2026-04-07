@@ -56,7 +56,7 @@ export function ForgotPasswordPage() {
 
   return (
     <div className="relative flex min-h-svh flex-col items-center justify-center bg-background p-4">
-      <LocaleSwitcher className="fixed top-4 end-4 z-50" />
+      <LocaleSwitcher className="fixed top-4 inset-e-4 z-50" />
       <div className="w-full max-w-sm space-y-6">
         <Card>
           <CardHeader>
