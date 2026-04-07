@@ -87,7 +87,12 @@ type RefreshResponse = {
 function parseRefreshBody(text: string): RefreshResponse | null {
   if (!text) return null;
   try {
-    const data = JSON.parse(text) as Record<string, unknown>;
+    const json = JSON.parse(text) as Record<string, unknown>;
+    // Unwrap { data: {...}, statusCode } envelope if present
+    const data =
+      json.data && typeof json.data === 'object'
+        ? (json.data as Record<string, unknown>)
+        : json;
     const accessToken = data.accessToken;
     const refreshToken = data.refreshToken;
     if (typeof accessToken !== 'string' || typeof refreshToken !== 'string') {

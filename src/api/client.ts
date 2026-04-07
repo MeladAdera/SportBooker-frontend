@@ -61,7 +61,12 @@ function resolveUrl(url: string): string {
 }
 
 function getPathname(resolvedUrl: string): string {
-  return new URL(resolvedUrl).pathname;
+  try {
+    return new URL(resolvedUrl).pathname;
+  } catch {
+    // relative URL (e.g. /api/auth/login when proxied through Vite)
+    return resolvedUrl.split('?')[0] ?? resolvedUrl;
+  }
 }
 
 function isAuthRefreshPath(pathname: string): boolean {

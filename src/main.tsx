@@ -20,6 +20,7 @@ const l = useLocaleStore.getState().locale;
 document.documentElement.lang = l;
 document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
 
+// Tenant slug from window.location.hostname (VITE_APP_DOMAIN + extractTenantSlug)
 useTenantStore.getState().resolveTenant();
 
 useAuthStore.persist.onFinishHydration(() => {

@@ -1,5 +1,18 @@
 /**
- * Subdomain → tenant slug (e.g. acfc.sportbooker.com → acfc, platform.* → platform).
+ * Tenant slug from the browser hostname using `VITE_APP_DOMAIN` as the public apex.
+ *
+ * Contract (product / manager spec):
+ * - Read `window.location.hostname` in the app (e.g. via `resolveTenant()`), pass it here.
+ * - Extract the subdomain **before** `VITE_APP_DOMAIN` (single label before the apex).
+ *
+ * Examples (with `VITE_APP_DOMAIN=sportbooker.com`):
+ * - `acfc.sportbooker.com` → `acfc`
+ * - `platform.sportbooker.com` → `platform`
+ * - `sportbooker.com`, `www.sportbooker.com` → `null` (marketing / no tenant host)
+ *
+ * Localhost:
+ * - `localhost` / `127.0.0.1` → no subdomain; use `VITE_DEV_TENANT_SLUG` if set, else `null`
+ * - `acfc.localhost` → `acfc` (local multi-tenant dev)
  */
 
 /** Normalized app apex domain from env (no scheme, no path, lowercase). */
@@ -19,12 +32,10 @@ export function getAppDomain(): string {
 }
 
 /**
- * Resolves tenant / platform slug from hostname.
- * - Production: label(s) before `VITE_APP_DOMAIN` (e.g. acfc.sportbooker.com → acfc).
- * - `platform.*` is the platform-admin host; still returned as slug `platform`.
- * - Apex (`sportbooker.com`, `www.sportbooker.com`) → null.
- * - localhost / 127.0.0.1 → `VITE_DEV_TENANT_SLUG` or null.
- * - `*.localhost` (e.g. acme.localhost) → first label for local multi-tenant dev.
+ * Resolves tenant slug from a hostname (typically `window.location.hostname`).
+ *
+ * Production-style hosts: must end with `.{VITE_APP_DOMAIN}`; returns the left label
+ * (e.g. `acfc` from `acfc.sportbooker.com`). `platform.sportbooker.com` → `platform`.
  */
 export function extractTenantSlug(hostname: string): string | null {
   const host = hostname.split(':')[0]?.toLowerCase() ?? '';

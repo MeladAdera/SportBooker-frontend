@@ -21,7 +21,7 @@ Copy environment placeholders and adjust for your API:
 cp .env.example .env
 ```
 
-Edit `.env` and set `VITE_API_BASE_URL` to your backend base URL (no trailing slash).
+Edit `.env` from `.env.example`: **`VITE_API_URL`** and **`VITE_APP_DOMAIN`** are required for API calls and tenant subdomain parsing (`extractTenantSlug`). For Nest tenant `Host` routing in dev, use the proxy flow in **[Local development — API and auth](docs/local-development.md)**.
 
 ## Scripts
 
@@ -41,6 +41,8 @@ npm run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173).
+
+After changing `.env` or `vite.config.ts`, restart `npm run dev`.
 
 ## Git hooks
 
