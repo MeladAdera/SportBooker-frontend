@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
+import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 
@@ -10,14 +11,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         {/* Placeholder routes — replace with real pages as features are built */}
-        <Route
-          path="/forgot-password"
-          element={
-            <div className="p-8 text-center text-muted-foreground">
-              Forgot password — coming soon
-            </div>
-          }
-        />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route
           path="/discover"
           element={

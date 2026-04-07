@@ -136,3 +136,23 @@ export async function registerRequest(
   const raw = unwrapData<RawAuthTokens>(json);
   return buildLoginResponse(raw, { email: body.email, name: body.name });
 }
+
+export type ForgotPasswordRequestBody = {
+  email: string;
+};
+
+/**
+ * POST /auth/forgot-password — backend always returns 200 for anti-enumeration.
+ * Does not throw on non-OK HTTP status so the UI can always show the same success copy.
+ * Only rejects on network/fetch failure.
+ */
+export async function forgotPasswordRequest(
+  body: ForgotPasswordRequestBody,
+): Promise<void> {
+  const res = await apiFetch('/auth/forgot-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: body.email.trim() }),
+  });
+  await res.text().catch(() => '');
+}
