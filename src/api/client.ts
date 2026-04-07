@@ -1,5 +1,9 @@
-import { authStore } from '@/stores/auth-store';
-import { useTenantStore } from '@/stores/tenantStore';
+import { authStore } from '@/stores/authStore';
+import { getApiBaseUrl, resolveApiUrl } from '@/lib/api-url';
+import { getTenantHostHeaderValue } from '@/lib/tenant-host-header';
+
+/** Re-export for callers that imported from `api/client`. */
+export { getApiBaseUrl, resolveApiUrl };
 
 /** Public login route; change if routing uses a different path. */
 export const LOGIN_PATH = '/login';
@@ -41,24 +45,6 @@ export function parseApiErrorBody(json: unknown): ApiErrorEnvelope | null {
   };
 }
 
-export function getApiBaseUrl(): string {
-  const raw =
-    import.meta.env.VITE_API_URL ?? import.meta.env.VITE_API_BASE_URL ?? '';
-  if (!raw) {
-    throw new Error(
-      'Missing VITE_API_URL (or VITE_API_BASE_URL) — set it in .env',
-    );
-  }
-  return raw.replace(/\/$/, '');
-}
-
-function getTenantHostHeaderValue(): string | null {
-  if (typeof window === 'undefined') return null;
-  const slug = useTenantStore.getState().slug;
-  if (!slug) return null;
-  return window.location.hostname;
-}
-
 function mergeHeaders(
   init: RequestInit | undefined,
   extra: Record<string, string>,
@@ -71,10 +57,7 @@ function mergeHeaders(
 }
 
 function resolveUrl(url: string): string {
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
-  const base = getApiBaseUrl();
-  const path = url.startsWith('/') ? url : `/${url}`;
-  return `${base}${path}`;
+  return resolveApiUrl(url);
 }
 
 function getPathname(resolvedUrl: string): string {
@@ -85,60 +68,12 @@ function isAuthRefreshPath(pathname: string): boolean {
   return pathname === '/auth/refresh' || pathname.endsWith('/auth/refresh');
 }
 
-let refreshPromise: Promise<boolean> | null = null;
-
 async function refreshAccessToken(): Promise<boolean> {
-  if (!refreshPromise) {
-    refreshPromise = (async () => {
-      const { refreshToken } = authStore.getState();
-      if (!refreshToken) return false;
-
-      const url = resolveUrl('/auth/refresh');
-      const headers = new Headers({
-        'Content-Type': 'application/json',
-      });
-      const tenantHost = getTenantHostHeaderValue();
-      if (tenantHost) {
-        headers.set('Host', tenantHost);
-      }
-
-      try {
-        const res = await fetch(url, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ refreshToken }),
-        });
-        const text = [204, 205, 304].includes(res.status)
-          ? ''
-          : await res.text();
-        if (!res.ok) return false;
-        const data = text
-          ? (JSON.parse(text) as {
-              accessToken: string;
-              refreshToken: string;
-            })
-          : null;
-        if (
-          !data ||
-          typeof data.accessToken !== 'string' ||
-          typeof data.refreshToken !== 'string'
-        ) {
-          return false;
-        }
-        authStore.setTokens(data.accessToken, data.refreshToken);
-        return true;
-      } catch {
-        return false;
-      }
-    })().finally(() => {
-      refreshPromise = null;
-    });
-  }
-  return refreshPromise;
+  return authStore.getState().refresh();
 }
 
 function redirectToLogin(): void {
-  authStore.clear();
+  authStore.getState().clearLocalSession();
   if (typeof window !== 'undefined') {
     window.location.assign(LOGIN_PATH);
   }

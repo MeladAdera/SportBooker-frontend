@@ -7,6 +7,7 @@ import App from './App.tsx';
 import { HtmlLangDir } from '@/components/HtmlLangDir';
 import { useLocaleStore } from '@/stores/localeStore';
 import { useTenantStore } from '@/stores/tenantStore';
+import { useAuthStore } from '@/stores/authStore';
 
 const code = i18n.language?.split('-')[0];
 if (code === 'en' || code === 'ar') {
@@ -20,6 +21,10 @@ document.documentElement.lang = l;
 document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
 
 useTenantStore.getState().resolveTenant();
+
+useAuthStore.persist.onFinishHydration(() => {
+  void useAuthStore.getState().restoreSession();
+});
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
