@@ -1,5 +1,13 @@
 {
   "appName": "Sportbooker",
+  "locale": {
+    "en": "EN",
+    "ar": "عربي",
+    "enFull": "English",
+    "arFull": "Arabic",
+    "groupLabel": "Language",
+    "switchTo": "Switch to {{lang}}"
+  },
   "sample": {
     "title": "Welcome",
     "description": "Arabic / RTL is supported from day one."

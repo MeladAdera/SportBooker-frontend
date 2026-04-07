@@ -1,12 +1,14 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import { LoginPage } from '@/features/auth/pages/LoginPage';
+import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         {/* Placeholder routes — replace with real pages as features are built */}
         <Route
           path="/forgot-password"
@@ -17,10 +19,10 @@ function App() {
           }
         />
         <Route
-          path="/register"
+          path="/discover"
           element={
             <div className="p-8 text-center text-muted-foreground">
-              Register — coming soon
+              Discover — coming soon
             </div>
           }
         />

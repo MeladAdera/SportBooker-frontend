@@ -29,16 +29,24 @@ export class ApiError extends Error {
   }
 }
 
+function normalizeMessage(msg: unknown): string | null {
+  if (typeof msg === 'string') return msg;
+  if (Array.isArray(msg) && msg.every((x) => typeof x === 'string')) {
+    return msg.join('. ');
+  }
+  return null;
+}
+
 export function parseApiErrorBody(json: unknown): ApiErrorEnvelope | null {
   if (!json || typeof json !== 'object') return null;
   const o = json as Record<string, unknown>;
-  if (typeof o.statusCode !== 'number' || typeof o.message !== 'string') {
-    return null;
-  }
+  if (typeof o.statusCode !== 'number') return null;
+  const message = normalizeMessage(o.message);
+  if (!message) return null;
   const errors = o.errors;
   return {
     statusCode: o.statusCode,
-    message: o.message,
+    message,
     errors: Array.isArray(errors)
       ? (errors as ApiErrorEnvelope['errors'])
       : undefined,

@@ -1,4 +1,4 @@
 /**
  * Shared UI primitives and cross-feature components.
  */
-export {};
+export { LocaleSwitcher } from './LocaleSwitcher';

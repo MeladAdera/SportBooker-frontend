@@ -13,13 +13,20 @@ export type LoginResponse = {
   user: AuthUser;
 };
 
+export type RegisterRequestBody = {
+  name: string;
+  email: string;
+  password: string;
+  phone?: string;
+};
+
 /** Backend wraps all responses in { data, statusCode }. */
 type ApiEnvelope<T> = {
   data: T;
   statusCode: number;
 };
 
-type RawLoginData = {
+type RawAuthTokens = {
   accessToken: string;
   refreshToken: string;
   expiresIn: number;
@@ -38,13 +45,44 @@ function parseJwtPayload(token: string): JwtPayload | null {
   try {
     const part = token.split('.')[1];
     if (!part) return null;
-    // atob needs padding
     const padded = part.replace(/-/g, '+').replace(/_/g, '/');
     const json = atob(padded.padEnd(Math.ceil(padded.length / 4) * 4, '='));
     return JSON.parse(json) as JwtPayload;
   } catch {
     return null;
   }
+}
+
+function buildLoginResponse(
+  raw: RawAuthTokens,
+  defaults: { email: string; name?: string },
+): LoginResponse {
+  const payload = parseJwtPayload(raw.accessToken);
+  const user: AuthUser = {
+    id: payload?.sub ?? '',
+    email: payload?.email ?? defaults.email,
+    name: payload?.name ?? defaults.name ?? '',
+    role: payload?.role ?? 'player',
+    tenantId: payload?.tenantId,
+  };
+  return {
+    accessToken: raw.accessToken,
+    refreshToken: raw.refreshToken,
+    expiresIn: raw.expiresIn,
+    user,
+  };
+}
+
+function unwrapData<T extends Record<string, unknown>>(json: unknown): T {
+  if (
+    json &&
+    typeof json === 'object' &&
+    'data' in (json as object) &&
+    typeof (json as ApiEnvelope<T>).data === 'object'
+  ) {
+    return (json as ApiEnvelope<T>).data as T;
+  }
+  return json as T;
 }
 
 export async function loginRequest(body: LoginRequest): Promise<LoginResponse> {
@@ -62,26 +100,39 @@ export async function loginRequest(body: LoginRequest): Promise<LoginResponse> {
     throw new ApiError({ statusCode: res.status, message: 'Login failed' });
   }
 
-  // Unwrap { data: {...}, statusCode } envelope
-  const raw =
-    json && typeof json === 'object' && 'data' in (json as object)
-      ? (json as ApiEnvelope<RawLoginData>).data
-      : (json as RawLoginData);
+  const raw = unwrapData<RawAuthTokens>(json);
+  return buildLoginResponse(raw, { email: body.email });
+}
 
-  const payload = parseJwtPayload(raw.accessToken);
-
-  const user: AuthUser = {
-    id: payload?.sub ?? '',
-    email: payload?.email ?? body.email,
-    name: payload?.name ?? '',
-    role: payload?.role ?? '',
-    tenantId: payload?.tenantId,
+export async function registerRequest(
+  body: RegisterRequestBody,
+): Promise<LoginResponse> {
+  const payload: Record<string, string> = {
+    name: body.name.trim(),
+    email: body.email.trim(),
+    password: body.password,
   };
+  if (body.phone?.trim()) {
+    payload.phone = body.phone.trim();
+  }
 
-  return {
-    accessToken: raw.accessToken,
-    refreshToken: raw.refreshToken,
-    expiresIn: raw.expiresIn,
-    user,
-  };
+  const res = await apiFetch('/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  const json: unknown = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const envelope = parseApiErrorBody(json);
+    if (envelope) throw new ApiError(envelope);
+    throw new ApiError({
+      statusCode: res.status,
+      message: 'Registration failed',
+    });
+  }
+
+  const raw = unwrapData<RawAuthTokens>(json);
+  return buildLoginResponse(raw, { email: body.email, name: body.name });
 }

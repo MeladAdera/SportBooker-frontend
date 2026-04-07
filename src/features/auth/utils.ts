@@ -12,7 +12,7 @@ export function getRoleHomePath(role: string): string {
       return '/operator';
     case 'player':
     case 'member':
-      return '/';
+      return '/discover';
     default:
       return '/';
   }

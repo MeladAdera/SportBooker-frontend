@@ -1,5 +1,13 @@
 {
   "appName": "سبورتبوكر",
+  "locale": {
+    "en": "EN",
+    "ar": "عربي",
+    "enFull": "الإنجليزية",
+    "arFull": "العربية",
+    "groupLabel": "اللغة",
+    "switchTo": "التبديل إلى {{lang}}"
+  },
   "sample": {
     "title": "مرحباً",
     "description": "العربية واتجاه RTL مدعومان من اليوم الأول."
