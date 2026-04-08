@@ -8,6 +8,10 @@
     "groupLabel": "اللغة",
     "switchTo": "التبديل إلى {{lang}}"
   },
+  "theme": {
+    "toggleLight": "التبديل إلى الوضع الفاتح",
+    "toggleDark": "التبديل إلى الوضع الداكن"
+  },
   "forbidden": {
     "title": "الوصول مرفوض",
     "description": "ليست لديك صلاحية لعرض هذه الصفحة.",

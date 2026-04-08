@@ -18,7 +18,7 @@ import {
 import { useAuthStore } from '@/stores/authStore';
 import { useTenantStore } from '@/stores/tenantStore';
 import { ApiError } from '@/api/client';
-import { LocaleSwitcher } from '@/shared/components/LocaleSwitcher';
+import { PageControls } from '@/shared/components/PageControls';
 import { loginRequest } from '../api';
 import { getRoleHomePath } from '../utils';
 
@@ -110,7 +110,7 @@ export function LoginPage() {
 
   return (
     <div className="relative flex min-h-svh flex-col items-center justify-center bg-background p-4">
-      <LocaleSwitcher className="fixed top-4 inset-e-4 z-50" />
+      <PageControls />
       <div className="w-full max-w-sm space-y-6">
         {/* Tenant branding */}
         <div className="flex flex-col items-center gap-3 text-center">

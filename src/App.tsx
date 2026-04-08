@@ -11,6 +11,7 @@ import {
   PlayerRoute,
   ProtectedRoute,
 } from '@/routes/guards';
+import { PageControls } from '@/shared/components/PageControls';
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -23,6 +24,8 @@ function Placeholder({ title }: { title: string }) {
 function App() {
   return (
     <BrowserRouter>
+      {/* DEV: global theme/locale controls — remove or guard with import.meta.env.DEV before prod */}
+      <PageControls />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />

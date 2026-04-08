@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
 import { useTenantStore } from '@/stores/tenantStore';
 import { ApiError } from '@/api/client';
-import { LocaleSwitcher } from '@/shared/components/LocaleSwitcher';
+import { PageControls } from '@/shared/components/PageControls';
 import { passwordStrengthScore, strengthLabelKey } from '../passwordStrength';
 import { registerRequest } from '../api';
 import { getRoleHomePath } from '../utils';
@@ -172,7 +172,7 @@ export function RegisterPage() {
   if (!isSessionReady || !isResolved) {
     return (
       <div className="relative flex min-h-svh items-center justify-center bg-background">
-        <LocaleSwitcher className="fixed top-4 inset-e-4 z-50" />
+        <PageControls />
         <Loader2 className="size-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -190,7 +190,7 @@ export function RegisterPage() {
 
   return (
     <div className="relative flex min-h-svh flex-col items-center justify-center bg-background p-4">
-      <LocaleSwitcher className="fixed top-4 inset-e-4 z-50" />
+      <PageControls />
       <div className="w-full max-w-sm space-y-6">
         <div className="flex flex-col items-center gap-3 text-center">
           {logoUrl ? (

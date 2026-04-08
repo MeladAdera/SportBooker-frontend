@@ -8,6 +8,7 @@ import { HtmlLangDir } from '@/components/HtmlLangDir';
 import { useLocaleStore } from '@/stores/localeStore';
 import { useTenantStore } from '@/stores/tenantStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useThemeStore } from '@/stores/themeStore';
 
 const code = i18n.language?.split('-')[0];
 if (code === 'en' || code === 'ar') {
@@ -19,6 +20,10 @@ if (code === 'en' || code === 'ar') {
 const l = useLocaleStore.getState().locale;
 document.documentElement.lang = l;
 document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
+
+// Apply persisted theme before first paint to avoid flash
+const { theme } = useThemeStore.getState();
+document.documentElement.classList.toggle('dark', theme === 'dark');
 
 // Tenant slug from window.location.hostname (VITE_APP_DOMAIN + extractTenantSlug)
 useTenantStore.getState().resolveTenant();
