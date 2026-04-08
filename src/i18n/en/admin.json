@@ -1,3 +1,7 @@
 {
-  "dashboard": "Admin dashboard"
+  "dashboard": "Admin dashboard",
+  "nav": {
+    "tenants": "Tenants",
+    "account": "Account"
+  }
 }

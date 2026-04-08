@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 
 import { isPlatformAdminRole } from '@/lib/roles';
+import { PlatformAdminLayout } from '@/shared/layouts/PlatformAdminLayout';
 import { useAuthStore } from '@/stores/authStore';
 
 /** Platform-level admin only. */
@@ -12,5 +13,9 @@ export function PlatformAdminRoute() {
     return <Navigate to="/403" replace />;
   }
 
-  return <Outlet />;
+  return (
+    <PlatformAdminLayout>
+      <Outlet />
+    </PlatformAdminLayout>
+  );
 }
