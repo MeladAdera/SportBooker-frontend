@@ -1,4 +1,4 @@
 /**
  * App shells, nav, and route-level layouts.
  */
-export {};
+export { PlayerLayout } from './PlayerLayout';

@@ -1,3 +1,9 @@
 {
-  "dashboard": "Player dashboard"
+  "dashboard": "Player dashboard",
+  "nav": {
+    "home": "Home",
+    "bookings": "My Bookings",
+    "wallet": "Wallet",
+    "profile": "Profile"
+  }
 }

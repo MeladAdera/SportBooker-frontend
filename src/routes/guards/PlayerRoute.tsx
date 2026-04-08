@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 
 import { isPlayerRole } from '@/lib/roles';
+import { PlayerLayout } from '@/shared/layouts/PlayerLayout';
 import { useAuthStore } from '@/stores/authStore';
 
 /** Player (`player`) — booking, wallet, profile. */
@@ -12,5 +13,9 @@ export function PlayerRoute() {
     return <Navigate to="/403" replace />;
   }
 
-  return <Outlet />;
+  return (
+    <PlayerLayout>
+      <Outlet />
+    </PlayerLayout>
+  );
 }

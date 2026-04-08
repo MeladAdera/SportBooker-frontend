@@ -17,6 +17,8 @@ export type AuthUser = {
   tenantId?: string;
   phone?: string | null;
   photoUrl?: string | null;
+  /** Wallet credit balance in the tenant's currency. Populated after wallet API loads. */
+  walletBalance?: number | null;
 };
 
 export type AuthState = {
