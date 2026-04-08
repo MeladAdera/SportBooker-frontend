@@ -1,3 +1,11 @@
 {
-  "dashboard": "لوحة المشغّل"
+  "dashboard": "لوحة المشغّل",
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "matches": "المباريات",
+    "venues": "الملاعب",
+    "players": "اللاعبون",
+    "tenantSettings": "إعدادات المنشأة",
+    "account": "الحساب"
+  }
 }

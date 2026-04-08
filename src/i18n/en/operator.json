@@ -1,3 +1,11 @@
 {
-  "dashboard": "Operator dashboard"
+  "dashboard": "Operator dashboard",
+  "nav": {
+    "dashboard": "Dashboard",
+    "matches": "Matches",
+    "venues": "Venues",
+    "players": "Players",
+    "tenantSettings": "Tenant Settings",
+    "account": "Account"
+  }
 }

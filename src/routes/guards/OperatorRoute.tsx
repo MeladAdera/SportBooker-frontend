@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 
 import { isOperatorRole } from '@/lib/roles';
+import { OperatorLayout } from '@/shared/layouts/OperatorLayout';
 import { useAuthStore } from '@/stores/authStore';
 
 /** Tenant operators: super_admin, tenant_admin, tenant_staff. */
@@ -12,5 +13,9 @@ export function OperatorRoute() {
     return <Navigate to="/403" replace />;
   }
 
-  return <Outlet />;
+  return (
+    <OperatorLayout>
+      <Outlet />
+    </OperatorLayout>
+  );
 }
