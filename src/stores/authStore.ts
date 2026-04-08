@@ -25,6 +25,8 @@ export type AuthState = {
   user: AuthUser | null;
   isAuthenticated: boolean;
   expiresIn: number | null;
+  /** False until persist hydrate + restoreSession finished — use for route guards. */
+  isSessionReady: boolean;
 };
 
 type AuthActions = {
@@ -127,6 +129,7 @@ export const useAuthStore = create<AuthStore>()(
         user: null,
         isAuthenticated: false,
         expiresIn: null,
+        isSessionReady: false,
 
         login: (accessToken, refreshToken, expiresIn, user) => {
           set({

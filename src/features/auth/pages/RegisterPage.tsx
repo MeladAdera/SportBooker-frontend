@@ -62,6 +62,9 @@ export function RegisterPage() {
   const { t } = useTranslation('auth');
   const navigate = useNavigate();
   const login = useAuthStore((s) => s.login);
+  const isSessionReady = useAuthStore((s) => s.isSessionReady);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const sessionUser = useAuthStore((s) => s.user);
   const slug = useTenantStore((s) => s.slug);
   const isResolved = useTenantStore((s) => s.isResolved);
   const tenantInfo = useTenantStore((s) => s.tenantInfo);
@@ -165,7 +168,8 @@ export function RegisterPage() {
     (slug && slug !== 'platform' ? slug.toUpperCase() : 'Sportbooker');
   const logoUrl = tenantInfo?.logoUrl ?? null;
 
-  if (!isResolved) {
+  // Wait for both session and tenant to resolve before making any redirect decision.
+  if (!isSessionReady || !isResolved) {
     return (
       <div className="relative flex min-h-svh items-center justify-center bg-background">
         <LocaleSwitcher className="fixed top-4 inset-e-4 z-50" />
@@ -174,6 +178,12 @@ export function RegisterPage() {
     );
   }
 
+  // Redirect already-authenticated users to their home.
+  if (isAuthenticated && sessionUser?.role) {
+    return <Navigate to={getRoleHomePath(sessionUser.role)} replace />;
+  }
+
+  // Register is only for tenant subdomains — platform and apex redirect to login.
   if (slug === 'platform' || slug === null) {
     return <Navigate to="/login" replace />;
   }

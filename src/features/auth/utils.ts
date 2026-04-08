@@ -1,19 +1,14 @@
+import { normalizeRole } from '@/lib/roles';
+
 /**
- * Maps a user role string to the appropriate home route after login.
- * Extend this as new roles are added.
+ * Default landing route after login for each role (must match guarded routes).
  */
 export function getRoleHomePath(role: string): string {
-  switch (role.toLowerCase()) {
-    case 'super-admin':
-    case 'platform-admin':
-      return '/admin';
-    case 'operator':
-    case 'club-admin':
-      return '/operator';
-    case 'player':
-    case 'member':
-      return '/discover';
-    default:
-      return '/';
+  const r = normalizeRole(role);
+  if (r === 'platform_admin') return '/admin/tenants';
+  if (['super_admin', 'tenant_admin', 'tenant_staff'].includes(r)) {
+    return '/dashboard';
   }
+  if (r === 'player' || r === 'member') return '/';
+  return '/';
 }

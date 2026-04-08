@@ -23,9 +23,25 @@ document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
 // Tenant slug from window.location.hostname (VITE_APP_DOMAIN + extractTenantSlug)
 useTenantStore.getState().resolveTenant();
 
-useAuthStore.persist.onFinishHydration(() => {
-  void useAuthStore.getState().restoreSession();
-});
+// If persist already hydrated synchronously (Zustand v5), onFinishHydration
+// may never fire. Handle both cases.
+if (useAuthStore.persist.hasHydrated()) {
+  void useAuthStore
+    .getState()
+    .restoreSession()
+    .finally(() => {
+      useAuthStore.setState({ isSessionReady: true });
+    });
+} else {
+  useAuthStore.persist.onFinishHydration(() => {
+    void useAuthStore
+      .getState()
+      .restoreSession()
+      .finally(() => {
+        useAuthStore.setState({ isSessionReady: true });
+      });
+  });
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

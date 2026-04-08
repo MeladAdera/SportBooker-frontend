@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -33,6 +33,9 @@ export function LoginPage() {
   const { t } = useTranslation('auth');
   const navigate = useNavigate();
   const login = useAuthStore((s) => s.login);
+  const isSessionReady = useAuthStore((s) => s.isSessionReady);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const sessionUser = useAuthStore((s) => s.user);
   const slug = useTenantStore((s) => s.slug);
   const tenantInfo = useTenantStore((s) => s.tenantInfo);
 
@@ -92,6 +95,18 @@ export function LoginPage() {
     tenantInfo?.name ??
     (slug && slug !== 'platform' ? slug.toUpperCase() : 'Sportbooker');
   const logoUrl = tenantInfo?.logoUrl ?? null;
+
+  if (!isSessionReady) {
+    return (
+      <div className="flex min-h-svh items-center justify-center bg-background">
+        <Loader2 className="size-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (isAuthenticated && sessionUser?.role) {
+    return <Navigate to={getRoleHomePath(sessionUser.role)} replace />;
+  }
 
   return (
     <div className="relative flex min-h-svh flex-col items-center justify-center bg-background p-4">

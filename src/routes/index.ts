@@ -1,4 +1,10 @@
 /**
- * Route definitions, loaders, and guards (router setup lives here).
+ * Route definitions, loaders, and guards.
  */
-export {};
+export { ForbiddenPage } from './ForbiddenPage';
+export {
+  ProtectedRoute,
+  PlayerRoute,
+  OperatorRoute,
+  PlatformAdminRoute,
+} from './guards';
