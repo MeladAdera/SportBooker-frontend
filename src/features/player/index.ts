@@ -1,4 +1,4 @@
 /**
  * Player feature: matches, bookings, wallet, profile.
  */
-export {};
+export { DiscoverPage } from './pages/DiscoverPage';

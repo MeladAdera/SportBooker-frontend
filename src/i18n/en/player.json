@@ -5,5 +5,43 @@
     "bookings": "My Bookings",
     "wallet": "Wallet",
     "profile": "Profile"
+  },
+  "discover": {
+    "pageTitle": "Discover Matches",
+    "filters": {
+      "sport": "Sport",
+      "allSports": "All sports",
+      "venue": "Venue",
+      "allVenues": "All venues",
+      "date": "Date",
+      "availableOnly": "Available only",
+      "clearFilters": "Clear filters"
+    },
+    "sports": {
+      "football": "Football",
+      "padel": "Padel",
+      "cricket": "Cricket",
+      "generic": "Other"
+    },
+    "card": {
+      "spotsRemaining": "{{booked}} / {{total}} spots",
+      "pricePerPlayer": "{{price}} / player"
+    },
+    "status": {
+      "open": "Open",
+      "full": "Full",
+      "cancelled": "Cancelled",
+      "completed": "Completed",
+      "in_progress": "In progress"
+    },
+    "empty": {
+      "title": "No matches found",
+      "description": "Try adjusting your filters."
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {{current}} of {{total}}"
+    }
   }
 }

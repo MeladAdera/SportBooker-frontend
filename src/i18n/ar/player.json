@@ -5,5 +5,43 @@
     "bookings": "حجوزاتي",
     "wallet": "المحفظة",
     "profile": "الملف الشخصي"
+  },
+  "discover": {
+    "pageTitle": "اكتشف المباريات",
+    "filters": {
+      "sport": "الرياضة",
+      "allSports": "كل الرياضات",
+      "venue": "الملعب",
+      "allVenues": "كل الملاعب",
+      "date": "التاريخ",
+      "availableOnly": "المتاحة فقط",
+      "clearFilters": "مسح الفلاتر"
+    },
+    "sports": {
+      "football": "كرة القدم",
+      "padel": "بادل",
+      "cricket": "كريكيت",
+      "generic": "أخرى"
+    },
+    "card": {
+      "spotsRemaining": "{{booked}} / {{total}} مقعد",
+      "pricePerPlayer": "{{price}} / لاعب"
+    },
+    "status": {
+      "open": "متاح",
+      "full": "مكتمل",
+      "cancelled": "ملغي",
+      "completed": "منتهي",
+      "in_progress": "جارٍ"
+    },
+    "empty": {
+      "title": "لا توجد مباريات",
+      "description": "حاول تغيير الفلاتر."
+    },
+    "pagination": {
+      "previous": "السابق",
+      "next": "التالي",
+      "page": "صفحة {{current}} من {{total}}"
+    }
   }
 }
