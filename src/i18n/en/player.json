@@ -37,6 +37,7 @@
       "leaveWaitlist": "Leave Waitlist",
       "cancelling": "Cancelling…",
       "cancelled": "This match has been cancelled.",
+      "cancelError": "Failed to cancel. Please try again.",
       "waitlistNotice": {
         "title": "Prepaid waitlist",
         "body": "Your wallet will be charged immediately. If you don't get a confirmed spot, or you cancel before the match, the full amount will be refunded."
@@ -45,6 +46,38 @@
     "error": {
       "notFound": "Match not found.",
       "goBack": "Go back"
+    }
+  },
+  "booking": {
+    "title": "Book a spot",
+    "position": {
+      "label": "Select position",
+      "fieldPlayer": "Field Player",
+      "goalkeeper": "Goalkeeper",
+      "gkFull": "GK spots full"
+    },
+    "gkAvailability": "{{taken}} / {{max}} GK spots taken",
+    "price": "{{price}} / player",
+    "walletBalanceLabel": "Your balance",
+    "walletBalance": "{{balance}}",
+    "walletBalanceUnknown": "—",
+    "insufficientFunds": "Insufficient wallet balance. Top up your wallet before booking.",
+    "confirm": "Confirm Booking",
+    "confirming": "Confirming…",
+    "cancel": "Cancel",
+    "error": "Something went wrong. Please try again.",
+    "success": {
+      "title": "Booking confirmed!",
+      "charged": "{{amount}} charged from your wallet",
+      "estimatedBalance": "Estimated new balance: {{balance}}",
+      "viewBookings": "View My Bookings"
+    },
+    "waitlist": {
+      "title": "You're on the waitlist",
+      "charged": "{{amount}} held from your wallet",
+      "refundPromise": "Full refund if you cancel or don't get promoted to a confirmed spot.",
+      "estimatedBalance": "Estimated new balance: {{balance}}",
+      "viewBookings": "View My Bookings"
     }
   },
   "discover": {

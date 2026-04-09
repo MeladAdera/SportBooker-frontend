@@ -1,13 +1,14 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
   Calendar,
   Clock,
+  Coins,
   Dumbbell,
   MapPin,
   Shield,
-  Users,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -17,10 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useMatchesControllerGetById } from '@/api/generated/matches/matches';
 import { useUsersControllerListMyBookings } from '@/api/generated/users/users';
-import {
-  useBookingsControllerCreateBooking,
-  useBookingsControllerCancelMyBooking,
-} from '@/api/generated/bookings/bookings';
+import { useBookingsControllerCancelMyBooking } from '@/api/generated/bookings/bookings';
 import { BookingPosition } from '@/api/generated/models/bookingPosition';
 import { MatchDetailResponseDtoStatus } from '@/api/generated/models/matchDetailResponseDtoStatus';
 import type { MatchDetailResponseDto } from '@/api/generated/models/matchDetailResponseDto';
@@ -28,6 +26,9 @@ import type { MyBookingItemDto } from '@/api/generated/models/myBookingItemDto';
 import { useQueryClient } from '@tanstack/react-query';
 import { getMatchesControllerGetByIdQueryKey } from '@/api/generated/matches/matches';
 import { getUsersControllerListMyBookingsQueryKey } from '@/api/generated/users/users';
+import { BookingModal } from '@/features/player/components/BookingModal';
+import { MAX_GK } from '@/features/player/constants';
+import { useAuthStore } from '@/stores/authStore';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -112,7 +113,6 @@ function GkSlots({ roster }: { roster: MatchDetailResponseDto['roster'] }) {
   const gkCount = roster.filter(
     (p) => p.position === BookingPosition.goalkeeper,
   ).length;
-  const MAX_GK = 2;
 
   return (
     <div className="flex items-center gap-2 text-sm">
@@ -172,11 +172,18 @@ type BookingCtaProps = {
   match: MatchDetailResponseDto;
   myBooking: MyBookingItemDto | undefined;
   myBookingId: string | undefined;
+  onBook: () => void;
 };
 
-function BookingCta({ match, myBooking, myBookingId }: BookingCtaProps) {
+function BookingCta({
+  match,
+  myBooking,
+  myBookingId,
+  onBook,
+}: BookingCtaProps) {
   const { t } = useTranslation('player');
   const qc = useQueryClient();
+  const [cancelError, setCancelError] = useState<string | null>(null);
 
   const invalidate = () => {
     void qc.invalidateQueries({
@@ -187,12 +194,14 @@ function BookingCta({ match, myBooking, myBookingId }: BookingCtaProps) {
     });
   };
 
-  const createBooking = useBookingsControllerCreateBooking({
-    mutation: { onSuccess: invalidate },
-  });
-
   const cancelBooking = useBookingsControllerCancelMyBooking({
-    mutation: { onSuccess: invalidate },
+    mutation: {
+      onSuccess: () => {
+        setCancelError(null);
+        invalidate();
+      },
+      onError: () => setCancelError(t('matchDetail.cta.cancelError')),
+    },
   });
 
   const matchInPast = isPast(match.scheduledAt);
@@ -220,6 +229,14 @@ function BookingCta({ match, myBooking, myBookingId }: BookingCtaProps) {
             {t('matchDetail.cta.alreadyBooked')}
           </Badge>
         </div>
+        {cancelError && (
+          <p
+            role="alert"
+            className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-xs text-destructive"
+          >
+            {cancelError}
+          </p>
+        )}
         <Button
           variant="outline"
           className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
@@ -247,6 +264,14 @@ function BookingCta({ match, myBooking, myBookingId }: BookingCtaProps) {
         <div className="flex items-center gap-2">
           <Badge variant="secondary">{t('matchDetail.cta.onWaitlist')}</Badge>
         </div>
+        {cancelError && (
+          <p
+            role="alert"
+            className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-xs text-destructive"
+          >
+            {cancelError}
+          </p>
+        )}
         <Button
           variant="outline"
           className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
@@ -277,38 +302,16 @@ function BookingCta({ match, myBooking, myBookingId }: BookingCtaProps) {
           </p>
           <p className="mt-1">{t('matchDetail.cta.waitlistNotice.body')}</p>
         </div>
-        <Button
-          className="w-full"
-          disabled={createBooking.isPending}
-          onClick={() =>
-            createBooking.mutate({
-              matchId: match.id,
-              data: { position: BookingPosition.field_player },
-            })
-          }
-        >
-          {createBooking.isPending
-            ? t('matchDetail.cta.joining')
-            : t('matchDetail.cta.joinWaitlist')}
+        <Button className="w-full" onClick={onBook}>
+          {t('matchDetail.cta.joinWaitlist')}
         </Button>
       </div>
     );
   }
 
   return (
-    <Button
-      className="w-full"
-      disabled={createBooking.isPending}
-      onClick={() =>
-        createBooking.mutate({
-          matchId: match.id,
-          data: { position: BookingPosition.field_player },
-        })
-      }
-    >
-      {createBooking.isPending
-        ? t('matchDetail.cta.booking')
-        : t('matchDetail.cta.bookNow')}
+    <Button className="w-full" onClick={onBook}>
+      {t('matchDetail.cta.bookNow')}
     </Button>
   );
 }
@@ -338,6 +341,8 @@ export function MatchDetailPage() {
   const { t } = useTranslation('player');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const currentUserId = useAuthStore((s) => s.user?.id);
 
   const {
     data: matchData,
@@ -356,9 +361,25 @@ export function MatchDetailPage() {
   const myBookings =
     bookingsData?.status === 200 ? bookingsData.data.data.items : [];
 
-  const myBookingForThisMatch = myBookings.find(
-    (b) => b.status !== 'cancelled',
-  );
+  // MyBookingItemDto has no matchId — confirmed status is derived from the roster
+  // (which only includes confirmed players); waitlist is matched by title since the
+  // backend doesn't expose matchId on booking list items yet. TODO: request matchId
+  // from backend to make this exact.
+  const isConfirmedInRoster =
+    !!currentUserId && !!match?.roster.some((p) => p.userId === currentUserId);
+
+  const myWaitlistBooking = match
+    ? myBookings.find(
+        (b) => b.matchTitle === match.title && b.status === 'waitlisted',
+      )
+    : undefined;
+
+  const myBookingForThisMatch: MyBookingItemDto | undefined =
+    isConfirmedInRoster
+      ? (myBookings.find(
+          (b) => b.matchTitle === match!.title && b.status === 'confirmed',
+        ) ?? ({ status: 'confirmed' } as MyBookingItemDto))
+      : myWaitlistBooking;
 
   // We need the booking ID for cancellation — MyBookingItemDto has `id`
   const myBookingId = myBookingForThisMatch?.id;
@@ -436,7 +457,7 @@ export function MatchDetailPage() {
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Users className="size-4 shrink-0" aria-hidden />
+                <Coins className="size-4 shrink-0" aria-hidden />
                 <span>
                   {match.pricePerPlayer} {t('matchDetail.info.perPlayer')}
                 </span>
@@ -457,6 +478,13 @@ export function MatchDetailPage() {
             match={match}
             myBooking={myBookingForThisMatch}
             myBookingId={myBookingId}
+            onBook={() => setBookingOpen(true)}
+          />
+
+          <BookingModal
+            match={match}
+            open={bookingOpen}
+            onOpenChange={setBookingOpen}
           />
 
           {/* Roster */}

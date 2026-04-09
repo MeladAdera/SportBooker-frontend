@@ -37,6 +37,7 @@
       "leaveWaitlist": "مغادرة قائمة الانتظار",
       "cancelling": "جارٍ الإلغاء…",
       "cancelled": "تم إلغاء هذه المباراة.",
+      "cancelError": "فشل الإلغاء. يرجى المحاولة مجدداً.",
       "waitlistNotice": {
         "title": "قائمة انتظار مدفوعة مسبقاً",
         "body": "سيتم خصم المبلغ من محفظتك فوراً. إذا لم تحصل على مقعد مؤكد أو ألغيت قبل المباراة، سيتم استرداد المبلغ كاملاً."
@@ -45,6 +46,38 @@
     "error": {
       "notFound": "المباراة غير موجودة.",
       "goBack": "العودة"
+    }
+  },
+  "booking": {
+    "title": "احجز مقعدًا",
+    "position": {
+      "label": "اختر المركز",
+      "fieldPlayer": "لاعب ميدان",
+      "goalkeeper": "حارس مرمى",
+      "gkFull": "مواقع الحراسة ممتلئة"
+    },
+    "gkAvailability": "{{taken}} / {{max}} مواقع حراسة مرمى مأخوذة",
+    "price": "{{price}} / لاعب",
+    "walletBalanceLabel": "رصيدك",
+    "walletBalance": "{{balance}}",
+    "walletBalanceUnknown": "—",
+    "insufficientFunds": "رصيد المحفظة غير كافٍ. يرجى إعادة الشحن قبل الحجز.",
+    "confirm": "تأكيد الحجز",
+    "confirming": "جارٍ التأكيد…",
+    "cancel": "إلغاء",
+    "error": "حدث خطأ ما. يرجى المحاولة مجددًا.",
+    "success": {
+      "title": "تم تأكيد الحجز!",
+      "charged": "تم خصم {{amount}} من محفظتك",
+      "estimatedBalance": "الرصيد المتوقع: {{balance}}",
+      "viewBookings": "عرض حجوزاتي"
+    },
+    "waitlist": {
+      "title": "أنت في قائمة الانتظار",
+      "charged": "تم احتجاز {{amount}} من محفظتك",
+      "refundPromise": "سيتم استرداد المبلغ كاملاً إذا ألغيت أو لم تحصل على مقعد مؤكد.",
+      "estimatedBalance": "الرصيد المتوقع: {{balance}}",
+      "viewBookings": "عرض حجوزاتي"
     }
   },
   "discover": {
