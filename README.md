@@ -23,6 +23,8 @@ cp .env.example .env
 
 Edit `.env` from `.env.example`: **`VITE_API_URL`** and **`VITE_APP_DOMAIN`** are required for API calls and tenant subdomain parsing (`extractTenantSlug`). For Nest tenant `Host` routing in dev, use the proxy flow in **[Local development — API and auth](docs/local-development.md)**.
 
+**Layouts and navigation:** player / operator / platform admin shells, app bar, and role-based routing are documented in **[Role-based layouts and navigation](docs/role-based-layouts.md)**.
+
 ## Scripts
 
 | Command                | Description                         |
