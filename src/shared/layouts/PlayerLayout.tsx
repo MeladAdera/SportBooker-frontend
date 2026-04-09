@@ -13,7 +13,7 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { to: '/', labelKey: 'nav.home', icon: Home },
+  { to: '/home', labelKey: 'nav.home', icon: Home },
   { to: '/bookings', labelKey: 'nav.bookings', icon: BookOpen },
   { to: '/wallet', labelKey: 'nav.wallet', icon: Wallet },
   { to: '/profile', labelKey: 'nav.profile', icon: User },

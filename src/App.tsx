@@ -11,6 +11,7 @@ import {
   PlayerRoute,
   ProtectedRoute,
 } from '@/routes/guards';
+import { RoleBasedRouter } from '@/routes/RoleBasedRouter';
 import { PageControls } from '@/shared/components/PageControls';
 
 function Placeholder({ title }: { title: string }) {
@@ -27,17 +28,25 @@ function App() {
       {/* DEV: global theme/locale controls — remove or guard with import.meta.env.DEV before prod */}
       <PageControls />
       <Routes>
+        {/* ── Public routes ──────────────────────────────────────── */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/403" element={<ForbiddenPage />} />
-        <Route path="/discover" element={<Navigate to="/" replace />} />
+        <Route path="/discover" element={<Navigate to="/home" replace />} />
 
+        {/* ── Protected routes ───────────────────────────────────── */}
         <Route element={<ProtectedRoute />}>
-          {/* Use index + relative paths under pathless layouts — nested path="/" often fails to match, so * sends users to /login and fights Login’s redirect (loop). */}
+          {/* "/" redirects each role to their appropriate home path */}
+          <Route index element={<RoleBasedRouter />} />
+
+          {/* ── Player routes ─────────────────────────────────────── */}
           <Route element={<PlayerRoute />}>
-            <Route index element={<Placeholder title="Home — coming soon" />} />
+            <Route
+              path="home"
+              element={<Placeholder title="Home — coming soon" />}
+            />
             <Route
               path="bookings"
               element={<Placeholder title="Bookings — coming soon" />}
@@ -52,6 +61,7 @@ function App() {
             />
           </Route>
 
+          {/* ── Operator routes ───────────────────────────────────── */}
           <Route element={<OperatorRoute />}>
             <Route
               path="dashboard"
@@ -75,6 +85,7 @@ function App() {
             />
           </Route>
 
+          {/* ── Platform admin routes ─────────────────────────────── */}
           <Route element={<PlatformAdminRoute />}>
             <Route
               path="admin/tenants"
