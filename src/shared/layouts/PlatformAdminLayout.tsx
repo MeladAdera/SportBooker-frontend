@@ -2,6 +2,7 @@ import { Building2, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet } from 'react-router-dom';
 
+import { AppBar } from '@/shared/components/AppBar';
 import { cn } from '@/lib/utils';
 
 type NavItem = {
@@ -44,36 +45,32 @@ type Props = {
 
 export function PlatformAdminLayout({ children }: Props) {
   return (
-    <div className="flex min-h-svh bg-background">
-      {/* ── Sidebar ─────────────────────────────────────────────── */}
-      <aside
-        className="flex w-56 shrink-0 flex-col border-e border-sidebar-border bg-sidebar lg:w-64"
-        aria-label="Platform admin navigation"
-      >
-        {/* Platform wordmark — no tenant branding */}
-        <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
-          <div className="flex h-6 w-6 items-center justify-center rounded bg-primary text-[10px] font-bold text-primary-foreground">
-            PA
-          </div>
-          <span className="text-sm font-semibold tracking-tight text-sidebar-foreground">
-            SportBooker Platform
-          </span>
-        </div>
+    <div className="flex min-h-svh flex-col bg-background">
+      {/* ── AppBar — full width ──────────────────────────────────── */}
+      <AppBar isPlatform profilePath="/admin/profile" />
 
-        <nav
-          className="flex flex-1 flex-col gap-1 overflow-y-auto p-3"
+      {/* ── Below AppBar: sidebar + content ─────────────────────── */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* ── Sidebar ───────────────────────────────────────────── */}
+        <aside
+          className="flex w-56 shrink-0 flex-col border-e border-sidebar-border bg-sidebar lg:w-64"
           aria-label="Platform admin navigation"
         >
-          {NAV_ITEMS.map((item) => (
-            <AdminNavItem key={item.to} item={item} />
-          ))}
-        </nav>
-      </aside>
+          <nav
+            className="flex flex-1 flex-col gap-1 overflow-y-auto p-3"
+            aria-label="Platform admin navigation"
+          >
+            {NAV_ITEMS.map((item) => (
+              <AdminNavItem key={item.to} item={item} />
+            ))}
+          </nav>
+        </aside>
 
-      {/* ── Main content ────────────────────────────────────────── */}
-      <main className="flex flex-1 flex-col overflow-y-auto">
-        {children ?? <Outlet />}
-      </main>
+        {/* ── Main content ──────────────────────────────────────── */}
+        <main className="flex flex-1 flex-col overflow-y-auto">
+          {children ?? <Outlet />}
+        </main>
+      </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { BookOpen, Home, User, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet } from 'react-router-dom';
 
+import { AppBar } from '@/shared/components/AppBar';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -85,35 +86,34 @@ export function PlayerLayout({ children }: Props) {
   const walletBalance = useAuthStore((s) => s.user?.walletBalance);
 
   return (
-    <div className="flex min-h-svh flex-col bg-background md:flex-row">
-      {/* ── Desktop sidebar ─────────────────────────────────────── */}
-      <aside
-        className="hidden md:flex md:w-56 md:shrink-0 md:flex-col md:border-e md:border-sidebar-border md:bg-sidebar lg:w-64"
-        aria-label="Main navigation"
-      >
-        {/* Logo / brand area */}
-        <div className="flex h-14 items-center border-b border-sidebar-border px-4">
-          <span className="text-base font-semibold tracking-tight text-sidebar-foreground">
-            SportBooker
-          </span>
-        </div>
+    <div className="flex min-h-svh flex-col bg-background">
+      {/* ── AppBar — full width ──────────────────────────────────── */}
+      <AppBar profilePath="/profile" />
 
-        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
-          {NAV_ITEMS.map((item) => (
-            <PlayerNavItem
-              key={item.to}
-              item={item}
-              walletBalance={walletBalance}
-              variant="sidebar"
-            />
-          ))}
-        </nav>
-      </aside>
+      {/* ── Below AppBar: sidebar + content ─────────────────────── */}
+      <div className="flex flex-1 overflow-hidden md:flex-row">
+        {/* ── Desktop sidebar ───────────────────────────────────── */}
+        <aside
+          className="hidden md:flex md:w-56 md:shrink-0 md:flex-col md:border-e md:border-sidebar-border md:bg-sidebar lg:w-64"
+          aria-label="Main navigation"
+        >
+          <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
+            {NAV_ITEMS.map((item) => (
+              <PlayerNavItem
+                key={item.to}
+                item={item}
+                walletBalance={walletBalance}
+                variant="sidebar"
+              />
+            ))}
+          </nav>
+        </aside>
 
-      {/* ── Main content ────────────────────────────────────────── */}
-      <main className="flex flex-1 flex-col overflow-y-auto pb-16 md:pb-0">
-        {children ?? <Outlet />}
-      </main>
+        {/* ── Main content ──────────────────────────────────────── */}
+        <main className="flex flex-1 flex-col overflow-y-auto pb-16 md:pb-0">
+          {children ?? <Outlet />}
+        </main>
+      </div>
 
       {/* ── Mobile bottom nav ───────────────────────────────────── */}
       <nav

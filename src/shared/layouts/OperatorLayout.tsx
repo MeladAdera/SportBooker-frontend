@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 
+import { AppBar } from '@/shared/components/AppBar';
 import { cn } from '@/lib/utils';
 import { normalizeRole } from '@/lib/roles';
 import { useAuthStore } from '@/stores/authStore';
@@ -67,33 +68,6 @@ function OperatorNavItem({ item, onClick }: NavItemProps) {
   );
 }
 
-type SidebarContentProps = {
-  items: NavItem[];
-  onItemClick?: () => void;
-};
-
-function SidebarContent({ items, onItemClick }: SidebarContentProps) {
-  const { t } = useTranslation('operator');
-
-  return (
-    <>
-      <div className="flex h-14 shrink-0 items-center border-b border-sidebar-border px-4">
-        <span className="text-base font-semibold tracking-tight text-sidebar-foreground">
-          SportBooker
-        </span>
-      </div>
-      <nav
-        className="flex flex-1 flex-col gap-1 overflow-y-auto p-3"
-        aria-label={t('nav.dashboard')}
-      >
-        {items.map((item) => (
-          <OperatorNavItem key={item.to} item={item} onClick={onItemClick} />
-        ))}
-      </nav>
-    </>
-  );
-}
-
 type Props = {
   children?: React.ReactNode;
 };
@@ -141,37 +115,50 @@ export function OperatorLayout({ children }: Props) {
   }, [drawerOpen]);
 
   return (
-    <div className="flex min-h-svh bg-background md:flex-row">
-      {/* ── Desktop sidebar ─────────────────────────────────────── */}
-      <aside
-        className="hidden md:flex md:w-56 md:shrink-0 md:flex-col md:border-e md:border-sidebar-border md:bg-sidebar lg:w-64"
-        aria-label="Main navigation"
-      >
-        <SidebarContent items={visibleItems} />
-      </aside>
+    <div className="flex min-h-svh flex-col bg-background">
+      {/* ── AppBar — full width ──────────────────────────────────── */}
+      <AppBar profilePath="/account" />
 
-      {/* ── Mobile top bar ──────────────────────────────────────── */}
-      <div className="flex flex-1 flex-col md:overflow-hidden">
-        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-sidebar-border bg-sidebar px-4 md:hidden">
-          <button
-            type="button"
-            aria-label="Open navigation menu"
-            aria-expanded={drawerOpen}
-            aria-controls="operator-drawer"
-            onClick={() => setDrawerOpen(true)}
-            className="rounded-md p-1.5 text-sidebar-foreground transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+      {/* ── Below AppBar: sidebar + content ─────────────────────── */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* ── Desktop sidebar ───────────────────────────────────── */}
+        <aside
+          className="hidden md:flex md:w-56 md:shrink-0 md:flex-col md:border-e md:border-sidebar-border md:bg-sidebar lg:w-64"
+          aria-label="Main navigation"
+        >
+          <nav
+            className="flex flex-1 flex-col gap-1 overflow-y-auto p-3"
+            aria-label="Main navigation"
           >
-            <Menu className="h-5 w-5" aria-hidden />
-          </button>
-          <span className="text-base font-semibold tracking-tight text-sidebar-foreground">
-            SportBooker
-          </span>
-        </header>
+            {visibleItems.map((item) => (
+              <OperatorNavItem key={item.to} item={item} />
+            ))}
+          </nav>
+        </aside>
 
-        {/* ── Main content ──────────────────────────────────────── */}
-        <main className="flex flex-1 flex-col overflow-y-auto">
-          {children ?? <Outlet />}
-        </main>
+        {/* ── Mobile hamburger bar ──────────────────────────────── */}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <header className="flex h-12 shrink-0 items-center gap-3 border-b border-sidebar-border bg-sidebar px-4 md:hidden">
+            <button
+              type="button"
+              aria-label="Open navigation menu"
+              aria-expanded={drawerOpen}
+              aria-controls="operator-drawer"
+              onClick={() => setDrawerOpen(true)}
+              className="rounded-md p-1.5 text-sidebar-foreground transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+            >
+              <Menu className="h-5 w-5" aria-hidden />
+            </button>
+            <span className="text-sm font-semibold tracking-tight text-sidebar-foreground">
+              Menu
+            </span>
+          </header>
+
+          {/* ── Main content ──────────────────────────────────────── */}
+          <main className="flex flex-1 flex-col overflow-y-auto">
+            {children ?? <Outlet />}
+          </main>
+        </div>
       </div>
 
       {/* ── Mobile drawer overlay ───────────────────────────────── */}
@@ -195,7 +182,6 @@ export function OperatorLayout({ children }: Props) {
           'fixed inset-y-0 inset-s-0 z-50 flex w-64 flex-col bg-sidebar shadow-xl transition-transform duration-300 ease-in-out md:hidden',
           'focus-visible:outline-none',
           drawerOpen ? 'translate-x-0' : '-translate-x-full',
-          // RTL: flip translation direction
           'rtl:translate-x-full rtl:data-[open=true]:translate-x-0',
         )}
         data-open={drawerOpen}
