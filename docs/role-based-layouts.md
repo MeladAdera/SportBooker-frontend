@@ -130,13 +130,32 @@ Defined in [`src/App.tsx`](../src/App.tsx). Public: `/login`, `/register`, `/for
 
 ---
 
-## 7. File index
+## 7. Discover page (player home — `/home`)
+
+**Source:** [`src/features/player/pages/DiscoverPage.tsx`](../src/features/player/pages/DiscoverPage.tsx)
+
+This is the first real page rendered inside `PlayerLayout` at `/home`.
+
+**What it renders:**
+
+- Filter bar: sport dropdown, venue dropdown, date picker, "available only" toggle, clear button.
+- Match card grid: each card shows sport, venue, date/time, spots remaining (`booked / total`), price per player, and match status.
+- Empty state when no matches pass the active filters.
+
+**Data:** `useMatchesControllerList` / `useVenuesControllerList` (Orval-generated React Query hooks). See **[Player flow](player-flow.md)** for full detail.
+
+**i18n:** all strings live in `discover.*` keys under the `player` namespace (`src/i18n/en/player.json`, `src/i18n/ar/player.json`).
+
+---
+
+## 8. File index (updated)
 
 | Concern                | Location                                                                           |
 | ---------------------- | ---------------------------------------------------------------------------------- |
 | Player shell           | `src/shared/layouts/PlayerLayout.tsx`                                              |
 | Operator shell         | `src/shared/layouts/OperatorLayout.tsx`                                            |
 | Platform admin shell   | `src/shared/layouts/PlatformAdminLayout.tsx`                                       |
+| Player home (Discover) | `src/features/player/pages/DiscoverPage.tsx`                                       |
 | Top bar                | `src/shared/components/AppBar.tsx`                                                 |
 | Role → home URL        | `src/features/auth/utils.ts` (`getRoleHomePath`)                                   |
 | `/` redirect           | `src/routes/RoleBasedRouter.tsx`                                                   |
@@ -146,7 +165,7 @@ Defined in [`src/App.tsx`](../src/App.tsx). Public: `/login`, `/register`, `/for
 
 ---
 
-## 8. Acceptance criteria checklist
+## 9. Acceptance criteria checklist
 
 | Criterion                                                 | Where it’s implemented                                            |
 | --------------------------------------------------------- | ----------------------------------------------------------------- |
@@ -161,7 +180,7 @@ Defined in [`src/App.tsx`](../src/App.tsx). Public: `/login`, `/register`, `/for
 
 ---
 
-## 9. Optional follow-ups (not blockers for this doc)
+## 10. Optional follow-ups (not blockers for this doc)
 
 - Add `/account` route under `OperatorRoute` when the account page ships.
 - Align copy (“Home” vs “Discover”) with design if `/discover` remains a marketing alias only (`Navigate` to `/home` is already in place).
