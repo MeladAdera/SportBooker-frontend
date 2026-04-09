@@ -6,6 +6,47 @@
     "wallet": "المحفظة",
     "profile": "الملف الشخصي"
   },
+  "matchDetail": {
+    "info": {
+      "venue": "الملعب",
+      "mins": "دقيقة",
+      "perPlayer": "/ لاعب"
+    },
+    "capacity": {
+      "label": "المقاعد"
+    },
+    "gkSlots": {
+      "label": "حراس المرمى"
+    },
+    "roster": {
+      "title": "اللاعبون المؤكدون",
+      "empty": "لا يوجد لاعبون مؤكدون بعد.",
+      "position": {
+        "field_player": "لاعب ميدان",
+        "goalkeeper": "حارس مرمى"
+      }
+    },
+    "cta": {
+      "bookNow": "احجز الآن",
+      "booking": "جارٍ الحجز…",
+      "joinWaitlist": "انضم لقائمة الانتظار",
+      "joining": "جارٍ الانضمام…",
+      "alreadyBooked": "أنت محجوز",
+      "onWaitlist": "أنت في قائمة الانتظار",
+      "cancelBooking": "إلغاء الحجز",
+      "leaveWaitlist": "مغادرة قائمة الانتظار",
+      "cancelling": "جارٍ الإلغاء…",
+      "cancelled": "تم إلغاء هذه المباراة.",
+      "waitlistNotice": {
+        "title": "قائمة انتظار مدفوعة مسبقاً",
+        "body": "سيتم خصم المبلغ من محفظتك فوراً. إذا لم تحصل على مقعد مؤكد أو ألغيت قبل المباراة، سيتم استرداد المبلغ كاملاً."
+      }
+    },
+    "error": {
+      "notFound": "المباراة غير موجودة.",
+      "goBack": "العودة"
+    }
+  },
   "discover": {
     "pageTitle": "اكتشف المباريات",
     "filters": {

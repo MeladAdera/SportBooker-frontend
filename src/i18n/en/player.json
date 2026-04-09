@@ -6,6 +6,47 @@
     "wallet": "Wallet",
     "profile": "Profile"
   },
+  "matchDetail": {
+    "info": {
+      "venue": "Venue",
+      "mins": "min",
+      "perPlayer": "/ player"
+    },
+    "capacity": {
+      "label": "Spots"
+    },
+    "gkSlots": {
+      "label": "Goalkeepers"
+    },
+    "roster": {
+      "title": "Confirmed Players",
+      "empty": "No players confirmed yet.",
+      "position": {
+        "field_player": "Field Player",
+        "goalkeeper": "Goalkeeper"
+      }
+    },
+    "cta": {
+      "bookNow": "Book Now",
+      "booking": "Booking…",
+      "joinWaitlist": "Join Waitlist",
+      "joining": "Joining…",
+      "alreadyBooked": "You're in",
+      "onWaitlist": "You're on the waitlist",
+      "cancelBooking": "Cancel Booking",
+      "leaveWaitlist": "Leave Waitlist",
+      "cancelling": "Cancelling…",
+      "cancelled": "This match has been cancelled.",
+      "waitlistNotice": {
+        "title": "Prepaid waitlist",
+        "body": "Your wallet will be charged immediately. If you don't get a confirmed spot, or you cancel before the match, the full amount will be refunded."
+      }
+    },
+    "error": {
+      "notFound": "Match not found.",
+      "goBack": "Go back"
+    }
+  },
   "discover": {
     "pageTitle": "Discover Matches",
     "filters": {

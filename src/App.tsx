@@ -5,6 +5,7 @@ import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 import { ResetPasswordPage } from '@/features/auth/pages/ResetPasswordPage';
 import { DiscoverPage } from '@/features/player/pages/DiscoverPage';
+import { MatchDetailPage } from '@/features/player/pages/MatchDetailPage';
 import { ForbiddenPage } from '@/routes/ForbiddenPage';
 import {
   OperatorRoute,
@@ -45,6 +46,7 @@ function App() {
           {/* ── Player routes ─────────────────────────────────────── */}
           <Route element={<PlayerRoute />}>
             <Route path="home" element={<DiscoverPage />} />
+            <Route path="matches/:id" element={<MatchDetailPage />} />
             <Route
               path="bookings"
               element={<Placeholder title="Bookings — coming soon" />}

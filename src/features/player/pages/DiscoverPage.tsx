@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { Bike, Dumbbell, Search, Shield, Swords, X } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -58,12 +59,16 @@ const STATUS_VARIANT: Record<
 
 function MatchCard({ match }: { match: MatchBrowseItemDto }) {
   const { t } = useTranslation('player');
+  const navigate = useNavigate();
   const Icon = SPORT_ICONS[match.sportType] ?? Dumbbell;
   const formattedDate = formatScheduledAt(match.scheduledAt);
   const bookedSpots = match.maxCapacity - match.spotsRemaining;
 
   return (
-    <Card className="transition-shadow hover:shadow-md">
+    <Card
+      className="cursor-pointer transition-shadow hover:shadow-md"
+      onClick={() => navigate(`/matches/${match.id}`)}
+    >
       <CardContent className="flex flex-col gap-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
