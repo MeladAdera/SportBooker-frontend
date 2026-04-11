@@ -12,6 +12,7 @@ dist
 
 # Orval — regenerate with npm run gen:api
 src/api/generated/
+openapi.json
 dist-ssr
 *.local
 .env
