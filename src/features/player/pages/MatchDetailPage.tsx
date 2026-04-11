@@ -65,14 +65,6 @@ function googleMapsSearchUrl(query: string) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
-/** Backend may send venueAddress or address */
-function venueAddressText(match: MatchDetailResponseDto): string | null {
-  const a = match.venueAddress ?? match.address;
-  if (a == null) return null;
-  const s = typeof a === 'string' ? a.trim() : '';
-  return s.length > 0 ? s : null;
-}
-
 const SPORT_ICONS: Record<string, React.ElementType> = {
   football: Shield,
   padel: Shield,
@@ -371,8 +363,6 @@ export function MatchDetailPage() {
 
   const match = matchData?.status === 200 ? matchData.data.data : undefined;
 
-  const venueAddressLine = match ? venueAddressText(match) : null;
-
   const myBookings =
     bookingsData?.status === 200 ? bookingsData.data.data.items : [];
 
@@ -484,13 +474,13 @@ export function MatchDetailPage() {
                   <span className="font-medium text-foreground">
                     {match.venueName ?? match.venueId}
                   </span>
-                  {venueAddressLine ? (
+                  {match.venueAddress ? (
                     <>
                       <p className="whitespace-pre-wrap leading-snug text-muted-foreground">
-                        {venueAddressLine}
+                        {match.venueAddress}
                       </p>
                       <a
-                        href={googleMapsSearchUrl(venueAddressLine)}
+                        href={googleMapsSearchUrl(match.venueAddress)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex w-fit items-center gap-1 text-xs font-medium text-primary underline-offset-4 hover:underline"
