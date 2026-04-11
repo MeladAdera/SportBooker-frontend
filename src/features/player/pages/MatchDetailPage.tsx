@@ -7,6 +7,7 @@ import {
   Clock,
   Coins,
   Dumbbell,
+  ExternalLink,
   MapPin,
   Shield,
 } from 'lucide-react';
@@ -58,6 +59,18 @@ function formatTime(iso: string) {
 
 function isPast(iso: string) {
   return new Date(iso).getTime() < Date.now();
+}
+
+function googleMapsSearchUrl(query: string) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+/** Backend may send venueAddress or address */
+function venueAddressText(match: MatchDetailResponseDto): string | null {
+  const a = match.venueAddress ?? match.address;
+  if (a == null) return null;
+  const s = typeof a === 'string' ? a.trim() : '';
+  return s.length > 0 ? s : null;
 }
 
 const SPORT_ICONS: Record<string, React.ElementType> = {
@@ -358,6 +371,8 @@ export function MatchDetailPage() {
 
   const match = matchData?.status === 200 ? matchData.data.data : undefined;
 
+  const venueAddressLine = match ? venueAddressText(match) : null;
+
   const myBookings =
     bookingsData?.status === 200 ? bookingsData.data.data.items : [];
 
@@ -459,16 +474,33 @@ export function MatchDetailPage() {
         <div className="flex flex-col gap-6 p-4 md:p-6">
           {/* Match info */}
           <Card>
-            <CardContent className="flex flex-col gap-3 pt-5">
-              <div className="flex items-center gap-2 text-sm">
+            <CardContent className="flex flex-col gap-4 pt-5">
+              <div className="flex gap-2.5 text-sm">
                 <MapPin
-                  className="size-4 shrink-0 text-muted-foreground"
+                  className="mt-0.5 size-4 shrink-0 text-muted-foreground"
                   aria-hidden
                 />
-                <span className="text-foreground font-medium">
-                  {t('matchDetail.info.venue')}:{' '}
-                  {match.venueName ?? match.venueId}
-                </span>
+                <div className="flex min-w-0 flex-col gap-1.5">
+                  <span className="font-medium text-foreground">
+                    {match.venueName ?? match.venueId}
+                  </span>
+                  {venueAddressLine ? (
+                    <>
+                      <p className="whitespace-pre-wrap leading-snug text-muted-foreground">
+                        {venueAddressLine}
+                      </p>
+                      <a
+                        href={googleMapsSearchUrl(venueAddressLine)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex w-fit items-center gap-1 text-xs font-medium text-primary underline-offset-4 hover:underline"
+                      >
+                        {t('matchDetail.info.openInMaps')}
+                        <ExternalLink className="size-3.5" aria-hidden />
+                      </a>
+                    </>
+                  ) : null}
+                </div>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Calendar className="size-4 shrink-0" aria-hidden />
