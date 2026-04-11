@@ -9,6 +9,8 @@
   "matchDetail": {
     "info": {
       "venue": "Venue",
+      "venuePhotoAlt": "Photo of {{venue}}",
+      "openInMaps": "Open in Maps",
       "mins": "min",
       "perPlayer": "/ player"
     },

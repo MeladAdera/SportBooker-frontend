@@ -407,8 +407,33 @@ export function MatchDetailPage() {
       {matchLoading ? (
         <HeroSkeleton />
       ) : (
-        <div className="flex h-48 items-end bg-linear-to-br from-primary/20 via-primary/10 to-background px-4 pb-4 md:mx-6 md:mt-6 md:rounded-xl md:px-6">
-          <div className="flex items-center gap-3">
+        <div
+          className={cn(
+            'relative flex h-48 items-end overflow-hidden px-4 pb-4 md:mx-6 md:mt-6 md:rounded-xl md:px-6',
+            !match?.venuePictureUrl &&
+              'bg-linear-to-br from-primary/20 via-primary/10 to-background',
+          )}
+        >
+          {match?.venuePictureUrl ? (
+            <>
+              <img
+                src={match.venuePictureUrl}
+                alt={
+                  match.venueName
+                    ? t('matchDetail.info.venuePhotoAlt', {
+                        venue: match.venueName,
+                      })
+                    : ''
+                }
+                className="absolute inset-0 size-full object-cover"
+              />
+              <div
+                className="absolute inset-0 bg-linear-to-t from-background via-background/70 to-background/20"
+                aria-hidden
+              />
+            </>
+          ) : null}
+          <div className="relative flex items-center gap-3">
             <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 text-primary">
               <SportIcon className="size-6" aria-hidden />
             </span>
@@ -441,8 +466,8 @@ export function MatchDetailPage() {
                   aria-hidden
                 />
                 <span className="text-foreground font-medium">
-                  {/* venueName not on MatchDetailResponseDto — using venueId as fallback until backend adds it */}
-                  {t('matchDetail.info.venue')}: {match.venueId}
+                  {t('matchDetail.info.venue')}:{' '}
+                  {match.venueName ?? match.venueId}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">

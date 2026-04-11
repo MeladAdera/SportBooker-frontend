@@ -9,6 +9,8 @@
   "matchDetail": {
     "info": {
       "venue": "الملعب",
+      "venuePhotoAlt": "صورة {{venue}}",
+      "openInMaps": "فتح في الخرائط",
       "mins": "دقيقة",
       "perPlayer": "/ لاعب"
     },
