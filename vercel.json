@@ -1,3 +1,5 @@
 {
-  "buildCommand": "curl -sv -H \"Authorization: Bearer $OPENAPI_DOCS_TOKEN\" \"$BACKEND_URL/api/docs-json\" -o openapi.json && OPENAPI_SPEC_PATH=./openapi.json npm run gen:api && npm run build"
+  "buildCommand": "curl -sv -H \"Authorization: Bearer $OPENAPI_DOCS_TOKEN\" \"$BACKEND_URL/api/docs-json\" -o openapi.json && OPENAPI_SPEC_PATH=./openapi.json npm run gen:api && npm run build",
+  "source": "/(.*)",
+  "destination": "/index.html"
 }
