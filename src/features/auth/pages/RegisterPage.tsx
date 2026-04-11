@@ -59,6 +59,7 @@ const BACKEND_FIELD_MAP: Record<string, keyof RegisterFormValues> = {
 };
 
 export function RegisterPage() {
+  console.log('RegisterPage');
   const { t } = useTranslation('auth');
   const navigate = useNavigate();
   const login = useAuthStore((s) => s.login);
