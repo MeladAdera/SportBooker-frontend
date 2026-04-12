@@ -108,6 +108,29 @@
       "close": "Close"
     }
   },
+  "wallet": {
+    "pageTitle": "My Wallet",
+    "balanceLabel": "Available Balance",
+    "topUp": "Top Up",
+    "error": "Failed to load wallet. Please try again.",
+    "empty": "No transactions yet",
+    "types": {
+      "deduction": "Deduction",
+      "refund": "Refund",
+      "topup": "Top-up",
+      "credit": "Credit"
+    },
+    "filter": {
+      "all": "All types",
+      "deduction": "Deduction",
+      "refund": "Refund",
+      "topup": "Top-up",
+      "credit": "Credit",
+      "dateFrom": "From",
+      "dateTo": "To",
+      "clear": "Clear filters"
+    }
+  },
   "myBookings": {
     "pageTitle": "My Bookings",
     "tabs": {

@@ -108,6 +108,29 @@
       "close": "إغلاق"
     }
   },
+  "wallet": {
+    "pageTitle": "محفظتي",
+    "balanceLabel": "الرصيد المتاح",
+    "topUp": "شحن الرصيد",
+    "error": "فشل تحميل المحفظة. يرجى المحاولة مجدداً.",
+    "empty": "لا توجد معاملات بعد",
+    "types": {
+      "deduction": "خصم",
+      "refund": "استرداد",
+      "topup": "شحن",
+      "credit": "إضافة رصيد"
+    },
+    "filter": {
+      "all": "كل الأنواع",
+      "deduction": "خصم",
+      "refund": "استرداد",
+      "topup": "شحن",
+      "credit": "إضافة رصيد",
+      "dateFrom": "من",
+      "dateTo": "إلى",
+      "clear": "مسح الفلاتر"
+    }
+  },
   "myBookings": {
     "pageTitle": "حجوزاتي",
     "tabs": {

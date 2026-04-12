@@ -7,6 +7,7 @@ import { ResetPasswordPage } from '@/features/auth/pages/ResetPasswordPage';
 import { DiscoverPage } from '@/features/player/pages/DiscoverPage';
 import { MatchDetailPage } from '@/features/player/pages/MatchDetailPage';
 import { MyBookingsPage } from '@/features/player/pages/MyBookingsPage';
+import { WalletPage } from '@/features/player/pages/WalletPage';
 import { ForbiddenPage } from '@/routes/ForbiddenPage';
 import {
   OperatorRoute,
@@ -49,10 +50,7 @@ function App() {
             <Route path="home" element={<DiscoverPage />} />
             <Route path="matches/:id" element={<MatchDetailPage />} />
             <Route path="bookings" element={<MyBookingsPage />} />
-            <Route
-              path="wallet"
-              element={<Placeholder title="Wallet — coming soon" />}
-            />
+            <Route path="wallet" element={<WalletPage />} />
             <Route
               path="profile"
               element={<Placeholder title="Profile — coming soon" />}
