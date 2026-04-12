@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import { resolveApiUrl } from '@/lib/api-url';
-import { getTenantHostHeaderValue } from '@/lib/tenant-host-header';
+import { getTenantSlugHeader } from '@/lib/tenant-host-header';
 
 const AUTH_STORAGE_KEY = 'sportbooker-auth';
 
@@ -71,9 +71,9 @@ function scheduleAutoRefresh(expiresInSeconds: number | null): void {
 
 function buildAuthHeaders(accessToken?: string | null): Headers {
   const headers = new Headers({ 'Content-Type': 'application/json' });
-  const tenantHost = getTenantHostHeaderValue();
-  if (tenantHost) {
-    headers.set('Host', tenantHost);
+  const tenantSlug = getTenantSlugHeader();
+  if (tenantSlug) {
+    headers.set('X-Tenant-Slug', tenantSlug);
   }
   if (accessToken) {
     headers.set('Authorization', `Bearer ${accessToken}`);
@@ -160,6 +160,7 @@ export const useAuthStore = create<AuthStore>()(
               await fetch(resolveApiUrl('/auth/logout'), {
                 method: 'POST',
                 headers: buildAuthHeaders(accessToken),
+                credentials: 'include',
               });
             }
           } catch {
@@ -181,6 +182,7 @@ export const useAuthStore = create<AuthStore>()(
               const res = await fetch(resolveApiUrl('/auth/refresh'), {
                 method: 'POST',
                 headers,
+                credentials: 'include',
                 body: JSON.stringify({ refreshToken }),
               });
 

@@ -1,12 +1,13 @@
 import { useTenantStore } from '@/stores/tenantStore';
 
 /**
- * Value for tenant routing (subdomain). Browsers may ignore `Host` on fetch; backend may use
- * `X-Forwarded-Host` or URL-based tenant resolution instead.
+ * Returns the tenant slug for the `X-Tenant-Slug` request header.
+ * Returns `null` when not in a tenant context (platform admin, app, etc.).
  */
-export function getTenantHostHeaderValue(): string | null {
-  if (typeof window === 'undefined') return null;
+export function getTenantSlugHeader(): string | null {
   const slug = useTenantStore.getState().slug;
-  if (!slug) return null;
-  return window.location.hostname;
+  return slug || null;
 }
+
+/** @deprecated Use `getTenantSlugHeader` — kept for downstream grep-ability. */
+export const getTenantHostHeaderValue = getTenantSlugHeader;

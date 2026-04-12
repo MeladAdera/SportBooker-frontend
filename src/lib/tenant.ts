@@ -1,19 +1,18 @@
 /**
  * Tenant slug from the browser hostname using `VITE_APP_DOMAIN` as the public apex.
  *
- * Contract (product / manager spec):
- * - Read `window.location.hostname` in the app (e.g. via `resolveTenant()`), pass it here.
- * - Extract the subdomain **before** `VITE_APP_DOMAIN` (single label before the apex).
- *
- * Examples (with `VITE_APP_DOMAIN=sportbooker.com`):
- * - `acfc.sportbooker.com` → `acfc`
- * - `platform.sportbooker.com` → `platform`
- * - `sportbooker.com`, `www.sportbooker.com` → `null` (marketing / no tenant host)
+ * Examples (with `VITE_APP_DOMAIN=sportbooker.net`):
+ * - `acfc.sportbooker.net` → `acfc`
+ * - `app.sportbooker.net` → `null` (not a tenant)
+ * - `platform.sportbooker.net` → `null` (platform admin, not tenant-scoped)
+ * - `sportbooker.net`, `www.sportbooker.net` → `null`
  *
  * Localhost:
- * - `localhost` / `127.0.0.1` → no subdomain; use `VITE_DEV_TENANT_SLUG` if set, else `null`
+ * - `localhost` / `127.0.0.1` → `VITE_DEV_TENANT_SLUG` if set, else `null`
  * - `acfc.localhost` → `acfc` (local multi-tenant dev)
  */
+
+const RESERVED_SUBDOMAINS = new Set(['app', 'platform', 'api', 'www']);
 
 /** Normalized app apex domain from env (no scheme, no path, lowercase). */
 export function getAppDomain(): string {
@@ -34,8 +33,8 @@ export function getAppDomain(): string {
 /**
  * Resolves tenant slug from a hostname (typically `window.location.hostname`).
  *
- * Production-style hosts: must end with `.{VITE_APP_DOMAIN}`; returns the left label
- * (e.g. `acfc` from `acfc.sportbooker.com`). `platform.sportbooker.com` → `platform`.
+ * Returns `null` for reserved subdomains (`app`, `platform`, `api`) and bare/apex domain.
+ * Only returns a slug for actual tenant subdomains (e.g. `acfc`).
  */
 export function extractTenantSlug(hostname: string): string | null {
   const host = hostname.split(':')[0]?.toLowerCase() ?? '';
@@ -47,9 +46,9 @@ export function extractTenantSlug(hostname: string): string | null {
   }
 
   if (host.endsWith('.localhost')) {
-    const rest = host.slice(0, -'.localhost'.length);
-    const first = rest.split('.').filter(Boolean)[0];
-    return first ?? null;
+    const label = host.slice(0, -'.localhost'.length);
+    if (!label || RESERVED_SUBDOMAINS.has(label)) return null;
+    return label;
   }
 
   const appDomain = getAppDomain();
@@ -60,15 +59,12 @@ export function extractTenantSlug(hostname: string): string | null {
   }
 
   const suffix = `.${appDomain}`;
-  if (!host.endsWith(suffix)) {
+  if (!host.endsWith(suffix)) return null;
+
+  const label = host.slice(0, -suffix.length);
+  if (!label || label.endsWith('.') || RESERVED_SUBDOMAINS.has(label)) {
     return null;
   }
 
-  let rest = host.slice(0, -suffix.length);
-  if (!rest || rest.endsWith('.')) return null;
-
-  rest = rest.replace(/^www\./, '');
-  if (!rest || rest === 'www') return null;
-
-  return rest;
+  return label;
 }

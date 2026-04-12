@@ -5,13 +5,14 @@
  * @see .env.example
  */
 interface ImportMetaEnv {
-  /** Backend API base URL (no trailing slash), e.g. http://localhost:3000 */
+  /** Backend API base URL (no trailing slash), e.g. https://api.sportbooker.net */
   readonly VITE_API_URL?: string;
-  /** @deprecated Prefer VITE_API_URL */
+  /** Backend API base URL — preferred name per backend integration guide. */
   readonly VITE_API_BASE_URL?: string;
   /**
-   * Public apex domain for subdomain parsing (no scheme), e.g. sportbooker.com.
+   * Public apex domain for subdomain parsing (no scheme), e.g. sportbooker.net.
    * Used by extractTenantSlug() — label before this domain is the tenant slug.
+   * Reserved subdomains (app, platform, api) are excluded.
    */
   readonly VITE_APP_DOMAIN?: string;
   /**
