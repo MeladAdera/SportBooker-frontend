@@ -4,7 +4,6 @@ import { NavLink, Outlet } from 'react-router-dom';
 
 import { AppBar } from '@/shared/components/AppBar';
 import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/stores/authStore';
 
 type NavItem = {
   to: string;
@@ -19,26 +18,14 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/profile', labelKey: 'nav.profile', icon: User },
 ];
 
-function formatBalance(balance: number | null | undefined): string | null {
-  if (balance == null) return null;
-  return new Intl.NumberFormat(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(balance);
-}
-
 type NavItemProps = {
   item: NavItem;
-  walletBalance: number | null | undefined;
   variant: 'bottom' | 'sidebar';
 };
 
-function PlayerNavItem({ item, walletBalance, variant }: NavItemProps) {
+function PlayerNavItem({ item, variant }: NavItemProps) {
   const { t } = useTranslation('player');
   const Icon = item.icon;
-  const isWallet = item.to === '/wallet';
-  const balance = isWallet ? formatBalance(walletBalance) : null;
-
   const isBottomNav = variant === 'bottom';
 
   return (
@@ -63,16 +50,6 @@ function PlayerNavItem({ item, walletBalance, variant }: NavItemProps) {
       />
       <span className={cn(isBottomNav ? 'leading-tight' : 'flex-1')}>
         {t(item.labelKey)}
-        {isWallet && balance !== null && (
-          <span
-            className={cn(
-              'block font-normal tabular-nums text-sidebar-primary',
-              isBottomNav ? 'text-[10px] leading-tight' : 'text-xs',
-            )}
-          >
-            {balance}
-          </span>
-        )}
       </span>
     </NavLink>
   );
@@ -83,8 +60,6 @@ type Props = {
 };
 
 export function PlayerLayout({ children }: Props) {
-  const walletBalance = useAuthStore((s) => s.user?.walletBalance);
-
   return (
     <div className="flex min-h-svh flex-col bg-background">
       {/* ── AppBar — full width ──────────────────────────────────── */}
@@ -99,12 +74,7 @@ export function PlayerLayout({ children }: Props) {
         >
           <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
             {NAV_ITEMS.map((item) => (
-              <PlayerNavItem
-                key={item.to}
-                item={item}
-                walletBalance={walletBalance}
-                variant="sidebar"
-              />
+              <PlayerNavItem key={item.to} item={item} variant="sidebar" />
             ))}
           </nav>
         </aside>
@@ -122,11 +92,7 @@ export function PlayerLayout({ children }: Props) {
       >
         {NAV_ITEMS.map((item) => (
           <div key={item.to} className="flex flex-1 items-stretch">
-            <PlayerNavItem
-              item={item}
-              walletBalance={walletBalance}
-              variant="bottom"
-            />
+            <PlayerNavItem item={item} variant="bottom" />
           </div>
         ))}
       </nav>

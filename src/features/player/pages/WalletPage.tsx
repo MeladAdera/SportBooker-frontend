@@ -25,6 +25,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/format';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +36,7 @@ import {
 import { useUsersControllerGetMyWallet } from '@/api/generated/users/users';
 import type { WalletTransactionItemDto } from '@/api/generated/models/walletTransactionItemDto';
 import { WalletTransactionItemDtoType } from '@/api/generated/models/walletTransactionItemDtoType';
+import { TopUpModal } from '../components/TopUpModal';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -44,13 +46,6 @@ type TxType = WalletTransactionItemDto['type'] | 'all';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-function formatBalance(n: number): string {
-  return new Intl.NumberFormat(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(n);
-}
-
 function formatAmount(
   raw: string,
   type: WalletTransactionItemDto['type'],
@@ -58,10 +53,7 @@ function formatAmount(
   const n = parseFloat(raw);
   if (isNaN(n)) return raw;
   const sign = type === WalletTransactionItemDtoType.deduction ? '-' : '+';
-  return `${sign}${new Intl.NumberFormat(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Math.abs(n))}`;
+  return `${sign}${formatCurrency(Math.abs(n))}`;
 }
 
 function isCredit(type: WalletTransactionItemDto['type']): boolean {
@@ -179,7 +171,7 @@ function BalanceCard({
           <Skeleton className="h-10 w-40 bg-primary-foreground/20" />
         ) : (
           <p className="text-4xl font-bold tabular-nums tracking-tight">
-            {formatBalance(balance)}
+            {formatCurrency(balance)}
           </p>
         )}
 
@@ -190,7 +182,7 @@ function BalanceCard({
           onClick={onTopUp}
         >
           <PlusCircle className="size-4" aria-hidden />
-          {t('wallet.topUp')}
+          {t('wallet.topUp.submit')}
         </Button>
       </CardContent>
     </Card>
@@ -341,6 +333,7 @@ export function WalletPage() {
   const [page, setPage] = useState(1);
   const [typeFilter, setTypeFilter] = useState<TxType>('all');
   const [dateRange, setDateRange] = useState<DateRange>({ from: '', to: '' });
+  const [topUpOpen, setTopUpOpen] = useState(false);
 
   const { data, isLoading, isFetching, isError, refetch } =
     useUsersControllerGetMyWallet({ page, limit: PAGE_SIZE });
@@ -380,7 +373,7 @@ export function WalletPage() {
   }
 
   function handleTopUp() {
-    // SPOFE-37: top-up flow not yet implemented
+    setTopUpOpen(true);
   }
 
   return (
@@ -459,6 +452,12 @@ export function WalletPage() {
       {!isLoading && !hasActiveFilters && (
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       )}
+
+      <TopUpModal
+        open={topUpOpen}
+        onOpenChange={setTopUpOpen}
+        currentBalance={balance}
+      />
     </div>
   );
 }

@@ -8,6 +8,10 @@ import { DiscoverPage } from '@/features/player/pages/DiscoverPage';
 import { MatchDetailPage } from '@/features/player/pages/MatchDetailPage';
 import { MyBookingsPage } from '@/features/player/pages/MyBookingsPage';
 import { WalletPage } from '@/features/player/pages/WalletPage';
+import { TopUpSuccessPage } from '@/features/player/pages/TopUpSuccessPage';
+import { TopUpCancelPage } from '@/features/player/pages/TopUpCancelPage';
+import { TopUpFailurePage } from '@/features/player/pages/TopUpFailurePage';
+import { TenantSettingsPage } from '@/features/operator/pages/TenantSettingsPage';
 import { ForbiddenPage } from '@/routes/ForbiddenPage';
 import {
   OperatorRoute,
@@ -52,6 +56,15 @@ function App() {
             <Route path="bookings" element={<MyBookingsPage />} />
             <Route path="wallet" element={<WalletPage />} />
             <Route
+              path="payments/topup/success"
+              element={<TopUpSuccessPage />}
+            />
+            <Route path="payments/topup/cancel" element={<TopUpCancelPage />} />
+            <Route
+              path="payments/topup/failure"
+              element={<TopUpFailurePage />}
+            />
+            <Route
               path="profile"
               element={<Placeholder title="Profile — coming soon" />}
             />
@@ -75,10 +88,7 @@ function App() {
               path="players"
               element={<Placeholder title="Players — coming soon" />}
             />
-            <Route
-              path="settings"
-              element={<Placeholder title="Settings — coming soon" />}
-            />
+            <Route path="settings" element={<TenantSettingsPage />} />
           </Route>
 
           {/* ── Platform admin routes ─────────────────────────────── */}

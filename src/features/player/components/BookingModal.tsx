@@ -13,24 +13,20 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/stores/authStore';
+import { formatCurrency } from '@/lib/format';
 import { useBookingsControllerCreateBooking } from '@/api/generated/bookings/bookings';
 import { BookingPosition } from '@/api/generated/models/bookingPosition';
 import { CreateBookingResponseDtoStatus } from '@/api/generated/models/createBookingResponseDtoStatus';
 import type { CreateBookingResponseDto } from '@/api/generated/models/createBookingResponseDto';
 import type { MatchDetailResponseDto } from '@/api/generated/models/matchDetailResponseDto';
 import { getMatchesControllerGetByIdQueryKey } from '@/api/generated/matches/matches';
-import { getUsersControllerListMyBookingsQueryKey } from '@/api/generated/users/users';
+import {
+  getUsersControllerListMyBookingsQueryKey,
+  getUsersControllerGetMyWalletQueryKey,
+  useUsersControllerGetMyWallet,
+} from '@/api/generated/users/users';
 import { MAX_GK } from '@/features/player/constants';
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function formatMoney(amount: number): string {
-  return new Intl.NumberFormat(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(amount);
-}
+import { TopUpModal } from './TopUpModal';
 
 // ── Position selector ─────────────────────────────────────────────────────────
 
@@ -145,7 +141,9 @@ function SuccessScreen({
             {t('booking.waitlist.title')}
           </p>
           <p className="text-sm text-muted-foreground">
-            {t('booking.waitlist.charged', { amount: formatMoney(paidAmount) })}
+            {t('booking.waitlist.charged', {
+              amount: formatCurrency(paidAmount),
+            })}
           </p>
         </div>
         <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-xs text-amber-700 dark:text-amber-400">
@@ -154,7 +152,7 @@ function SuccessScreen({
         {optimisticBalance != null && (
           <p className="text-xs text-muted-foreground">
             {t('booking.waitlist.estimatedBalance', {
-              balance: formatMoney(optimisticBalance),
+              balance: formatCurrency(optimisticBalance),
             })}
           </p>
         )}
@@ -180,13 +178,13 @@ function SuccessScreen({
           {t('booking.success.title')}
         </p>
         <p className="text-sm text-muted-foreground">
-          {t('booking.success.charged', { amount: formatMoney(paidAmount) })}
+          {t('booking.success.charged', { amount: formatCurrency(paidAmount) })}
         </p>
       </div>
       {optimisticBalance != null && (
         <p className="text-xs text-muted-foreground">
           {t('booking.success.estimatedBalance', {
-            balance: formatMoney(optimisticBalance),
+            balance: formatCurrency(optimisticBalance),
           })}
         </p>
       )}
@@ -209,7 +207,6 @@ type BookingModalProps = {
 
 export function BookingModal({ match, open, onOpenChange }: BookingModalProps) {
   const { t } = useTranslation('player');
-  const walletBalance = useAuthStore((s) => s.user?.walletBalance);
   const qc = useQueryClient();
 
   const [step, setStep] = useState<Step>('form');
@@ -218,13 +215,19 @@ export function BookingModal({ match, open, onOpenChange }: BookingModalProps) {
   );
   const [result, setResult] = useState<CreateBookingResponseDto | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isInsufficientFunds, setIsInsufficientFunds] = useState(false);
+  const [topUpOpen, setTopUpOpen] = useState(false);
+
+  const { data: walletData } = useUsersControllerGetMyWallet(undefined);
+  const walletBalance =
+    walletData?.status === 200 ? walletData.data.data.balance : null;
+
+  const insufficientFunds =
+    walletBalance != null && walletBalance < match.pricePerPlayer;
 
   const gkCount = match.roster.filter(
     (p) => p.position === BookingPosition.goalkeeper,
   ).length;
-
-  const insufficientFunds =
-    walletBalance != null && walletBalance < match.pricePerPlayer;
 
   const createBooking = useBookingsControllerCreateBooking({
     mutation: {
@@ -243,12 +246,24 @@ export function BookingModal({ match, open, onOpenChange }: BookingModalProps) {
           void qc.invalidateQueries({
             queryKey: getUsersControllerListMyBookingsQueryKey(),
           });
+          void qc.invalidateQueries({
+            queryKey: getUsersControllerGetMyWalletQueryKey(),
+          });
         } else {
           setErrorMsg(t('booking.error'));
         }
       },
-      onError: () => {
-        setErrorMsg(t('booking.error'));
+      onError: (err: unknown) => {
+        const e = err as { statusCode?: number; message?: string } | null;
+        if (
+          e?.statusCode === 422 &&
+          e?.message?.toLowerCase().includes('insufficient wallet balance')
+        ) {
+          setIsInsufficientFunds(true);
+          setErrorMsg(null);
+        } else {
+          setErrorMsg(t('booking.error'));
+        }
       },
     },
   });
@@ -256,133 +271,152 @@ export function BookingModal({ match, open, onOpenChange }: BookingModalProps) {
   function handleClose() {
     if (createBooking.isPending) return;
     onOpenChange(false);
-    // Reset after animation settles
     setTimeout(() => {
       setStep('form');
       setPosition(BookingPosition.field_player);
       setResult(null);
       setErrorMsg(null);
+      setIsInsufficientFunds(false);
       createBooking.reset();
     }, 150);
   }
 
   function handleConfirm() {
     setErrorMsg(null);
+    setIsInsufficientFunds(false);
     createBooking.mutate({ matchId: match.id, data: { position } });
   }
 
+  const showInsufficientFunds = insufficientFunds || isInsufficientFunds;
   const isSuccessStep = step === 'confirmed' || step === 'waitlist';
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
-      <DialogContent showCloseButton={!createBooking.isPending}>
-        {isSuccessStep && result ? (
-          <SuccessScreen
-            booking={result}
-            walletBalance={walletBalance}
-            onClose={handleClose}
-          />
-        ) : (
-          <>
-            <DialogHeader>
-              <DialogTitle>{t('booking.title')}</DialogTitle>
-              <p className="text-sm text-muted-foreground line-clamp-1">
-                {match.title}
-              </p>
-            </DialogHeader>
-
-            <div className="flex flex-col gap-4">
-              {/* Position selector */}
-              <PositionSelector
-                value={position}
-                onChange={setPosition}
-                gkCount={gkCount}
-              />
-
-              {/* GK availability */}
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Shield className="size-4 shrink-0" aria-hidden />
-                <span>
-                  {t('booking.gkAvailability', {
-                    taken: gkCount,
-                    max: MAX_GK,
-                  })}
-                </span>
-              </div>
-
-              {/* Price + wallet */}
-              <div className="flex flex-col gap-1.5 rounded-lg border border-border bg-muted/30 px-3 py-2.5 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">
-                    {t('matchDetail.info.perPlayer').replace('/ ', '')}
-                  </span>
-                  <span className="font-semibold tabular-nums text-foreground">
-                    {t('booking.price', { price: match.pricePerPlayer })}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">
-                    {t('booking.walletBalanceLabel')}
-                  </span>
-                  <span
-                    className={cn(
-                      'tabular-nums',
-                      insufficientFunds
-                        ? 'font-medium text-destructive'
-                        : 'text-foreground',
-                    )}
-                  >
-                    {walletBalance != null
-                      ? t('booking.walletBalance', {
-                          balance: formatMoney(walletBalance),
-                        })
-                      : t('booking.walletBalanceUnknown')}
-                  </span>
-                </div>
-              </div>
-
-              {/* Insufficient funds warning */}
-              {insufficientFunds && (
-                <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-xs text-destructive">
-                  <AlertTriangle
-                    className="mt-0.5 size-3.5 shrink-0"
-                    aria-hidden
-                  />
-                  {t('booking.insufficientFunds')}
-                </div>
-              )}
-
-              {/* API error */}
-              {errorMsg && (
-                <p
-                  role="alert"
-                  className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-xs text-destructive"
-                >
-                  {errorMsg}
+    <>
+      <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
+        <DialogContent showCloseButton={!createBooking.isPending}>
+          {isSuccessStep && result ? (
+            <SuccessScreen
+              booking={result}
+              walletBalance={walletBalance}
+              onClose={handleClose}
+            />
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle>{t('booking.title')}</DialogTitle>
+                <p className="text-sm text-muted-foreground line-clamp-1">
+                  {match.title}
                 </p>
-              )}
-            </div>
+              </DialogHeader>
 
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={handleClose}
-                disabled={createBooking.isPending}
-              >
-                {t('booking.cancel')}
-              </Button>
-              <Button
-                onClick={handleConfirm}
-                disabled={createBooking.isPending || insufficientFunds}
-              >
-                {createBooking.isPending
-                  ? t('booking.confirming')
-                  : t('booking.confirm')}
-              </Button>
-            </DialogFooter>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+              <div className="flex flex-col gap-4">
+                {/* Position selector */}
+                <PositionSelector
+                  value={position}
+                  onChange={setPosition}
+                  gkCount={gkCount}
+                />
+
+                {/* GK availability */}
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Shield className="size-4 shrink-0" aria-hidden />
+                  <span>
+                    {t('booking.gkAvailability', {
+                      taken: gkCount,
+                      max: MAX_GK,
+                    })}
+                  </span>
+                </div>
+
+                {/* Price + wallet */}
+                <div className="flex flex-col gap-1.5 rounded-lg border border-border bg-muted/30 px-3 py-2.5 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">
+                      {t('matchDetail.info.perPlayer').replace('/ ', '')}
+                    </span>
+                    <span className="font-semibold tabular-nums text-foreground">
+                      {t('booking.price', { price: match.pricePerPlayer })}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">
+                      {t('booking.walletBalanceLabel')}
+                    </span>
+                    <span
+                      className={cn(
+                        'tabular-nums',
+                        showInsufficientFunds
+                          ? 'font-medium text-destructive'
+                          : 'text-foreground',
+                      )}
+                    >
+                      {walletBalance != null
+                        ? t('booking.walletBalance', {
+                            balance: formatCurrency(walletBalance),
+                          })
+                        : t('booking.walletBalanceUnknown')}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Insufficient funds warning */}
+                {showInsufficientFunds && (
+                  <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-xs text-destructive">
+                    <AlertTriangle
+                      className="mt-0.5 size-3.5 shrink-0"
+                      aria-hidden
+                    />
+                    <span className="flex-1">
+                      {t('booking.insufficientFunds')}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setTopUpOpen(true)}
+                      className="shrink-0 font-medium underline underline-offset-2 hover:no-underline focus-visible:outline-none"
+                    >
+                      {t('booking.insufficientFundsAction')}
+                    </button>
+                  </div>
+                )}
+
+                {/* API error */}
+                {errorMsg && (
+                  <p
+                    role="alert"
+                    className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-xs text-destructive"
+                  >
+                    {errorMsg}
+                  </p>
+                )}
+              </div>
+
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={handleClose}
+                  disabled={createBooking.isPending}
+                >
+                  {t('booking.cancel')}
+                </Button>
+                <Button
+                  onClick={handleConfirm}
+                  disabled={createBooking.isPending || showInsufficientFunds}
+                >
+                  {createBooking.isPending
+                    ? t('booking.confirming')
+                    : t('booking.confirm')}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <TopUpModal
+        open={topUpOpen}
+        onOpenChange={setTopUpOpen}
+        currentBalance={walletBalance ?? 0}
+      />
+    </>
   );
 }

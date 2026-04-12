@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'sonner';
 import './index.css';
 import './i18n/config';
 import i18n from '@/i18n/config';
@@ -63,6 +64,7 @@ createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <HtmlLangDir />
       <App />
+      <Toaster richColors position="top-right" />
     </QueryClientProvider>
   </StrictMode>,
 );

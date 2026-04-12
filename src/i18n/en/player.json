@@ -64,6 +64,7 @@
     "walletBalance": "{{balance}}",
     "walletBalanceUnknown": "—",
     "insufficientFunds": "Insufficient wallet balance. Top up your wallet before booking.",
+    "insufficientFundsAction": "Top Up",
     "confirm": "Confirm Booking",
     "confirming": "Confirming…",
     "cancel": "Cancel",
@@ -111,7 +112,6 @@
   "wallet": {
     "pageTitle": "My Wallet",
     "balanceLabel": "Available Balance",
-    "topUp": "Top Up",
     "refresh": "Refresh wallet",
     "error": "Failed to load wallet. Please try again.",
     "empty": "No transactions yet",
@@ -130,6 +130,36 @@
       "dateFrom": "From",
       "dateTo": "To",
       "clear": "Clear filters"
+    },
+    "topUp": {
+      "title": "Top Up Wallet",
+      "amountLabel": "Amount (AED)",
+      "amountPlaceholder": "e.g. 100",
+      "min": "Minimum top-up is AED 10",
+      "max": "Maximum top-up is AED 5,000",
+      "submit": "Top Up",
+      "submitting": "Redirecting…",
+      "success": {
+        "title": "Payment Successful!",
+        "subtitle": "Your wallet is being updated…",
+        "balanceUpdated": "New balance: {{balance}}",
+        "backToWallet": "Back to Wallet"
+      },
+      "cancel": {
+        "title": "Payment Cancelled",
+        "subtitle": "Your payment was cancelled. No charge was made.",
+        "tryAgain": "Try Again"
+      },
+      "failure": {
+        "title": "Payment Failed",
+        "subtitle": "Your payment could not be processed. Please try again.",
+        "tryAgain": "Try Again"
+      },
+      "error": {
+        "ziinaNotConfigured": "Online top-up is not available for this venue yet. Please contact support.",
+        "rateLimit": "Too many requests. Please wait a moment and try again.",
+        "generic": "Something went wrong. Please try again."
+      }
     }
   },
   "myBookings": {

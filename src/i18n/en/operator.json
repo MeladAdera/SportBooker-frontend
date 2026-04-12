@@ -7,5 +7,22 @@
     "players": "Players",
     "tenantSettings": "Tenant Settings",
     "account": "Account"
+  },
+  "settings": {
+    "title": "Settings",
+    "ziina": {
+      "title": "Ziina Payment Integration",
+      "description": "Configure your Ziina access token to enable online wallet top-ups for players.",
+      "tokenLabel": "Ziina Access Token",
+      "tokenPlaceholder": "Paste your Ziina access token here",
+      "scopesHint": "Generate your token with write_payment_intents and write_webhooks scopes at",
+      "save": "Save Token",
+      "saving": "Saving…",
+      "success": "Ziina token saved. Webhook registered successfully.",
+      "error": {
+        "invalid": "Invalid token or missing required scopes (write_payment_intents, write_webhooks). Please check and try again.",
+        "generic": "Failed to save settings. Please try again."
+      }
+    }
   }
 }
