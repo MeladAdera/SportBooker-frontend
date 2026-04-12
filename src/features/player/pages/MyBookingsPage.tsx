@@ -8,6 +8,7 @@ import {
   Coins,
   History,
   ListOrdered,
+  XCircle,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +24,7 @@ import { MyBookingItemDtoStatus } from '@/api/generated/models/myBookingItemDtoS
 
 const PAGE_SIZE = 10;
 
-type Tab = 'upcoming' | 'past' | 'waitlist';
+type Tab = 'upcoming' | 'past' | 'waitlist' | 'cancelled';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -174,6 +175,7 @@ const EMPTY_ICONS: Record<Tab, React.ElementType> = {
   upcoming: Calendar,
   past: History,
   waitlist: ListOrdered,
+  cancelled: XCircle,
 };
 
 function EmptyState({ tab }: { tab: Tab }) {
@@ -229,7 +231,7 @@ function Pagination({
 
 // ── Tab bar ────────────────────────────────────────────────────────────────────
 
-const TABS: Tab[] = ['upcoming', 'past', 'waitlist'];
+const TABS: Tab[] = ['upcoming', 'past', 'waitlist', 'cancelled'];
 
 function TabBar({
   active,
@@ -268,9 +270,12 @@ function tabToParams(tab: Tab): {
   upcoming?: boolean;
   status?: 'confirmed' | 'cancelled' | 'waitlisted';
 } {
-  if (tab === 'upcoming') return { upcoming: true };
-  if (tab === 'past') return { upcoming: false };
-  return { status: MyBookingItemDtoStatus.waitlisted };
+  if (tab === 'upcoming')
+    return { status: MyBookingItemDtoStatus.confirmed, upcoming: true };
+  if (tab === 'past')
+    return { status: MyBookingItemDtoStatus.confirmed, upcoming: false };
+  if (tab === 'waitlist') return { status: MyBookingItemDtoStatus.waitlisted };
+  return { status: MyBookingItemDtoStatus.cancelled };
 }
 
 // ── Page ───────────────────────────────────────────────────────────────────────

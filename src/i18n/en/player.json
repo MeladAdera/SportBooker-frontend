@@ -113,7 +113,8 @@
     "tabs": {
       "upcoming": "Upcoming",
       "past": "Past",
-      "waitlist": "Waitlist"
+      "waitlist": "Waitlist",
+      "cancelled": "Cancelled"
     },
     "status": {
       "confirmed": "Confirmed",
@@ -125,7 +126,8 @@
     "empty": {
       "upcoming": "No upcoming bookings",
       "past": "No past bookings",
-      "waitlist": "You're not on any waitlists"
+      "waitlist": "You're not on any waitlists",
+      "cancelled": "No cancelled bookings"
     }
   },
   "discover": {
