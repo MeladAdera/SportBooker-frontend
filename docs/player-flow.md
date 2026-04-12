@@ -176,10 +176,11 @@ Translated in `src/i18n/en/player.json` and `src/i18n/ar/player.json`.
   <Route index>               ← RoleBasedRouter → Navigate to /home
   <PlayerRoute>               ← checks isPlayerRole(user.role); 403 otherwise
     <PlayerLayout>            ← AppBar + sidebar + bottom nav
-      <Route path="home">     ← DiscoverPage
-      <Route path="bookings"> ← (coming soon)
-      <Route path="wallet">   ← (coming soon)
-      <Route path="profile">  ← (coming soon)
+      <Route path="home">        ← DiscoverPage
+      <Route path="matches/:id"> ← MatchDetailPage (booking + cancel flow)
+      <Route path="bookings">    ← (page not yet implemented, route exists)
+      <Route path="wallet">      ← (coming soon)
+      <Route path="profile">     ← (coming soon)
 ```
 
 `PlayerRoute` renders `<Navigate to="/403" />` for any non-player role — layout never mounts for unauthorised users.
@@ -197,6 +198,7 @@ Translated in `src/i18n/en/player.json` and `src/i18n/ar/player.json`.
 | Player guard    | `src/routes/guards/PlayerRoute.tsx`              |
 | Discover page   | `src/features/player/pages/DiscoverPage.tsx`     |
 | Player barrel   | `src/features/player/index.ts`                   |
+| Booking flow    | `docs/booking-flow.md`                           |
 | i18n (EN)       | `src/i18n/en/player.json`                        |
 | i18n (AR)       | `src/i18n/ar/player.json`                        |
 | Query client    | `src/main.tsx` (`QueryClientProvider`)           |
@@ -209,7 +211,8 @@ Translated in `src/i18n/en/player.json` and `src/i18n/ar/player.json`.
 | -------------------------- | ------------------------------------------------------------------------------- |
 | Venues loading state       | `FilterBar` shows plain "Loading..." while venues fetch — replace with skeleton |
 | `console.log` in FilterBar | Line 159 of `DiscoverPage.tsx` — remove before merge to main                    |
-| Booking flow               | `/bookings` route and booking CTA on match card not yet implemented             |
+| Booking flow               | Create + cancel booking implemented — see `docs/booking-flow.md`                |
+| My Bookings page           | `/bookings` route exists but page component not yet implemented                 |
 | Wallet API                 | `user.walletBalance` always `null` until wallet service ships                   |
 | Notification bell          | Placeholder only — no badge, no panel                                           |
 | Error i18n                 | "Failed to load matches" string is hardcoded in EN — add to `player.json`       |
