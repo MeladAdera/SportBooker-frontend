@@ -107,6 +107,26 @@
       "close": "إغلاق"
     }
   },
+  "myBookings": {
+    "pageTitle": "حجوزاتي",
+    "tabs": {
+      "upcoming": "القادمة",
+      "past": "السابقة",
+      "waitlist": "قائمة الانتظار"
+    },
+    "status": {
+      "confirmed": "مؤكد",
+      "waitlisted": "في الانتظار",
+      "cancelled": "ملغي"
+    },
+    "paid": "مدفوع: {{amount}}",
+    "error": "فشل تحميل الحجوزات. يرجى المحاولة مجدداً.",
+    "empty": {
+      "upcoming": "لا توجد حجوزات قادمة",
+      "past": "لا توجد حجوزات سابقة",
+      "waitlist": "لست في أي قائمة انتظار"
+    }
+  },
   "discover": {
     "pageTitle": "اكتشف المباريات",
     "filters": {

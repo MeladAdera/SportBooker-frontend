@@ -107,6 +107,26 @@
       "close": "Close"
     }
   },
+  "myBookings": {
+    "pageTitle": "My Bookings",
+    "tabs": {
+      "upcoming": "Upcoming",
+      "past": "Past",
+      "waitlist": "Waitlist"
+    },
+    "status": {
+      "confirmed": "Confirmed",
+      "waitlisted": "Waitlisted",
+      "cancelled": "Cancelled"
+    },
+    "paid": "Paid: {{amount}}",
+    "error": "Failed to load bookings. Please try again.",
+    "empty": {
+      "upcoming": "No upcoming bookings",
+      "past": "No past bookings",
+      "waitlist": "You're not on any waitlists"
+    }
+  },
   "discover": {
     "pageTitle": "Discover Matches",
     "filters": {
