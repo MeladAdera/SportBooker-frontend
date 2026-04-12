@@ -16,6 +16,7 @@ import {
   ChevronDown,
   PlusCircle,
   Receipt,
+  RefreshCw,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -341,10 +342,8 @@ export function WalletPage() {
   const [typeFilter, setTypeFilter] = useState<TxType>('all');
   const [dateRange, setDateRange] = useState<DateRange>({ from: '', to: '' });
 
-  const { data, isLoading, isError } = useUsersControllerGetMyWallet({
-    page,
-    limit: PAGE_SIZE,
-  });
+  const { data, isLoading, isFetching, isError, refetch } =
+    useUsersControllerGetMyWallet({ page, limit: PAGE_SIZE });
 
   const wallet = data?.status === 200 ? data.data.data : null;
   const allTransactions = wallet?.transactions ?? [];
@@ -386,9 +385,23 @@ export function WalletPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
-      <h1 className="text-xl font-semibold text-foreground">
-        {t('wallet.pageTitle')}
-      </h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-xl font-semibold text-foreground">
+          {t('wallet.pageTitle')}
+        </h1>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => refetch()}
+          disabled={isFetching}
+          aria-label={t('wallet.refresh')}
+        >
+          <RefreshCw
+            className={cn('size-4', isFetching && 'animate-spin')}
+            aria-hidden
+          />
+        </Button>
+      </div>
 
       <BalanceCard
         balance={balance}

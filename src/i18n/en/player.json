@@ -112,6 +112,7 @@
     "pageTitle": "My Wallet",
     "balanceLabel": "Available Balance",
     "topUp": "Top Up",
+    "refresh": "Refresh wallet",
     "error": "Failed to load wallet. Please try again.",
     "empty": "No transactions yet",
     "types": {
