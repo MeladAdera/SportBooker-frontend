@@ -82,6 +82,31 @@
       "viewBookings": "View My Bookings"
     }
   },
+  "cancelBooking": {
+    "confirmed": {
+      "title": "Cancel Booking",
+      "noRefundHeading": "You will NOT receive a refund.",
+      "noRefundBody": "Cancelling a confirmed booking forfeits the full amount paid.",
+      "forfeitLabel": "Amount forfeited",
+      "confirmBtn": "Cancel This Booking"
+    },
+    "waitlist": {
+      "title": "Leave Waitlist",
+      "refundNotice": "Your {{amount}} will be refunded to your wallet.",
+      "confirmBtn": "Leave Waitlist"
+    },
+    "goBack": "Go Back",
+    "error": {
+      "generic": "Cancellation failed. Please try again.",
+      "cutoffWindow": "Cancellations are not allowed this close to match start."
+    },
+    "success": {
+      "title": "Booking Cancelled",
+      "refunded": "{{amount}} has been refunded to your wallet.",
+      "noRefund": "No refund was issued.",
+      "close": "Close"
+    }
+  },
   "discover": {
     "pageTitle": "Discover Matches",
     "filters": {

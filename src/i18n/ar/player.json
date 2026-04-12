@@ -82,6 +82,31 @@
       "viewBookings": "عرض حجوزاتي"
     }
   },
+  "cancelBooking": {
+    "confirmed": {
+      "title": "إلغاء الحجز",
+      "noRefundHeading": "لن تحصل على أي استرداد.",
+      "noRefundBody": "إلغاء الحجز المؤكد يعني خسارة المبلغ المدفوع كاملاً.",
+      "forfeitLabel": "المبلغ المفقود",
+      "confirmBtn": "إلغاء هذا الحجز"
+    },
+    "waitlist": {
+      "title": "مغادرة قائمة الانتظار",
+      "refundNotice": "سيتم إعادة {{amount}} إلى محفظتك.",
+      "confirmBtn": "مغادرة قائمة الانتظار"
+    },
+    "goBack": "العودة",
+    "error": {
+      "generic": "فشل الإلغاء. يرجى المحاولة مجدداً.",
+      "cutoffWindow": "لا يمكن الإلغاء في هذا الوقت القريب من بدء المباراة."
+    },
+    "success": {
+      "title": "تم إلغاء الحجز",
+      "refunded": "تمت إعادة {{amount}} إلى محفظتك.",
+      "noRefund": "لم يتم إصدار أي استرداد.",
+      "close": "إغلاق"
+    }
+  },
   "discover": {
     "pageTitle": "اكتشف المباريات",
     "filters": {

@@ -19,15 +19,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useMatchesControllerGetById } from '@/api/generated/matches/matches';
 import { useUsersControllerListMyBookings } from '@/api/generated/users/users';
-import { useBookingsControllerCancelMyBooking } from '@/api/generated/bookings/bookings';
 import { BookingPosition } from '@/api/generated/models/bookingPosition';
 import { MatchDetailResponseDtoStatus } from '@/api/generated/models/matchDetailResponseDtoStatus';
 import type { MatchDetailResponseDto } from '@/api/generated/models/matchDetailResponseDto';
 import type { MyBookingItemDto } from '@/api/generated/models/myBookingItemDto';
-import { useQueryClient } from '@tanstack/react-query';
-import { getMatchesControllerGetByIdQueryKey } from '@/api/generated/matches/matches';
-import { getUsersControllerListMyBookingsQueryKey } from '@/api/generated/users/users';
 import { BookingModal } from '@/features/player/components/BookingModal';
+import { CancelBookingModal } from '@/features/player/components/CancelBookingModal';
 import { MAX_GK } from '@/features/player/constants';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -187,27 +184,7 @@ function BookingCta({
   onBook,
 }: BookingCtaProps) {
   const { t } = useTranslation('player');
-  const qc = useQueryClient();
-  const [cancelError, setCancelError] = useState<string | null>(null);
-
-  const invalidate = () => {
-    void qc.invalidateQueries({
-      queryKey: getMatchesControllerGetByIdQueryKey(match.id),
-    });
-    void qc.invalidateQueries({
-      queryKey: getUsersControllerListMyBookingsQueryKey(),
-    });
-  };
-
-  const cancelBooking = useBookingsControllerCancelMyBooking({
-    mutation: {
-      onSuccess: () => {
-        setCancelError(null);
-        invalidate();
-      },
-      onError: () => setCancelError(t('matchDetail.cta.cancelError')),
-    },
-  });
+  const [cancelOpen, setCancelOpen] = useState(false);
 
   const matchInPast = isPast(match.scheduledAt);
   const matchCancelled =
@@ -234,31 +211,21 @@ function BookingCta({
             {t('matchDetail.cta.alreadyBooked')}
           </Badge>
         </div>
-        {cancelError && (
-          <p
-            role="alert"
-            className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-xs text-destructive"
-          >
-            {cancelError}
-          </p>
-        )}
         <Button
           variant="outline"
           className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-          disabled={cancelBooking.isPending}
-          onClick={() => {
-            if (myBookingId) {
-              cancelBooking.mutate({
-                matchId: match.id,
-                bookingId: myBookingId,
-              });
-            }
-          }}
+          onClick={() => setCancelOpen(true)}
         >
-          {cancelBooking.isPending
-            ? t('matchDetail.cta.cancelling')
-            : t('matchDetail.cta.cancelBooking')}
+          {t('matchDetail.cta.cancelBooking')}
         </Button>
+        {myBooking && myBookingId && (
+          <CancelBookingModal
+            matchId={match.id}
+            myBooking={{ ...myBooking, id: myBookingId }}
+            open={cancelOpen}
+            onOpenChange={setCancelOpen}
+          />
+        )}
       </div>
     );
   }
@@ -269,31 +236,21 @@ function BookingCta({
         <div className="flex items-center gap-2">
           <Badge variant="secondary">{t('matchDetail.cta.onWaitlist')}</Badge>
         </div>
-        {cancelError && (
-          <p
-            role="alert"
-            className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-xs text-destructive"
-          >
-            {cancelError}
-          </p>
-        )}
         <Button
           variant="outline"
           className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-          disabled={cancelBooking.isPending}
-          onClick={() => {
-            if (myBookingId) {
-              cancelBooking.mutate({
-                matchId: match.id,
-                bookingId: myBookingId,
-              });
-            }
-          }}
+          onClick={() => setCancelOpen(true)}
         >
-          {cancelBooking.isPending
-            ? t('matchDetail.cta.cancelling')
-            : t('matchDetail.cta.leaveWaitlist')}
+          {t('matchDetail.cta.leaveWaitlist')}
         </Button>
+        {myBooking && myBookingId && (
+          <CancelBookingModal
+            matchId={match.id}
+            myBooking={{ ...myBooking, id: myBookingId }}
+            open={cancelOpen}
+            onOpenChange={setCancelOpen}
+          />
+        )}
       </div>
     );
   }
