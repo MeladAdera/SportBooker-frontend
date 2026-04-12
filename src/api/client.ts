@@ -1,6 +1,6 @@
 import { authStore } from '@/stores/authStore';
 import { getApiBaseUrl, resolveApiUrl } from '@/lib/api-url';
-import { getTenantHostHeaderValue } from '@/lib/tenant-host-header';
+import { getTenantSlugHeader } from '@/lib/tenant-host-header';
 
 /** Re-export for callers that imported from `api/client`. */
 export { getApiBaseUrl, resolveApiUrl };
@@ -104,11 +104,9 @@ export async function apiFetch(
   const pathname = getPathname(resolved);
 
   const headers = mergeHeaders(init, {});
-  const tenantHost = getTenantHostHeaderValue();
-  // Browsers treat `Host` as a forbidden header; some engines strip it. Prefer
-  // subdomain routing via the request URL or a custom header on the backend if needed.
-  if (tenantHost) {
-    headers.set('Host', tenantHost);
+  const tenantSlug = getTenantSlugHeader();
+  if (tenantSlug) {
+    headers.set('X-Tenant-Slug', tenantSlug);
   }
 
   const { accessToken } = authStore.getState();
@@ -124,6 +122,7 @@ export async function apiFetch(
   const nextInit: RequestInit = {
     ...init,
     headers,
+    credentials: 'include',
   };
 
   const response = await fetch(resolved, nextInit);
@@ -143,8 +142,8 @@ export async function apiFetch(
     const retryHeaders = mergeHeaders(init, {
       [AUTH_RETRY_HEADER]: '1',
     });
-    const tenant = getTenantHostHeaderValue();
-    if (tenant) retryHeaders.set('Host', tenant);
+    const retrySlug = getTenantSlugHeader();
+    if (retrySlug) retryHeaders.set('X-Tenant-Slug', retrySlug);
     const nextAccess = authStore.getState().accessToken;
     if (nextAccess) {
       retryHeaders.set('Authorization', `Bearer ${nextAccess}`);
