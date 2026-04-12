@@ -173,18 +173,12 @@ function RosterList({ roster }: { roster: MatchDetailResponseDto['roster'] }) {
 type BookingCtaProps = {
   match: MatchDetailResponseDto;
   myBooking: MyBookingItemDto | undefined;
-  myBookingId: string | undefined;
   onBook: () => void;
+  onCancel: () => void;
 };
 
-function BookingCta({
-  match,
-  myBooking,
-  myBookingId,
-  onBook,
-}: BookingCtaProps) {
+function BookingCta({ match, myBooking, onBook, onCancel }: BookingCtaProps) {
   const { t } = useTranslation('player');
-  const [cancelOpen, setCancelOpen] = useState(false);
 
   const matchInPast = isPast(match.scheduledAt);
   const matchCancelled =
@@ -214,18 +208,10 @@ function BookingCta({
         <Button
           variant="outline"
           className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-          onClick={() => setCancelOpen(true)}
+          onClick={onCancel}
         >
           {t('matchDetail.cta.cancelBooking')}
         </Button>
-        {myBooking && myBookingId && (
-          <CancelBookingModal
-            matchId={match.id}
-            myBooking={{ ...myBooking, id: myBookingId }}
-            open={cancelOpen}
-            onOpenChange={setCancelOpen}
-          />
-        )}
       </div>
     );
   }
@@ -239,18 +225,10 @@ function BookingCta({
         <Button
           variant="outline"
           className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-          onClick={() => setCancelOpen(true)}
+          onClick={onCancel}
         >
           {t('matchDetail.cta.leaveWaitlist')}
         </Button>
-        {myBooking && myBookingId && (
-          <CancelBookingModal
-            matchId={match.id}
-            myBooking={{ ...myBooking, id: myBookingId }}
-            open={cancelOpen}
-            onOpenChange={setCancelOpen}
-          />
-        )}
       </div>
     );
   }
@@ -304,6 +282,7 @@ export function MatchDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
   const currentUserId = useAuthStore((s) => s.user?.id);
 
   const {
@@ -364,7 +343,7 @@ export function MatchDetailPage() {
   }
 
   return (
-    <div className="flex flex-col gap-0">
+    <div className="flex flex-col">
       {/* ── Hero ──────────────────────────────────────────────────── */}
       {matchLoading ? (
         <HeroSkeleton />
@@ -481,8 +460,8 @@ export function MatchDetailPage() {
           <BookingCta
             match={match}
             myBooking={myBookingForThisMatch}
-            myBookingId={myBookingId}
             onBook={() => setBookingOpen(true)}
+            onCancel={() => setCancelOpen(true)}
           />
 
           <BookingModal
@@ -490,6 +469,15 @@ export function MatchDetailPage() {
             open={bookingOpen}
             onOpenChange={setBookingOpen}
           />
+
+          {myBookingForThisMatch && myBookingId && (
+            <CancelBookingModal
+              matchId={match.id}
+              myBooking={{ ...myBookingForThisMatch, id: myBookingId }}
+              open={cancelOpen}
+              onOpenChange={setCancelOpen}
+            />
+          )}
 
           {/* Roster */}
           <div className="flex flex-col gap-3">

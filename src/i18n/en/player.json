@@ -83,6 +83,7 @@
     }
   },
   "cancelBooking": {
+    "cancelling": "Cancelling…",
     "confirmed": {
       "title": "Cancel Booking",
       "noRefundHeading": "You will NOT receive a refund.",

@@ -83,6 +83,7 @@
     }
   },
   "cancelBooking": {
+    "cancelling": "جارٍ الإلغاء…",
     "confirmed": {
       "title": "إلغاء الحجز",
       "noRefundHeading": "لن تحصل على أي استرداد.",

@@ -26,25 +26,19 @@ function formatMoney(amount: number): string {
   }).format(amount);
 }
 
-function isCutoffError(error: unknown): boolean {
-  if (error && typeof error === 'object' && 'response' in error) {
-    const response = (error as { response?: { status?: number } }).response;
-    return response?.status === 422;
-  }
-  return false;
-}
-
 // ── Success screen ────────────────────────────────────────────────────────────
 
 type SuccessScreenProps = {
   wasConfirmed: boolean;
   paidAmount: number;
+  hasPaidAmount: boolean;
   onClose: () => void;
 };
 
 function SuccessScreen({
   wasConfirmed,
   paidAmount,
+  hasPaidAmount,
   onClose,
 }: SuccessScreenProps) {
   const { t } = useTranslation('player');
@@ -65,7 +59,7 @@ function SuccessScreen({
           {wasConfirmed
             ? t('cancelBooking.success.noRefund')
             : t('cancelBooking.success.refunded', {
-                amount: formatMoney(paidAmount),
+                amount: hasPaidAmount ? formatMoney(paidAmount) : '—',
               })}
         </p>
       </div>
@@ -78,8 +72,9 @@ function SuccessScreen({
 
 // ── Confirm screen — confirmed booking ────────────────────────────────────────
 
-type ConfirmedCancelProps = {
+type CancelBodyProps = {
   paidAmount: number;
+  hasPaidAmount: boolean;
   isPending: boolean;
   errorMsg: string | null;
   onConfirm: () => void;
@@ -88,11 +83,12 @@ type ConfirmedCancelProps = {
 
 function ConfirmedCancelBody({
   paidAmount,
+  hasPaidAmount,
   isPending,
   errorMsg,
   onConfirm,
   onGoBack,
-}: ConfirmedCancelProps) {
+}: CancelBodyProps) {
   const { t } = useTranslation('player');
 
   return (
@@ -124,7 +120,7 @@ function ConfirmedCancelBody({
             {t('cancelBooking.confirmed.forfeitLabel')}
           </span>
           <span className="font-semibold tabular-nums text-destructive">
-            {formatMoney(paidAmount)}
+            {hasPaidAmount ? formatMoney(paidAmount) : '—'}
           </span>
         </div>
 
@@ -146,7 +142,7 @@ function ConfirmedCancelBody({
         </Button>
         <Button variant="destructive" onClick={onConfirm} disabled={isPending}>
           {isPending
-            ? t('matchDetail.cta.cancelling')
+            ? t('cancelBooking.cancelling')
             : t('cancelBooking.confirmed.confirmBtn')}
         </Button>
       </DialogFooter>
@@ -156,21 +152,14 @@ function ConfirmedCancelBody({
 
 // ── Confirm screen — waitlist booking ─────────────────────────────────────────
 
-type WaitlistCancelProps = {
-  paidAmount: number;
-  isPending: boolean;
-  errorMsg: string | null;
-  onConfirm: () => void;
-  onGoBack: () => void;
-};
-
 function WaitlistCancelBody({
   paidAmount,
+  hasPaidAmount,
   isPending,
   errorMsg,
   onConfirm,
   onGoBack,
-}: WaitlistCancelProps) {
+}: CancelBodyProps) {
   const { t } = useTranslation('player');
 
   return (
@@ -183,7 +172,7 @@ function WaitlistCancelBody({
         {/* Refund notice */}
         <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-700 dark:text-amber-400">
           {t('cancelBooking.waitlist.refundNotice', {
-            amount: formatMoney(paidAmount),
+            amount: hasPaidAmount ? formatMoney(paidAmount) : '—',
           })}
         </div>
 
@@ -205,7 +194,7 @@ function WaitlistCancelBody({
         </Button>
         <Button onClick={onConfirm} disabled={isPending}>
           {isPending
-            ? t('matchDetail.cta.cancelling')
+            ? t('cancelBooking.cancelling')
             : t('cancelBooking.waitlist.confirmBtn')}
         </Button>
       </DialogFooter>
@@ -238,26 +227,32 @@ export function CancelBookingModal({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const isConfirmed = myBooking.status === 'confirmed';
-  const paidAmount = parseFloat(myBooking.paidAmount ?? '0');
+  const paidAmount = parseFloat(myBooking.paidAmount ?? '');
+  const hasPaidAmount = !isNaN(paidAmount) && paidAmount > 0;
 
   const cancelBooking = useBookingsControllerCancelMyBooking({
     mutation: {
-      onSuccess: () => {
-        void qc.invalidateQueries({
-          queryKey: getMatchesControllerGetByIdQueryKey(matchId),
-        });
-        void qc.invalidateQueries({
-          queryKey: getUsersControllerListMyBookingsQueryKey(),
-        });
-        setErrorMsg(null);
-        setStep('success');
+      onSuccess: (res) => {
+        if (res.status === 200) {
+          void qc.invalidateQueries({
+            queryKey: getMatchesControllerGetByIdQueryKey(matchId),
+          });
+          void qc.invalidateQueries({
+            queryKey: getUsersControllerListMyBookingsQueryKey(),
+          });
+          setErrorMsg(null);
+          setStep('success');
+        } else {
+          // Cast to number: the Orval type union omits 422 but the backend can return it
+          setErrorMsg(
+            (res.status as number) === 422
+              ? t('cancelBooking.error.cutoffWindow')
+              : t('cancelBooking.error.generic'),
+          );
+        }
       },
-      onError: (error) => {
-        setErrorMsg(
-          isCutoffError(error)
-            ? t('cancelBooking.error.cutoffWindow')
-            : t('cancelBooking.error.generic'),
-        );
+      onError: () => {
+        setErrorMsg(t('cancelBooking.error.generic'));
       },
     },
   });
@@ -293,11 +288,13 @@ export function CancelBookingModal({
           <SuccessScreen
             wasConfirmed={isConfirmed}
             paidAmount={paidAmount}
+            hasPaidAmount={hasPaidAmount}
             onClose={handleSuccessClose}
           />
         ) : isConfirmed ? (
           <ConfirmedCancelBody
             paidAmount={paidAmount}
+            hasPaidAmount={hasPaidAmount}
             isPending={cancelBooking.isPending}
             errorMsg={errorMsg}
             onConfirm={handleConfirm}
@@ -306,6 +303,7 @@ export function CancelBookingModal({
         ) : (
           <WaitlistCancelBody
             paidAmount={paidAmount}
+            hasPaidAmount={hasPaidAmount}
             isPending={cancelBooking.isPending}
             errorMsg={errorMsg}
             onConfirm={handleConfirm}
