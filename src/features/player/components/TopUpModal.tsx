@@ -24,7 +24,7 @@ const topUpSchema = z.object({
     .refine((v) => Math.round(v * 100) === v * 100, 'wallet.topUp.amountLabel'),
 });
 
-type TopUpFormValues = z.infer<typeof topUpSchema>;
+type TopUpFormValues = z.output<typeof topUpSchema>;
 
 type Props = {
   open: boolean;
@@ -40,7 +40,7 @@ export function TopUpModal({ open, onOpenChange, currentBalance }: Props) {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<TopUpFormValues>({
+  } = useForm<z.input<typeof topUpSchema>, unknown, TopUpFormValues>({
     resolver: zodResolver(topUpSchema),
   });
 
