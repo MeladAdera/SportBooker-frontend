@@ -8,6 +8,7 @@ import { DiscoverPage } from '@/features/player/pages/DiscoverPage';
 import { MatchDetailPage } from '@/features/player/pages/MatchDetailPage';
 import { MyBookingsPage } from '@/features/player/pages/MyBookingsPage';
 import { WalletPage } from '@/features/player/pages/WalletPage';
+import { ProfilePage } from '@/features/player/pages/ProfilePage';
 import { TopUpSuccessPage } from '@/features/player/pages/TopUpSuccessPage';
 import { TopUpCancelPage } from '@/features/player/pages/TopUpCancelPage';
 import { TopUpFailurePage } from '@/features/player/pages/TopUpFailurePage';
@@ -64,10 +65,7 @@ function App() {
               path="payments/topup/failure"
               element={<TopUpFailurePage />}
             />
-            <Route
-              path="profile"
-              element={<Placeholder title="Profile — coming soon" />}
-            />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
 
           {/* ── Operator routes ───────────────────────────────────── */}

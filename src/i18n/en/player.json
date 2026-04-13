@@ -109,6 +109,51 @@
       "close": "Close"
     }
   },
+  "profile": {
+    "pageTitle": "Profile & Settings",
+    "logout": "Log out",
+    "loadError": "Failed to load profile. Please try again.",
+    "photo": {
+      "change": "Change photo",
+      "previewNotice": "Preview — save to apply"
+    },
+    "form": {
+      "name": "Name",
+      "email": "Email",
+      "emailReadOnly": "Read-only",
+      "phone": "Phone",
+      "phonePlaceholder": "e.g. +971 50 000 0000",
+      "save": "Save changes",
+      "saveSuccess": "Profile updated successfully.",
+      "error": "Failed to save profile. Please try again.",
+      "photoError": "Failed to upload photo. Please try again.",
+      "validation": {
+        "nameMin": "Name must be at least 2 characters.",
+        "phoneMax": "Phone number is too long."
+      }
+    },
+    "password": {
+      "title": "Change Password",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "changeBtn": "Change password",
+      "comingSoon": "Password change is coming soon."
+    },
+    "delete": {
+      "title": "Delete Account",
+      "warning": "You can only delete your account if you have no upcoming confirmed bookings.",
+      "btn": "Delete my account",
+      "errorUpcomingBookings": "You have upcoming confirmed bookings. Cancel them before deleting your account.",
+      "errorGeneric": "Failed to delete account. Please try again.",
+      "modal": {
+        "title": "Are you sure?",
+        "body": "This action cannot be undone. Your account and all associated data will be permanently deleted.",
+        "cancel": "Cancel",
+        "confirm": "Yes, delete my account"
+      }
+    }
+  },
   "wallet": {
     "pageTitle": "My Wallet",
     "balanceLabel": "Available Balance",
