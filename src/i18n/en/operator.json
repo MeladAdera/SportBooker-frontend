@@ -1,5 +1,15 @@
 {
-  "dashboard": "Operator dashboard",
+  "dashboard": {
+    "title": "Dashboard",
+    "period": "{{from}} – {{to}}",
+    "stats": {
+      "todayMatches": "Today's Matches",
+      "playersThisMonth": "Players This Month",
+      "matchOccupancy": "Match Occupancy",
+      "revenueThisMonth": "Revenue This Month",
+      "noMatches": "No matches in this period"
+    }
+  },
   "nav": {
     "dashboard": "Dashboard",
     "matches": "Matches",

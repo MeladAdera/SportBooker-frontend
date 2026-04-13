@@ -1,5 +1,15 @@
 {
-  "dashboard": "لوحة المشغّل",
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "period": "{{from}} – {{to}}",
+    "stats": {
+      "todayMatches": "مباريات اليوم",
+      "playersThisMonth": "لاعبو هذا الشهر",
+      "matchOccupancy": "إشغال المباريات",
+      "revenueThisMonth": "إيرادات هذا الشهر",
+      "noMatches": "لا توجد مباريات في هذه الفترة"
+    }
+  },
   "nav": {
     "dashboard": "لوحة التحكم",
     "matches": "المباريات",

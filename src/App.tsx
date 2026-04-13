@@ -12,6 +12,7 @@ import { ProfilePage } from '@/features/player/pages/ProfilePage';
 import { TopUpSuccessPage } from '@/features/player/pages/TopUpSuccessPage';
 import { TopUpCancelPage } from '@/features/player/pages/TopUpCancelPage';
 import { TopUpFailurePage } from '@/features/player/pages/TopUpFailurePage';
+import { DashboardPage } from '@/features/operator/pages/DashboardPage';
 import { TenantSettingsPage } from '@/features/operator/pages/TenantSettingsPage';
 import { ForbiddenPage } from '@/routes/ForbiddenPage';
 import {
@@ -66,10 +67,7 @@ function App() {
 
           {/* ── Operator routes ───────────────────────────────────── */}
           <Route element={<OperatorRoute />}>
-            <Route
-              path="dashboard"
-              element={<Placeholder title="Dashboard — coming soon" />}
-            />
+            <Route path="dashboard" element={<DashboardPage />} />
             <Route
               path="matches"
               element={<Placeholder title="Matches — coming soon" />}
