@@ -83,26 +83,27 @@ type RefreshResponse = {
   accessToken: string;
   refreshToken: string;
   expiresIn?: number;
-  user?: AuthUser;
+  user: AuthUser;
 };
 
 function parseRefreshBody(text: string): RefreshResponse | null {
   if (!text) return null;
   try {
     const json = JSON.parse(text) as Record<string, unknown>;
-    // Unwrap { data: {...}, statusCode } envelope if present
     const data =
       json.data && typeof json.data === 'object'
         ? (json.data as Record<string, unknown>)
         : json;
-    const accessToken = data.accessToken;
-    const refreshToken = data.refreshToken;
+    const { accessToken, refreshToken } = data;
     if (typeof accessToken !== 'string' || typeof refreshToken !== 'string') {
+      return null;
+    }
+    const user = data.user as AuthUser | undefined;
+    if (!user || typeof user.id !== 'string' || typeof user.role !== 'string') {
       return null;
     }
     const expiresIn =
       typeof data.expiresIn === 'number' ? data.expiresIn : undefined;
-    const user = data.user as AuthUser | undefined;
     return { accessToken, refreshToken, expiresIn, user };
   } catch {
     return null;
@@ -203,13 +204,13 @@ export const useAuthStore = create<AuthStore>()(
               }
 
               const nextExpiresIn = data.expiresIn ?? null;
-              set((s) => ({
+              set({
                 accessToken: data.accessToken,
                 refreshToken: data.refreshToken,
                 expiresIn: nextExpiresIn,
                 isAuthenticated: true,
-                user: data.user ?? s.user,
-              }));
+                user: data.user,
+              });
               scheduleAutoRefresh(nextExpiresIn);
               return true;
             } catch {

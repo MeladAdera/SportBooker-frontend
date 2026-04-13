@@ -138,7 +138,15 @@
       "new": "New password",
       "confirm": "Confirm new password",
       "changeBtn": "Change password",
-      "comingSoon": "Password change is coming soon."
+      "revokeOtherSessions": "Sign out from all other devices",
+      "success": "Password changed successfully.",
+      "errorIncorrect": "Current password is incorrect.",
+      "errorGeneric": "Failed to change password. Please try again.",
+      "validation": {
+        "currentRequired": "Current password is required.",
+        "newMin": "New password must be at least 8 characters.",
+        "confirmMismatch": "Passwords do not match."
+      }
     },
     "delete": {
       "title": "Delete Account",

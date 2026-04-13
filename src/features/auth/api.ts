@@ -26,53 +26,6 @@ type ApiEnvelope<T> = {
   statusCode: number;
 };
 
-type RawAuthTokens = {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-};
-
-/** JWT payload fields we care about (no signature verification — server already validated). */
-type JwtPayload = {
-  sub: string;
-  role: string;
-  tenantId?: string;
-  email?: string;
-  name?: string;
-};
-
-function parseJwtPayload(token: string): JwtPayload | null {
-  try {
-    const part = token.split('.')[1];
-    if (!part) return null;
-    const padded = part.replace(/-/g, '+').replace(/_/g, '/');
-    const json = atob(padded.padEnd(Math.ceil(padded.length / 4) * 4, '='));
-    return JSON.parse(json) as JwtPayload;
-  } catch {
-    return null;
-  }
-}
-
-function buildLoginResponse(
-  raw: RawAuthTokens,
-  defaults: { email: string; name?: string },
-): LoginResponse {
-  const payload = parseJwtPayload(raw.accessToken);
-  const user: AuthUser = {
-    id: payload?.sub ?? '',
-    email: payload?.email ?? defaults.email,
-    name: payload?.name ?? defaults.name ?? '',
-    role: payload?.role ?? 'player',
-    tenantId: payload?.tenantId,
-  };
-  return {
-    accessToken: raw.accessToken,
-    refreshToken: raw.refreshToken,
-    expiresIn: raw.expiresIn,
-    user,
-  };
-}
-
 function unwrapData<T extends Record<string, unknown>>(json: unknown): T {
   if (
     json &&
@@ -100,8 +53,7 @@ export async function loginRequest(body: LoginRequest): Promise<LoginResponse> {
     throw new ApiError({ statusCode: res.status, message: 'Login failed' });
   }
 
-  const raw = unwrapData<RawAuthTokens>(json);
-  return buildLoginResponse(raw, { email: body.email });
+  return unwrapData<LoginResponse>(json);
 }
 
 export async function registerRequest(
@@ -133,8 +85,7 @@ export async function registerRequest(
     });
   }
 
-  const raw = unwrapData<RawAuthTokens>(json);
-  return buildLoginResponse(raw, { email: body.email, name: body.name });
+  return unwrapData<LoginResponse>(json);
 }
 
 export type ForgotPasswordRequestBody = {

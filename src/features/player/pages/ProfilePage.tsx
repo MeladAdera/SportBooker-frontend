@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Camera, KeyRound, Loader2, LogOut, Trash2, User } from 'lucide-react';
+import { useAuthControllerChangePassword } from '@/api/generated/auth/auth';
+import type { ApiError } from '@/api/client';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -37,6 +39,20 @@ const profileSchema = z.object({
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
+
+const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'currentRequired'),
+    newPassword: z.string().min(8, 'newMin'),
+    confirmPassword: z.string(),
+    revokeOtherSessions: z.boolean(),
+  })
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    message: 'confirmMismatch',
+    path: ['confirmPassword'],
+  });
+
+type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -287,66 +303,169 @@ function ProfileForm({
 
 function PasswordSection() {
   const { t } = useTranslation('player');
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ChangePasswordFormValues>({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+      revokeOtherSessions: false,
+    },
+  });
+
+  const mutation = useAuthControllerChangePassword({
+    mutation: {
+      onSuccess: () => {
+        setSuccess(true);
+        setServerError(null);
+        reset();
+      },
+      onError: (err: unknown) => {
+        const status = (err as ApiError | null)?.statusCode;
+        if (status === 401) {
+          setServerError(t('profile.password.errorIncorrect'));
+        } else {
+          setServerError(t('profile.password.errorGeneric'));
+        }
+      },
+    },
+  });
+
+  function onSubmit(values: ChangePasswordFormValues) {
+    setServerError(null);
+    setSuccess(false);
+    mutation.mutate({
+      data: {
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+        revokeOtherSessions: values.revokeOtherSessions,
+      },
+    });
+  }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2">
-        <KeyRound className="size-4 text-muted-foreground" aria-hidden />
-        <h2 className="text-base font-semibold text-foreground">
-          {t('profile.password.title')}
-        </h2>
-      </div>
+    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-2">
+          <KeyRound className="size-4 text-muted-foreground" aria-hidden />
+          <h2 className="text-base font-semibold text-foreground">
+            {t('profile.password.title')}
+          </h2>
+        </div>
 
-      <div className="flex flex-col gap-3 opacity-50">
-        <div className="flex flex-col gap-1.5">
-          <FormLabel htmlFor="current-password">
-            {t('profile.password.current')}
-          </FormLabel>
-          <Input
-            id="current-password"
-            type="password"
-            disabled
-            autoComplete="current-password"
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <FormLabel htmlFor="new-password">
-            {t('profile.password.new')}
-          </FormLabel>
-          <Input
-            id="new-password"
-            type="password"
-            disabled
-            autoComplete="new-password"
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <FormLabel htmlFor="confirm-password">
-            {t('profile.password.confirm')}
-          </FormLabel>
-          <Input
-            id="confirm-password"
-            type="password"
-            disabled
-            autoComplete="new-password"
-          />
-        </div>
-      </div>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
+            <FormLabel htmlFor="current-password">
+              {t('profile.password.current')}
+            </FormLabel>
+            <Input
+              id="current-password"
+              type="password"
+              autoComplete="current-password"
+              {...register('currentPassword')}
+            />
+            <FieldError
+              message={
+                errors.currentPassword?.message
+                  ? t(
+                      `profile.password.validation.${errors.currentPassword.message}`,
+                    )
+                  : undefined
+              }
+            />
+          </div>
 
-      <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-1.5">
+            <FormLabel htmlFor="new-password">
+              {t('profile.password.new')}
+            </FormLabel>
+            <Input
+              id="new-password"
+              type="password"
+              autoComplete="new-password"
+              {...register('newPassword')}
+            />
+            <FieldError
+              message={
+                errors.newPassword?.message
+                  ? t(
+                      `profile.password.validation.${errors.newPassword.message}`,
+                    )
+                  : undefined
+              }
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <FormLabel htmlFor="confirm-password">
+              {t('profile.password.confirm')}
+            </FormLabel>
+            <Input
+              id="confirm-password"
+              type="password"
+              autoComplete="new-password"
+              {...register('confirmPassword')}
+            />
+            <FieldError
+              message={
+                errors.confirmPassword?.message
+                  ? t(
+                      `profile.password.validation.${errors.confirmPassword.message}`,
+                    )
+                  : undefined
+              }
+            />
+          </div>
+
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              className="size-4 rounded border-border accent-primary"
+              {...register('revokeOtherSessions')}
+            />
+            {t('profile.password.revokeOtherSessions')}
+          </label>
+        </div>
+
+        {serverError && (
+          <p
+            role="alert"
+            className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          >
+            {serverError}
+          </p>
+        )}
+
+        {success && (
+          <p
+            role="status"
+            className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-600 dark:text-emerald-400"
+          >
+            {t('profile.password.success')}
+          </p>
+        )}
+
         <Button
-          type="button"
+          type="submit"
           variant="outline"
-          disabled
-          title={t('profile.password.comingSoon')}
+          disabled={mutation.isPending}
+          className="w-fit"
         >
+          {mutation.isPending && (
+            <Loader2 className="size-4 animate-spin" aria-hidden />
+          )}
           {t('profile.password.changeBtn')}
         </Button>
-        <p className="text-xs text-muted-foreground">
-          {t('profile.password.comingSoon')}
-        </p>
       </div>
-    </div>
+    </form>
   );
 }
 
