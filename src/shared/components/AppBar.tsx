@@ -12,6 +12,8 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
 import { useTenantStore } from '@/stores/tenantStore';
+import { LocaleSwitcher } from '@/shared/components/LocaleSwitcher';
+import { ThemeToggle } from '@/shared/components/ThemeToggle';
 
 type BrandingProps = {
   /** When true, shows platform wordmark instead of tenant branding */
@@ -117,8 +119,11 @@ export function AppBar({ isPlatform = false, profilePath, className }: Props) {
       {/* Left: tenant / platform branding */}
       <Branding isPlatform={isPlatform} />
 
-      {/* Right: notification bell + user menu */}
+      {/* Right: theme, locale, notification bell + user menu */}
       <div className="flex items-center gap-2">
+        <ThemeToggle className="h-8 w-8" />
+        <LocaleSwitcher className="h-8 w-8" />
+
         {/* Notification bell — placeholder, no badge yet */}
         <button
           type="button"

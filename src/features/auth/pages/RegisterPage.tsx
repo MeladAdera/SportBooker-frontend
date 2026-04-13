@@ -171,9 +171,11 @@ export function RegisterPage() {
   // Wait for both session and tenant to resolve before making any redirect decision.
   if (!isSessionReady || !isResolved) {
     return (
-      <div className="relative flex min-h-svh items-center justify-center bg-background">
+      <div className="flex min-h-svh flex-col bg-background">
         <PageControls />
-        <Loader2 className="size-8 animate-spin text-muted-foreground" />
+        <div className="flex flex-1 items-center justify-center">
+          <Loader2 className="size-8 animate-spin text-muted-foreground" />
+        </div>
       </div>
     );
   }
@@ -189,252 +191,254 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="relative flex min-h-svh flex-col items-center justify-center bg-background p-4">
+    <div className="flex min-h-svh flex-col bg-background">
       <PageControls />
-      <div className="w-full max-w-sm space-y-6">
-        <div className="flex flex-col items-center gap-3 text-center">
-          {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt={displayName}
-              className="h-14 w-14 rounded-xl object-cover ring-1 ring-foreground/10"
-            />
-          ) : (
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary text-2xl font-bold text-primary-foreground ring-1 ring-foreground/10">
-              {displayName.charAt(0).toUpperCase()}
-            </div>
-          )}
-          <div>
-            <h1 className="text-xl font-semibold text-foreground">
-              {displayName}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {t('registerPage.subtitle')}
-            </p>
-          </div>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('registerPage.title')}</CardTitle>
-            {serverError && (
-              <CardDescription>
-                <span
-                  role="alert"
-                  className="block rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/20"
-                >
-                  {serverError}
-                </span>
-              </CardDescription>
+      <div className="flex flex-1 flex-col items-center justify-center p-4">
+        <div className="w-full max-w-sm space-y-6">
+          <div className="flex flex-col items-center gap-3 text-center">
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt={displayName}
+                className="h-14 w-14 rounded-xl object-cover ring-1 ring-foreground/10"
+              />
+            ) : (
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary text-2xl font-bold text-primary-foreground ring-1 ring-foreground/10">
+                {displayName.charAt(0).toUpperCase()}
+              </div>
             )}
-          </CardHeader>
+            <div>
+              <h1 className="text-xl font-semibold text-foreground">
+                {displayName}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {t('registerPage.subtitle')}
+              </p>
+            </div>
+          </div>
 
-          <CardContent>
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              noValidate
-              className="flex flex-col gap-4"
-            >
-              <div className="flex flex-col gap-1.5">
-                <label
-                  htmlFor="reg-name"
-                  className="text-sm font-medium text-foreground"
-                >
-                  {t('registerPage.name')}
-                </label>
-                <Input
-                  id="reg-name"
-                  autoComplete="name"
-                  placeholder={t('registerPage.namePlaceholder')}
-                  aria-invalid={!!errors.name}
-                  {...register('name')}
-                />
-                {errors.name && (
-                  <p className="text-xs text-destructive" role="alert">
-                    {fieldMessage('name')}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label
-                  htmlFor="reg-email"
-                  className="text-sm font-medium text-foreground"
-                >
-                  {t('registerPage.email')}
-                </label>
-                <Input
-                  id="reg-email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder={t('registerPage.emailPlaceholder')}
-                  aria-invalid={!!errors.email}
-                  {...register('email')}
-                />
-                {errors.email && (
-                  <p className="text-xs text-destructive" role="alert">
-                    {fieldMessage('email')}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label
-                  htmlFor="reg-password"
-                  className="text-sm font-medium text-foreground"
-                >
-                  {t('registerPage.password')}
-                </label>
-                <div className="relative">
-                  <Input
-                    id="reg-password"
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="new-password"
-                    placeholder={t('registerPage.passwordPlaceholder')}
-                    aria-invalid={!!errors.password}
-                    className="pr-9"
-                    {...register('password')}
-                  />
-                  <button
-                    type="button"
-                    aria-label={
-                      showPassword ? 'Hide password' : 'Show password'
-                    }
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="absolute inset-y-0 inset-e-0 flex items-center px-2.5 text-muted-foreground hover:text-foreground"
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('registerPage.title')}</CardTitle>
+              {serverError && (
+                <CardDescription>
+                  <span
+                    role="alert"
+                    className="block rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/20"
                   >
-                    {showPassword ? (
-                      <EyeOff className="size-4" />
-                    ) : (
-                      <Eye className="size-4" />
-                    )}
-                  </button>
-                </div>
-                <div className="space-y-1.5">
-                  <div
-                    className="flex h-1.5 gap-0.5 overflow-hidden rounded-full bg-muted"
-                    role="group"
-                    aria-label={t('registerPage.passwordStrength.label')}
-                  >
-                    {[0, 1, 2, 3].map((i) => {
-                      const filled =
-                        strength.label === 'empty'
-                          ? 0
-                          : Math.min(4, Math.ceil((strength.score / 5) * 4));
-                      const tone =
-                        strength.label === 'weak'
-                          ? 'bg-destructive/80'
-                          : strength.label === 'medium'
-                            ? 'bg-amber-500/90'
-                            : strength.label === 'strong'
-                              ? 'bg-emerald-600'
-                              : 'bg-muted-foreground/20';
-                      return (
-                        <div
-                          key={i}
-                          className={cn(
-                            'h-full flex-1 rounded-full transition-colors',
-                            i < filled ? tone : 'bg-muted-foreground/15',
-                          )}
-                        />
-                      );
-                    })}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {passwordValue.length > 0
-                      ? t(`registerPage.passwordStrength.${strength.label}`)
-                      : t('registerPage.passwordStrength.empty')}
-                  </p>
-                </div>
-                {errors.password && (
-                  <p className="text-xs text-destructive" role="alert">
-                    {fieldMessage('password')}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label
-                  htmlFor="reg-phone"
-                  className="text-sm font-medium text-foreground"
-                >
-                  {t('registerPage.phone')}{' '}
-                  <span className="font-normal text-muted-foreground">
-                    ({t('registerPage.optional')})
+                    {serverError}
                   </span>
-                </label>
-                <Input
-                  id="reg-phone"
-                  type="tel"
-                  autoComplete="tel"
-                  placeholder={t('registerPage.phonePlaceholder')}
-                  aria-invalid={!!errors.phone}
-                  {...register('phone')}
-                />
-                {errors.phone && (
+                </CardDescription>
+              )}
+            </CardHeader>
+
+            <CardContent>
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                noValidate
+                className="flex flex-col gap-4"
+              >
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    htmlFor="reg-name"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    {t('registerPage.name')}
+                  </label>
+                  <Input
+                    id="reg-name"
+                    autoComplete="name"
+                    placeholder={t('registerPage.namePlaceholder')}
+                    aria-invalid={!!errors.name}
+                    {...register('name')}
+                  />
+                  {errors.name && (
+                    <p className="text-xs text-destructive" role="alert">
+                      {fieldMessage('name')}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    htmlFor="reg-email"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    {t('registerPage.email')}
+                  </label>
+                  <Input
+                    id="reg-email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder={t('registerPage.emailPlaceholder')}
+                    aria-invalid={!!errors.email}
+                    {...register('email')}
+                  />
+                  {errors.email && (
+                    <p className="text-xs text-destructive" role="alert">
+                      {fieldMessage('email')}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    htmlFor="reg-password"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    {t('registerPage.password')}
+                  </label>
+                  <div className="relative">
+                    <Input
+                      id="reg-password"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="new-password"
+                      placeholder={t('registerPage.passwordPlaceholder')}
+                      aria-invalid={!!errors.password}
+                      className="pr-9"
+                      {...register('password')}
+                    />
+                    <button
+                      type="button"
+                      aria-label={
+                        showPassword ? 'Hide password' : 'Show password'
+                      }
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute inset-y-0 inset-e-0 flex items-center px-2.5 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="size-4" />
+                      ) : (
+                        <Eye className="size-4" />
+                      )}
+                    </button>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div
+                      className="flex h-1.5 gap-0.5 overflow-hidden rounded-full bg-muted"
+                      role="group"
+                      aria-label={t('registerPage.passwordStrength.label')}
+                    >
+                      {[0, 1, 2, 3].map((i) => {
+                        const filled =
+                          strength.label === 'empty'
+                            ? 0
+                            : Math.min(4, Math.ceil((strength.score / 5) * 4));
+                        const tone =
+                          strength.label === 'weak'
+                            ? 'bg-destructive/80'
+                            : strength.label === 'medium'
+                              ? 'bg-amber-500/90'
+                              : strength.label === 'strong'
+                                ? 'bg-emerald-600'
+                                : 'bg-muted-foreground/20';
+                        return (
+                          <div
+                            key={i}
+                            className={cn(
+                              'h-full flex-1 rounded-full transition-colors',
+                              i < filled ? tone : 'bg-muted-foreground/15',
+                            )}
+                          />
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {passwordValue.length > 0
+                        ? t(`registerPage.passwordStrength.${strength.label}`)
+                        : t('registerPage.passwordStrength.empty')}
+                    </p>
+                  </div>
+                  {errors.password && (
+                    <p className="text-xs text-destructive" role="alert">
+                      {fieldMessage('password')}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    htmlFor="reg-phone"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    {t('registerPage.phone')}{' '}
+                    <span className="font-normal text-muted-foreground">
+                      ({t('registerPage.optional')})
+                    </span>
+                  </label>
+                  <Input
+                    id="reg-phone"
+                    type="tel"
+                    autoComplete="tel"
+                    placeholder={t('registerPage.phonePlaceholder')}
+                    aria-invalid={!!errors.phone}
+                    {...register('phone')}
+                  />
+                  {errors.phone && (
+                    <p className="text-xs text-destructive" role="alert">
+                      {fieldMessage('phone')}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <Controller
+                    name="acceptTerms"
+                    control={control}
+                    render={({ field }) => (
+                      <input
+                        id="reg-terms"
+                        type="checkbox"
+                        className="mt-1 size-4 shrink-0 rounded border border-input accent-primary"
+                        checked={field.value}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        ref={field.ref}
+                      />
+                    )}
+                  />
+                  <label
+                    htmlFor="reg-terms"
+                    className="text-sm leading-snug text-foreground"
+                  >
+                    {t('registerPage.termsLabel')}
+                  </label>
+                </div>
+                {errors.acceptTerms && (
                   <p className="text-xs text-destructive" role="alert">
-                    {fieldMessage('phone')}
+                    {fieldMessage('acceptTerms')}
                   </p>
                 )}
-              </div>
 
-              <div className="flex items-start gap-2">
-                <Controller
-                  name="acceptTerms"
-                  control={control}
-                  render={({ field }) => (
-                    <input
-                      id="reg-terms"
-                      type="checkbox"
-                      className="mt-1 size-4 shrink-0 rounded border border-input accent-primary"
-                      checked={field.value}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      ref={field.ref}
-                    />
-                  )}
-                />
-                <label
-                  htmlFor="reg-terms"
-                  className="text-sm leading-snug text-foreground"
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full"
+                  disabled={isSubmitting}
                 >
-                  {t('registerPage.termsLabel')}
-                </label>
-              </div>
-              {errors.acceptTerms && (
-                <p className="text-xs text-destructive" role="alert">
-                  {fieldMessage('acceptTerms')}
-                </p>
-              )}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="animate-spin" />
+                      {t('registerPage.submitting')}
+                    </>
+                  ) : (
+                    t('registerPage.submitButton')
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
 
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="animate-spin" />
-                    {t('registerPage.submitting')}
-                  </>
-                ) : (
-                  t('registerPage.submitButton')
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        <p className="text-center text-sm text-muted-foreground">
-          {t('registerPage.haveAccount')}{' '}
-          <Link
-            to="/login"
-            className="font-medium text-primary underline-offset-4 hover:underline"
-          >
-            {t('login')}
-          </Link>
-        </p>
+          <p className="text-center text-sm text-muted-foreground">
+            {t('registerPage.haveAccount')}{' '}
+            <Link
+              to="/login"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              {t('login')}
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

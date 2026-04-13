@@ -21,8 +21,6 @@ import {
   ProtectedRoute,
 } from '@/routes/guards';
 import { RoleBasedRouter } from '@/routes/RoleBasedRouter';
-import { PageControls } from '@/shared/components/PageControls';
-
 function Placeholder({ title }: { title: string }) {
   return (
     <div className="flex min-h-svh flex-col items-center justify-center bg-background p-8 text-center text-muted-foreground">
@@ -34,8 +32,6 @@ function Placeholder({ title }: { title: string }) {
 function App() {
   return (
     <BrowserRouter>
-      {/* DEV: global theme/locale controls — remove or guard with import.meta.env.DEV before prod */}
-      <PageControls />
       <Routes>
         {/* ── Public routes ──────────────────────────────────────── */}
         <Route path="/login" element={<LoginPage />} />

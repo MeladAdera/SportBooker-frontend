@@ -15,7 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { LocaleSwitcher } from '@/shared/components/LocaleSwitcher';
+import { PageControls } from '@/shared/components/PageControls';
 import { forgotPasswordRequest } from '../api';
 
 const forgotSchema = z.object({
@@ -55,89 +55,91 @@ export function ForgotPasswordPage() {
   };
 
   return (
-    <div className="relative flex min-h-svh flex-col items-center justify-center bg-background p-4">
-      <LocaleSwitcher className="fixed top-4 inset-e-4 z-50" />
-      <div className="w-full max-w-sm space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('forgotPasswordPage.title')}</CardTitle>
-            <CardDescription>
-              {t('forgotPasswordPage.subtitle')}
-            </CardDescription>
-          </CardHeader>
+    <div className="flex min-h-svh flex-col bg-background">
+      <PageControls />
+      <div className="flex flex-1 flex-col items-center justify-center p-4">
+        <div className="w-full max-w-sm space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('forgotPasswordPage.title')}</CardTitle>
+              <CardDescription>
+                {t('forgotPasswordPage.subtitle')}
+              </CardDescription>
+            </CardHeader>
 
-          <CardContent className="flex flex-col gap-4">
-            {success ? (
-              <div
-                role="status"
-                className="rounded-md border border-border bg-muted/40 px-3 py-3 text-sm text-foreground"
-              >
-                {t('forgotPasswordPage.successMessage')}
-              </div>
-            ) : (
-              <form
-                onSubmit={handleSubmit(onSubmit)}
-                noValidate
-                className="flex flex-col gap-4"
-              >
-                {networkError && (
-                  <p
-                    role="alert"
-                    className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/20"
-                  >
-                    {networkError}
-                  </p>
-                )}
-                <div className="flex flex-col gap-1.5">
-                  <label
-                    htmlFor="forgot-email"
-                    className="text-sm font-medium text-foreground"
-                  >
-                    {t('forgotPasswordPage.email')}
-                  </label>
-                  <Input
-                    id="forgot-email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder={t('forgotPasswordPage.emailPlaceholder')}
-                    aria-invalid={!!errors.email}
-                    {...register('email')}
-                  />
-                  {errors.email && (
-                    <p className="text-xs text-destructive" role="alert">
-                      {resolveFieldError(errors.email.message)}
+            <CardContent className="flex flex-col gap-4">
+              {success ? (
+                <div
+                  role="status"
+                  className="rounded-md border border-border bg-muted/40 px-3 py-3 text-sm text-foreground"
+                >
+                  {t('forgotPasswordPage.successMessage')}
+                </div>
+              ) : (
+                <form
+                  onSubmit={handleSubmit(onSubmit)}
+                  noValidate
+                  className="flex flex-col gap-4"
+                >
+                  {networkError && (
+                    <p
+                      role="alert"
+                      className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/20"
+                    >
+                      {networkError}
                     </p>
                   )}
-                </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label
+                      htmlFor="forgot-email"
+                      className="text-sm font-medium text-foreground"
+                    >
+                      {t('forgotPasswordPage.email')}
+                    </label>
+                    <Input
+                      id="forgot-email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder={t('forgotPasswordPage.emailPlaceholder')}
+                      aria-invalid={!!errors.email}
+                      {...register('email')}
+                    />
+                    {errors.email && (
+                      <p className="text-xs text-destructive" role="alert">
+                        {resolveFieldError(errors.email.message)}
+                      </p>
+                    )}
+                  </div>
 
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="w-full"
-                  disabled={isSubmitting}
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="animate-spin" />
+                        {t('forgotPasswordPage.submitting')}
+                      </>
+                    ) : (
+                      t('forgotPasswordPage.submitButton')
+                    )}
+                  </Button>
+                </form>
+              )}
+
+              <p className="text-center text-sm text-muted-foreground">
+                <Link
+                  to="/login"
+                  className="font-medium text-primary underline-offset-4 hover:underline"
                 >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="animate-spin" />
-                      {t('forgotPasswordPage.submitting')}
-                    </>
-                  ) : (
-                    t('forgotPasswordPage.submitButton')
-                  )}
-                </Button>
-              </form>
-            )}
-
-            <p className="text-center text-sm text-muted-foreground">
-              <Link
-                to="/login"
-                className="font-medium text-primary underline-offset-4 hover:underline"
-              >
-                {t('forgotPasswordPage.backToLogin')}
-              </Link>
-            </p>
-          </CardContent>
-        </Card>
+                  {t('forgotPasswordPage.backToLogin')}
+                </Link>
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

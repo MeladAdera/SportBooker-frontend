@@ -7,12 +7,12 @@ type Props = {
   className?: string;
 };
 
-/** Fixed top-end corner controls used on full-page layouts (auth pages, etc.). */
+/** Full-width top bar — first row inside a `flex min-h-svh flex-col` shell (auth, error pages). */
 export function PageControls({ className }: Props) {
   return (
     <div
       className={cn(
-        'fixed top-4 inset-e-4 z-50 flex items-center gap-2',
+        'flex w-full shrink-0 items-center justify-end gap-2 border-b border-border bg-background/95 px-4 py-2 backdrop-blur-sm',
         className,
       )}
     >
