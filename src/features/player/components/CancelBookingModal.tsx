@@ -16,6 +16,7 @@ import { useBookingsControllerCancelMyBooking } from '@/api/generated/bookings/b
 import { getMatchesControllerGetByIdQueryKey } from '@/api/generated/matches/matches';
 import { getUsersControllerListMyBookingsQueryKey } from '@/api/generated/users/users';
 import type { MyBookingItemDto } from '@/api/generated/models/myBookingItemDto';
+import { ApiError } from '@/api';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -204,6 +205,10 @@ function WaitlistCancelBody({
 
 // ── Main modal ────────────────────────────────────────────────────────────────
 
+function isCutoffError(err: unknown): boolean {
+  return err instanceof ApiError && err.statusCode === 422;
+}
+
 type Step = 'confirm' | 'success';
 
 type CancelBookingModalProps = {
@@ -224,7 +229,6 @@ export function CancelBookingModal({
   const qc = useQueryClient();
 
   const [step, setStep] = useState<Step>('confirm');
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const isConfirmed = myBooking.status === 'confirmed';
   const paidAmount = parseFloat(myBooking.paidAmount ?? '');
@@ -232,44 +236,34 @@ export function CancelBookingModal({
 
   const cancelBooking = useBookingsControllerCancelMyBooking({
     mutation: {
-      onSuccess: (res) => {
-        if (res.status === 200) {
-          void qc.invalidateQueries({
-            queryKey: getMatchesControllerGetByIdQueryKey(matchId),
-          });
-          void qc.invalidateQueries({
-            queryKey: getUsersControllerListMyBookingsQueryKey(),
-          });
-          setErrorMsg(null);
-          setStep('success');
-        } else {
-          // Cast to number: the Orval type union omits 422 but the backend can return it
-          setErrorMsg(
-            (res.status as number) === 422
-              ? t('cancelBooking.error.cutoffWindow')
-              : t('cancelBooking.error.generic'),
-          );
-        }
-      },
-      onError: () => {
-        setErrorMsg(t('cancelBooking.error.generic'));
+      onSuccess: () => {
+        void qc.invalidateQueries({
+          queryKey: getMatchesControllerGetByIdQueryKey(matchId),
+        });
+        void qc.invalidateQueries({
+          queryKey: getUsersControllerListMyBookingsQueryKey(),
+        });
+        setStep('success');
       },
     },
   });
 
+  const errorMsg = cancelBooking.isError
+    ? isCutoffError(cancelBooking.error)
+      ? t('cancelBooking.error.cutoffWindow')
+      : t('cancelBooking.error.generic')
+    : null;
+
   function handleConfirm() {
     if (!myBooking.id) return;
-    setErrorMsg(null);
     cancelBooking.mutate({ matchId, bookingId: myBooking.id });
   }
 
   function handleClose() {
     if (cancelBooking.isPending) return;
     onOpenChange(false);
-    // Reset after animation settles
     setTimeout(() => {
       setStep('confirm');
-      setErrorMsg(null);
       cancelBooking.reset();
     }, 150);
   }

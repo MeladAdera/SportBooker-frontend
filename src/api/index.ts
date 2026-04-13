@@ -10,4 +10,5 @@ export {
   parseApiErrorBody,
   type ApiErrorEnvelope,
 } from './client';
+export { unwrap } from './mutator';
 export { extractTenantSlug, getAppDomain } from '@/lib/tenant';

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTenantSettingsControllerUpdateSettings } from '@/api/generated/tenant-settings/tenant-settings';
+import { ApiError } from '@/api';
 
 const settingsSchema = z.object({
   ziinaAccessToken: z.string().min(10, 'settings.ziina.tokenPlaceholder'),
@@ -19,7 +19,6 @@ type SettingsFormValues = z.infer<typeof settingsSchema>;
 
 export function TenantSettingsPage() {
   const { t } = useTranslation('operator');
-  const [serverError, setServerError] = useState<string | null>(null);
 
   const {
     register,
@@ -35,21 +34,18 @@ export function TenantSettingsPage() {
       onSuccess: () => {
         toast.success(t('settings.ziina.success'));
         reset();
-        setServerError(null);
       },
       onError: (err: unknown) => {
-        const e = err as { statusCode?: number } | null;
-        if (e?.statusCode === 422) {
-          setServerError(t('settings.ziina.error.invalid'));
-        } else {
-          setServerError(t('settings.ziina.error.generic'));
-        }
+        toast.error(
+          err instanceof ApiError && err.statusCode === 422
+            ? t('settings.ziina.error.invalid')
+            : t('settings.ziina.error.generic'),
+        );
       },
     },
   });
 
   function onSubmit(values: SettingsFormValues) {
-    setServerError(null);
     mutation.mutate({
       data: { ziinaAccessToken: values.ziinaAccessToken } as Parameters<
         typeof mutation.mutate
@@ -114,15 +110,6 @@ export function TenantSettingsPage() {
                 <ExternalLink className="size-3" aria-hidden />
               </a>
             </p>
-
-            {serverError && (
-              <p
-                role="alert"
-                className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-xs text-destructive"
-              >
-                {serverError}
-              </p>
-            )}
 
             <div className="flex justify-end">
               <Button type="submit" disabled={mutation.isPending}>

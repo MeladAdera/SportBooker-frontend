@@ -5,6 +5,7 @@ import { CheckCircle2, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { useUsersControllerGetMyWallet } from '@/api/generated/users/users';
+import { unwrap } from '@/api';
 import { formatCurrency } from '@/lib/format';
 
 const MAX_POLL_ATTEMPTS = 6;
@@ -40,12 +41,7 @@ export function TopUpSuccessPage() {
     {
       query: {
         refetchInterval: (query) => {
-          const balance =
-            (
-              query.state.data as
-                | { status: number; data: { data: { balance: number } } }
-                | undefined
-            )?.data?.data?.balance ?? null;
+          const balance = unwrap(query.state.data)?.balance ?? null;
           const increased =
             previousBalance !== null &&
             balance !== null &&
@@ -57,7 +53,7 @@ export function TopUpSuccessPage() {
     },
   );
 
-  const currentBalance = data?.status === 200 ? data.data.data.balance : null;
+  const currentBalance = unwrap(data)?.balance ?? null;
 
   const balanceUpdated =
     previousBalance !== null &&

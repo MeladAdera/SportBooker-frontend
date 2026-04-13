@@ -12,6 +12,7 @@ import { useVenuesControllerList } from '@/api/generated/venues/venues';
 import type { MatchBrowseItemDto } from '@/api/generated/models/matchBrowseItemDto';
 import type { MatchesControllerListParams } from '@/api/generated/models/matchesControllerListParams';
 import { MatchesControllerListSportType } from '@/api/generated/models/matchesControllerListSportType';
+import { unwrap } from '@/api';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -160,8 +161,7 @@ function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
     useVenuesControllerList({ limit: 100 });
   if (isVenuesLoading) return <div>Loading...</div>;
 
-  const venues = venuesData?.status === 200 ? venuesData.data.data.items : [];
-  console.log(venuesData);
+  const venues = unwrap(venuesData)?.items ?? [];
 
   const hasActiveFilters =
     !!filters.sportType ||
@@ -310,8 +310,9 @@ export function DiscoverPage() {
     page,
     limit,
   });
-  const matches = data?.status === 200 ? data.data.data.items : [];
-  const total = data?.status === 200 ? data.data.data.total : 0;
+  const matchesData = unwrap(data);
+  const matches = matchesData?.items ?? [];
+  const total = matchesData?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   const handleFilterChange = useCallback((next: Partial<FilterState>) => {

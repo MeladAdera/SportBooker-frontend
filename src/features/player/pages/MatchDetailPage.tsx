@@ -26,6 +26,7 @@ import type { MyBookingItemDto } from '@/api/generated/models/myBookingItemDto';
 import { BookingModal } from '@/features/player/components/BookingModal';
 import { CancelBookingModal } from '@/features/player/components/CancelBookingModal';
 import { MAX_GK } from '@/features/player/constants';
+import { unwrap } from '@/api';
 import { useAuthStore } from '@/stores/authStore';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -297,10 +298,9 @@ export function MatchDetailPage() {
       { query: { enabled: !!id } },
     );
 
-  const match = matchData?.status === 200 ? matchData.data.data : undefined;
+  const match = unwrap(matchData);
 
-  const myBookings =
-    bookingsData?.status === 200 ? bookingsData.data.data.items : [];
+  const myBookings = unwrap(bookingsData)?.items ?? [];
 
   // MyBookingItemDto has no matchId — confirmed status is derived from the roster
   // (which only includes confirmed players); waitlist is matched by title since the

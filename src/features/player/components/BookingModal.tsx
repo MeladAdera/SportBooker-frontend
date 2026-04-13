@@ -25,6 +25,7 @@ import {
   getUsersControllerGetMyWalletQueryKey,
   useUsersControllerGetMyWallet,
 } from '@/api/generated/users/users';
+import { unwrap, ApiError } from '@/api';
 import { MAX_GK } from '@/features/player/constants';
 import { TopUpModal } from './TopUpModal';
 
@@ -205,6 +206,14 @@ type BookingModalProps = {
   onOpenChange: (open: boolean) => void;
 };
 
+function isInsufficientFundsError(err: unknown): boolean {
+  return (
+    err instanceof ApiError &&
+    err.statusCode === 422 &&
+    err.message.toLowerCase().includes('insufficient wallet balance')
+  );
+}
+
 export function BookingModal({ match, open, onOpenChange }: BookingModalProps) {
   const { t } = useTranslation('player');
   const qc = useQueryClient();
@@ -214,13 +223,10 @@ export function BookingModal({ match, open, onOpenChange }: BookingModalProps) {
     BookingPosition.field_player,
   );
   const [result, setResult] = useState<CreateBookingResponseDto | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isInsufficientFunds, setIsInsufficientFunds] = useState(false);
   const [topUpOpen, setTopUpOpen] = useState(false);
 
   const { data: walletData } = useUsersControllerGetMyWallet(undefined);
-  const walletBalance =
-    walletData?.status === 200 ? walletData.data.data.balance : null;
+  const walletBalance = unwrap(walletData)?.balance ?? null;
 
   const insufficientFunds =
     walletBalance != null && walletBalance < match.pricePerPlayer;
@@ -232,41 +238,30 @@ export function BookingModal({ match, open, onOpenChange }: BookingModalProps) {
   const createBooking = useBookingsControllerCreateBooking({
     mutation: {
       onSuccess: (res) => {
-        if (res.status === 201) {
-          const booking = res.data.data;
-          setResult(booking);
-          setStep(
-            booking.status === CreateBookingResponseDtoStatus.confirmed
-              ? 'confirmed'
-              : 'waitlist',
-          );
-          void qc.invalidateQueries({
-            queryKey: getMatchesControllerGetByIdQueryKey(match.id),
-          });
-          void qc.invalidateQueries({
-            queryKey: getUsersControllerListMyBookingsQueryKey(),
-          });
-          void qc.invalidateQueries({
-            queryKey: getUsersControllerGetMyWalletQueryKey(),
-          });
-        } else {
-          setErrorMsg(t('booking.error'));
-        }
-      },
-      onError: (err: unknown) => {
-        const e = err as { statusCode?: number; message?: string } | null;
-        if (
-          e?.statusCode === 422 &&
-          e?.message?.toLowerCase().includes('insufficient wallet balance')
-        ) {
-          setIsInsufficientFunds(true);
-          setErrorMsg(null);
-        } else {
-          setErrorMsg(t('booking.error'));
-        }
+        const booking = unwrap(res);
+        if (!booking) return;
+        setResult(booking);
+        setStep(
+          booking.status === CreateBookingResponseDtoStatus.confirmed
+            ? 'confirmed'
+            : 'waitlist',
+        );
+        void qc.invalidateQueries({
+          queryKey: getMatchesControllerGetByIdQueryKey(match.id),
+        });
+        void qc.invalidateQueries({
+          queryKey: getUsersControllerListMyBookingsQueryKey(),
+        });
+        void qc.invalidateQueries({
+          queryKey: getUsersControllerGetMyWalletQueryKey(),
+        });
       },
     },
   });
+
+  const serverInsufficientFunds = isInsufficientFundsError(createBooking.error);
+  const showInsufficientFunds = insufficientFunds || serverInsufficientFunds;
+  const showGenericError = createBooking.isError && !serverInsufficientFunds;
 
   function handleClose() {
     if (createBooking.isPending) return;
@@ -275,19 +270,14 @@ export function BookingModal({ match, open, onOpenChange }: BookingModalProps) {
       setStep('form');
       setPosition(BookingPosition.field_player);
       setResult(null);
-      setErrorMsg(null);
-      setIsInsufficientFunds(false);
       createBooking.reset();
     }, 150);
   }
 
   function handleConfirm() {
-    setErrorMsg(null);
-    setIsInsufficientFunds(false);
     createBooking.mutate({ matchId: match.id, data: { position } });
   }
 
-  const showInsufficientFunds = insufficientFunds || isInsufficientFunds;
   const isSuccessStep = step === 'confirmed' || step === 'waitlist';
 
   return (
@@ -380,12 +370,12 @@ export function BookingModal({ match, open, onOpenChange }: BookingModalProps) {
                 )}
 
                 {/* API error */}
-                {errorMsg && (
+                {showGenericError && (
                   <p
                     role="alert"
                     className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-xs text-destructive"
                   >
-                    {errorMsg}
+                    {t('booking.error')}
                   </p>
                 )}
               </div>

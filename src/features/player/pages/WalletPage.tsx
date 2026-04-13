@@ -34,6 +34,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useUsersControllerGetMyWallet } from '@/api/generated/users/users';
+import { unwrap } from '@/api';
 import type { WalletTransactionItemDto } from '@/api/generated/models/walletTransactionItemDto';
 import { WalletTransactionItemDtoType } from '@/api/generated/models/walletTransactionItemDtoType';
 import { TopUpModal } from '../components/TopUpModal';
@@ -338,7 +339,7 @@ export function WalletPage() {
   const { data, isLoading, isFetching, isError, refetch } =
     useUsersControllerGetMyWallet({ page, limit: PAGE_SIZE });
 
-  const wallet = data?.status === 200 ? data.data.data : null;
+  const wallet = unwrap(data) ?? null;
   const allTransactions = wallet?.transactions ?? [];
   const total = wallet?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);

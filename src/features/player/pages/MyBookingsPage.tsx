@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { useUsersControllerListMyBookings } from '@/api/generated/users/users';
 import type { MyBookingItemDto } from '@/api/generated/models/myBookingItemDto';
 import { MyBookingItemDtoStatus } from '@/api/generated/models/myBookingItemDtoStatus';
+import { unwrap } from '@/api';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -296,8 +297,9 @@ export function MyBookingsPage() {
     ...tabToParams(activeTab),
   });
 
-  const bookings = data?.status === 200 ? data.data.data.items : [];
-  const total = data?.status === 200 ? data.data.data.total : 0;
+  const bookingsData = unwrap(data);
+  const bookings = bookingsData?.items ?? [];
+  const total = bookingsData?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (

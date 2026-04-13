@@ -13,7 +13,8 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useCreateTopup } from '../api/payments';
+import { usePaymentsControllerCreateTopup } from '@/api/generated/payments/payments';
+import { unwrap, ApiError } from '@/api';
 
 const topUpSchema = z.object({
   amount: z.coerce
@@ -43,12 +44,14 @@ export function TopUpModal({ open, onOpenChange, currentBalance }: Props) {
     resolver: zodResolver(topUpSchema),
   });
 
-  const mutation = useCreateTopup();
+  const mutation = usePaymentsControllerCreateTopup();
 
-  function getErrorMessage(err: Error & { statusCode?: number }): string {
-    if (err.statusCode === 422)
-      return t('wallet.topUp.error.ziinaNotConfigured');
-    if (err.statusCode === 429) return t('wallet.topUp.error.rateLimit');
+  function getErrorMessage(err: unknown): string {
+    if (err instanceof ApiError) {
+      if (err.statusCode === 422)
+        return t('wallet.topUp.error.ziinaNotConfigured');
+      if (err.statusCode === 429) return t('wallet.topUp.error.rateLimit');
+    }
     return t('wallet.topUp.error.generic');
   }
 
@@ -63,9 +66,11 @@ export function TopUpModal({ open, onOpenChange, currentBalance }: Props) {
 
   function onSubmit(values: TopUpFormValues) {
     mutation.mutate(
-      { amount: values.amount },
+      { data: { amount: values.amount } },
       {
-        onSuccess: (data) => {
+        onSuccess: (res) => {
+          const data = unwrap(res);
+          if (!data) return;
           sessionStorage.setItem(
             'topup_session',
             JSON.stringify({
@@ -118,9 +123,7 @@ export function TopUpModal({ open, onOpenChange, currentBalance }: Props) {
               role="alert"
               className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-xs text-destructive"
             >
-              {getErrorMessage(
-                mutation.error as Error & { statusCode?: number },
-              )}
+              {getErrorMessage(mutation.error)}
             </p>
           )}
 

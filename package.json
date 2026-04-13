@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "prepare": "husky",
     "commit": "cz",
-    "gen:api": "orval && node scripts/wire-api-fetch.mjs"
+    "gen:api": "orval"
   },
   "config": {
     "commitizen": {
