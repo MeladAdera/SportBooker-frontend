@@ -181,6 +181,16 @@ type FilterBarProps = {
   onClear: () => void;
 };
 
+/**
+ * Cycles through `phrases` with a typewriter effect — types each phrase
+ * character by character, pauses, then deletes before moving to the next.
+ *
+ * @param phrases - List of strings to cycle through (loops indefinitely).
+ * @param typeSpeed  - ms per character when typing (default 80).
+ * @param deleteSpeed - ms per character when deleting (default 40).
+ * @param pauseMs   - ms to pause at the end of a fully typed phrase (default 1800).
+ * @returns The currently visible substring to render.
+ */
 function useTypewriter(
   phrases: readonly string[],
   { typeSpeed = 80, deleteSpeed = 40, pauseMs = 1800 } = {},
@@ -225,6 +235,11 @@ function useTypewriter(
   return displayed;
 }
 
+/**
+ * Seven pill buttons (Sun–Sat) that let the user filter matches by day of week.
+ * Selecting the active day deselects it (toggle off). Filtering is client-side,
+ * applied after the paginated API response is received.
+ */
 function DayChips({
   value,
   onChange,
