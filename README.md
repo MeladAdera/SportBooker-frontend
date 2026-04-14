@@ -27,6 +27,8 @@ Edit `.env` from `.env.example`: **`VITE_API_URL`** and **`VITE_APP_DOMAIN`** ar
 
 **Player flow:** login → discover page → match cards, filters, pagination — documented in **[Player flow](docs/player-flow.md)**.
 
+**Release notes:** **[Changelog](CHANGELOG.md)** — notable changes by version.
+
 ## Scripts
 
 | Command                | Description                         |

@@ -10,6 +10,51 @@
       "noMatches": "لا توجد مباريات في هذه الفترة"
     }
   },
+  "matches": {
+    "title": "المباريات",
+    "filters": {
+      "status": "الحالة",
+      "statusAll": "كل الحالات",
+      "venue": "الملعب",
+      "venueAll": "كل الملاعب",
+      "sport": "الرياضة",
+      "sportAll": "كل الرياضات",
+      "dateFrom": "من",
+      "dateTo": "إلى",
+      "search": "البحث عن مباريات…",
+      "clear": "مسح الفلاتر"
+    },
+    "table": {
+      "date": "التاريخ",
+      "venue": "الملعب",
+      "sport": "الرياضة",
+      "status": "الحالة",
+      "players": "اللاعبون",
+      "actions": "الإجراءات"
+    },
+    "actions": {
+      "view": "عرض",
+      "edit": "تعديل",
+      "cancel": "إلغاء"
+    },
+    "status": {
+      "upcoming": "قادمة",
+      "in_progress": "جارية",
+      "completed": "مكتملة",
+      "cancelled": "ملغاة"
+    },
+    "sport": {
+      "football": "كرة القدم",
+      "padel": "بادل",
+      "cricket": "كريكيت",
+      "generic": "عام",
+      "basketball": "كرة السلة",
+      "tennis": "تنس"
+    },
+    "empty": "لا توجد مباريات",
+    "error": "فشل تحميل المباريات. حاول مجدداً.",
+    "loadingVenues": "جارٍ تحميل الملاعب…"
+  },
   "nav": {
     "dashboard": "لوحة التحكم",
     "matches": "المباريات",

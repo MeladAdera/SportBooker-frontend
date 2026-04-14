@@ -10,6 +10,51 @@
       "noMatches": "No matches in this period"
     }
   },
+  "matches": {
+    "title": "Matches",
+    "filters": {
+      "status": "Status",
+      "statusAll": "All statuses",
+      "venue": "Venue",
+      "venueAll": "All venues",
+      "sport": "Sport",
+      "sportAll": "All sports",
+      "dateFrom": "From",
+      "dateTo": "To",
+      "search": "Search matches…",
+      "clear": "Clear filters"
+    },
+    "table": {
+      "date": "Date",
+      "venue": "Venue",
+      "sport": "Sport",
+      "status": "Status",
+      "players": "Players",
+      "actions": "Actions"
+    },
+    "actions": {
+      "view": "View",
+      "edit": "Edit",
+      "cancel": "Cancel"
+    },
+    "status": {
+      "upcoming": "Upcoming",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "sport": {
+      "football": "Football",
+      "padel": "Padel",
+      "cricket": "Cricket",
+      "generic": "Generic",
+      "basketball": "Basketball",
+      "tennis": "Tennis"
+    },
+    "empty": "No matches found",
+    "error": "Failed to load matches. Please try again.",
+    "loadingVenues": "Loading venues…"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "matches": "Matches",

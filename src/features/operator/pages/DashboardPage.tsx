@@ -120,6 +120,7 @@ export function DashboardPage() {
   });
 
   const paginated = unwrap(data);
+  // unwrap peels both data layers: customFetch wrapper + API envelope
   const items = paginated?.items ?? [];
 
   const stats = useMemo(() => deriveStats(items), [items]);

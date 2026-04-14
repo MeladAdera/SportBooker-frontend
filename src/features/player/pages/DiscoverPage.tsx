@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Bike, Dumbbell, Search, Shield, Swords, X } from 'lucide-react';
+import { DatePicker } from '@/components/ui/date-picker';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -209,14 +210,15 @@ function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
         ))}
       </select>
 
-      <input
-        type="date"
-        className={cn(selectClass, 'w-36')}
-        value={filters.date ?? ''}
-        onChange={(e) =>
-          onChange({ date: e.target.value || undefined, page: 1 })
+      <DatePicker
+        value={filters.date ? new Date(filters.date) : undefined}
+        onChange={(d) =>
+          onChange({
+            date: d ? d.toISOString().slice(0, 10) : undefined,
+            page: 1,
+          })
         }
-        aria-label={t('discover.filters.date')}
+        placeholder={t('discover.filters.date')}
       />
 
       <label className="flex cursor-pointer select-none items-center gap-1.5 text-sm text-foreground">
