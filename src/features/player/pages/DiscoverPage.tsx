@@ -7,6 +7,13 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useMatchesControllerList } from '@/api/generated/matches/matches';
 import { useVenuesControllerList } from '@/api/generated/venues/venues';
@@ -24,6 +31,14 @@ type SportType =
 
 const DAYS_OF_WEEK = [0, 1, 2, 3, 4, 5, 6] as const;
 type DayOfWeek = (typeof DAYS_OF_WEEK)[number];
+
+type SortOption =
+  | 'date-asc'
+  | 'date-desc'
+  | 'price-asc'
+  | 'price-desc'
+  | 'spots-asc'
+  | 'spots-desc';
 
 const TYPEWRITER_PHRASES: Record<string, readonly string[]> = {
   en: [
@@ -173,6 +188,7 @@ const SPORT_TYPES = Object.values(MatchesControllerListSportType);
 type FilterState = MatchesControllerListParams & {
   page: number;
   dayOfWeek?: DayOfWeek;
+  sortBy?: SortOption;
 };
 
 type FilterBarProps = {
@@ -236,39 +252,61 @@ function useTypewriter(
 }
 
 /**
- * Seven pill buttons (Sun–Sat) that let the user filter matches by day of week.
- * Selecting the active day deselects it (toggle off). Filtering is client-side,
- * applied after the paginated API response is received.
+ * Seven pill buttons (Sun–Sat) + sort select + availability toggle on one row.
+ * Day filtering is client-side; sort is also applied client-side.
  */
 function DayChips({
   value,
   onChange,
+  sortBy,
+  onSortChange,
 }: {
   value?: DayOfWeek;
   onChange: (day: DayOfWeek | undefined) => void;
+  sortBy?: SortOption;
+  onSortChange: (sort: SortOption | undefined) => void;
 }) {
   const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {DAYS_OF_WEEK.map((day) => {
-        const active = value === day;
-        return (
-          <button
-            key={day}
-            type="button"
-            onClick={() => onChange(active ? undefined : day)}
-            className={cn(
-              'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-              active
-                ? 'border-primary bg-primary text-primary-foreground'
-                : 'border-input bg-transparent text-foreground hover:bg-muted',
-            )}
-          >
-            {DAY_LABELS[day]}
-          </button>
-        );
-      })}
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap gap-2">
+        {DAYS_OF_WEEK.map((day) => {
+          const active = value === day;
+          return (
+            <button
+              key={day}
+              type="button"
+              onClick={() => onChange(active ? undefined : day)}
+              className={cn(
+                'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                active
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-input bg-transparent text-foreground hover:bg-muted',
+              )}
+            >
+              {DAY_LABELS[day]}
+            </button>
+          );
+        })}
+      </div>
+
+      <Select
+        value={sortBy ?? ''}
+        onValueChange={(v) => onSortChange((v as SortOption) || undefined)}
+      >
+        <SelectTrigger size="sm" className="min-w-[130px]">
+          <SelectValue placeholder="Sort by" />
+        </SelectTrigger>
+        <SelectContent align="end">
+          <SelectItem value="date-asc">Date ↑</SelectItem>
+          <SelectItem value="date-desc">Date ↓</SelectItem>
+          <SelectItem value="price-asc">Price ↑</SelectItem>
+          <SelectItem value="price-desc">Price ↓</SelectItem>
+          <SelectItem value="spots-desc">Spots: most first</SelectItem>
+          <SelectItem value="spots-asc">Spots: fewest first</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 }
@@ -286,6 +324,7 @@ function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
     !!filters.venueId ||
     !!filters.date ||
     !!filters.available ||
+    !!filters.sortBy ||
     filters.dayOfWeek !== undefined;
 
   const selectClass =
@@ -296,6 +335,8 @@ function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
       <DayChips
         value={filters.dayOfWeek}
         onChange={(day) => onChange({ dayOfWeek: day, page: 1 })}
+        sortBy={filters.sortBy}
+        onSortChange={(sort) => onChange({ sortBy: sort, page: 1 })}
       />
       <div className="flex flex-wrap items-center gap-2">
         <select
@@ -433,7 +474,7 @@ export function DiscoverPage() {
     TYPEWRITER_PHRASES[i18n.language] ?? TYPEWRITER_PHRASES['en']!;
   const typedTitle = useTypewriter(phrases);
 
-  const { page, limit, dayOfWeek, ...queryParams } = filters;
+  const { page, limit, dayOfWeek, sortBy, ...queryParams } = filters;
   const { data, isLoading, isError } = useMatchesControllerList({
     ...queryParams,
     page,
@@ -441,10 +482,31 @@ export function DiscoverPage() {
   });
   const matchesData = unwrap(data);
   const allMatches = matchesData?.items ?? [];
-  const matches =
+
+  const filtered =
     dayOfWeek !== undefined
       ? allMatches.filter((m) => new Date(m.scheduledAt).getDay() === dayOfWeek)
       : allMatches;
+
+  const matches = sortBy
+    ? [...filtered].sort((a, b) => {
+        if (sortBy === 'date-asc')
+          return (
+            new Date(a.scheduledAt).getTime() -
+            new Date(b.scheduledAt).getTime()
+          );
+        if (sortBy === 'date-desc')
+          return (
+            new Date(b.scheduledAt).getTime() -
+            new Date(a.scheduledAt).getTime()
+          );
+        if (sortBy === 'price-asc') return a.pricePerPlayer - b.pricePerPlayer;
+        if (sortBy === 'price-desc') return b.pricePerPlayer - a.pricePerPlayer;
+        if (sortBy === 'spots-desc') return b.spotsRemaining - a.spotsRemaining;
+        if (sortBy === 'spots-asc') return a.spotsRemaining - b.spotsRemaining;
+        return 0;
+      })
+    : filtered;
   const total = matchesData?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
