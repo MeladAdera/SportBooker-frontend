@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Bike, Dumbbell, Search, Shield, Swords, X } from 'lucide-react';
@@ -21,6 +21,25 @@ const PAGE_SIZE = 12;
 
 type SportType =
   (typeof MatchesControllerListSportType)[keyof typeof MatchesControllerListSportType];
+
+const DAYS_OF_WEEK = [0, 1, 2, 3, 4, 5, 6] as const;
+type DayOfWeek = (typeof DAYS_OF_WEEK)[number];
+
+const TYPEWRITER_PHRASES: Record<string, readonly string[]> = {
+  en: [
+    'Discover Matches...',
+    'Choose Your Day...',
+    'Find Your Game...',
+    'Book Your Spot..',
+    'Play Today..',
+  ],
+  ar: [
+    'ابحث عن مباراتك الان...',
+    'اختر اليوم المناسب لك...',
+    'ابحث عن لعبتك المفضلة ...',
+    'احجز مقعدك الان...',
+  ],
+};
 
 const SPORT_ICONS: Record<SportType, React.ElementType> = {
   football: Shield,
@@ -151,13 +170,93 @@ function MatchCardSkeleton() {
 
 const SPORT_TYPES = Object.values(MatchesControllerListSportType);
 
-type FilterState = MatchesControllerListParams & { page: number };
+type FilterState = MatchesControllerListParams & {
+  page: number;
+  dayOfWeek?: DayOfWeek;
+};
 
 type FilterBarProps = {
   filters: FilterState;
   onChange: (next: Partial<FilterState>) => void;
   onClear: () => void;
 };
+
+function useTypewriter(
+  phrases: readonly string[],
+  { typeSpeed = 80, deleteSpeed = 40, pauseMs = 1800 } = {},
+) {
+  const [displayed, setDisplayed] = useState('');
+  const phraseIdx = useRef(0);
+  const charIdx = useRef(0);
+  const deleting = useRef(false);
+
+  useEffect(() => {
+    function tick() {
+      const phrase = phrases[phraseIdx.current];
+      if (!deleting.current) {
+        charIdx.current += 1;
+        setDisplayed(phrase.slice(0, charIdx.current));
+        if (charIdx.current === phrase.length) {
+          deleting.current = true;
+          return pauseMs;
+        }
+        return typeSpeed;
+      } else {
+        charIdx.current -= 1;
+        setDisplayed(phrase.slice(0, charIdx.current));
+        if (charIdx.current === 0) {
+          deleting.current = false;
+          phraseIdx.current = (phraseIdx.current + 1) % phrases.length;
+          return typeSpeed;
+        }
+        return deleteSpeed;
+      }
+    }
+
+    let timeout: ReturnType<typeof setTimeout>;
+    function schedule() {
+      const delay = tick();
+      timeout = setTimeout(schedule, delay);
+    }
+    timeout = setTimeout(schedule, typeSpeed);
+    return () => clearTimeout(timeout);
+  }, [phrases, typeSpeed, deleteSpeed, pauseMs]);
+
+  return displayed;
+}
+
+function DayChips({
+  value,
+  onChange,
+}: {
+  value?: DayOfWeek;
+  onChange: (day: DayOfWeek | undefined) => void;
+}) {
+  const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {DAYS_OF_WEEK.map((day) => {
+        const active = value === day;
+        return (
+          <button
+            key={day}
+            type="button"
+            onClick={() => onChange(active ? undefined : day)}
+            className={cn(
+              'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+              active
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-input bg-transparent text-foreground hover:bg-muted',
+            )}
+          >
+            {DAY_LABELS[day]}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
   const { t } = useTranslation('player');
@@ -171,77 +270,84 @@ function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
     !!filters.sportType ||
     !!filters.venueId ||
     !!filters.date ||
-    !!filters.available;
+    !!filters.available ||
+    filters.dayOfWeek !== undefined;
 
   const selectClass =
     'h-8 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30';
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <select
-        className={selectClass}
-        value={filters.sportType ?? ''}
-        onChange={(e) =>
-          onChange({
-            sportType: (e.target.value as SportType) || undefined,
-            page: 1,
-          })
-        }
-        aria-label={t('discover.filters.sport')}
-      >
-        <option value="">{t('discover.filters.allSports')}</option>
-        {SPORT_TYPES.map((s) => (
-          <option key={s} value={s}>
-            {t(`discover.sports.${s}`)}
-          </option>
-        ))}
-      </select>
-
-      <select
-        className={selectClass}
-        value={filters.venueId ?? ''}
-        onChange={(e) =>
-          onChange({ venueId: e.target.value || undefined, page: 1 })
-        }
-        aria-label={t('discover.filters.venue')}
-      >
-        <option value="">{t('discover.filters.allVenues')}</option>
-        {venues.map((v) => (
-          <option key={v.id} value={v.id}>
-            {v.name}
-          </option>
-        ))}
-      </select>
-
-      <DatePicker
-        value={filters.date ? new Date(filters.date) : undefined}
-        onChange={(d) =>
-          onChange({
-            date: d ? d.toISOString().slice(0, 10) : undefined,
-            page: 1,
-          })
-        }
-        placeholder={t('discover.filters.date')}
+    <div className="flex flex-col gap-3">
+      <DayChips
+        value={filters.dayOfWeek}
+        onChange={(day) => onChange({ dayOfWeek: day, page: 1 })}
       />
-
-      <label className="flex cursor-pointer select-none items-center gap-1.5 text-sm text-foreground">
-        <input
-          type="checkbox"
-          className="accent-primary"
-          checked={!!filters.available}
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          className={selectClass}
+          value={filters.sportType ?? ''}
           onChange={(e) =>
-            onChange({ available: e.target.checked || undefined, page: 1 })
+            onChange({
+              sportType: (e.target.value as SportType) || undefined,
+              page: 1,
+            })
           }
-        />
-        {t('discover.filters.availableOnly')}
-      </label>
+          aria-label={t('discover.filters.sport')}
+        >
+          <option value="">{t('discover.filters.allSports')}</option>
+          {SPORT_TYPES.map((s) => (
+            <option key={s} value={s}>
+              {t(`discover.sports.${s}`)}
+            </option>
+          ))}
+        </select>
 
-      {hasActiveFilters && (
-        <Button variant="ghost" size="sm" onClick={onClear} className="gap-1">
-          <X className="size-3.5" aria-hidden />
-          {t('discover.filters.clearFilters')}
-        </Button>
-      )}
+        <select
+          className={selectClass}
+          value={filters.venueId ?? ''}
+          onChange={(e) =>
+            onChange({ venueId: e.target.value || undefined, page: 1 })
+          }
+          aria-label={t('discover.filters.venue')}
+        >
+          <option value="">{t('discover.filters.allVenues')}</option>
+          {venues.map((v) => (
+            <option key={v.id} value={v.id}>
+              {v.name}
+            </option>
+          ))}
+        </select>
+
+        <DatePicker
+          value={filters.date ? new Date(filters.date) : undefined}
+          onChange={(d) =>
+            onChange({
+              date: d ? d.toISOString().slice(0, 10) : undefined,
+              page: 1,
+            })
+          }
+          placeholder={t('discover.filters.date')}
+        />
+
+        <label className="flex cursor-pointer select-none items-center gap-1.5 text-sm text-foreground">
+          <input
+            type="checkbox"
+            className="accent-primary"
+            checked={!!filters.available}
+            onChange={(e) =>
+              onChange({ available: e.target.checked || undefined, page: 1 })
+            }
+          />
+          {t('discover.filters.availableOnly')}
+        </label>
+
+        {hasActiveFilters && (
+          <Button variant="ghost" size="sm" onClick={onClear} className="gap-1">
+            <X className="size-3.5" aria-hidden />
+            {t('discover.filters.clearFilters')}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
@@ -306,17 +412,24 @@ const DEFAULT_FILTERS: FilterState = {
 };
 
 export function DiscoverPage() {
-  const { t } = useTranslation('player');
+  const { i18n } = useTranslation();
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const phrases =
+    TYPEWRITER_PHRASES[i18n.language] ?? TYPEWRITER_PHRASES['en']!;
+  const typedTitle = useTypewriter(phrases);
 
-  const { page, limit, ...queryParams } = filters;
+  const { page, limit, dayOfWeek, ...queryParams } = filters;
   const { data, isLoading, isError } = useMatchesControllerList({
     ...queryParams,
     page,
     limit,
   });
   const matchesData = unwrap(data);
-  const matches = matchesData?.items ?? [];
+  const allMatches = matchesData?.items ?? [];
+  const matches =
+    dayOfWeek !== undefined
+      ? allMatches.filter((m) => new Date(m.scheduledAt).getDay() === dayOfWeek)
+      : allMatches;
   const total = matchesData?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
@@ -331,7 +444,8 @@ export function DiscoverPage() {
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
       <h1 className="text-xl font-semibold text-foreground">
-        {t('discover.pageTitle')}
+        {typedTitle}
+        <span className="ml-0.5 inline-block h-5 w-0.5 animate-pulse bg-primary align-middle" />
       </h1>
 
       <FilterBar
