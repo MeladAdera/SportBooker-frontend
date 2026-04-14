@@ -14,6 +14,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { unwrap } from '@/api';
 import { normalizeRole } from '@/lib/roles';
@@ -114,62 +122,71 @@ function FilterBar({
       {/* search row */}
       <div className="relative">
         <Search className="pointer-events-none absolute inset-s-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <input
+        <Input
           type="text"
           value={filters.search}
           onChange={(e) => onFilterChange({ search: e.target.value })}
           placeholder={t('matches.filters.search')}
-          className="h-8 w-full rounded-lg border border-input bg-background ps-9 pe-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          className="ps-9"
         />
       </div>
 
       {/* filter row */}
       <div className="flex flex-wrap gap-2">
         {/* Status */}
-        <select
-          value={filters.status}
-          onChange={(e) =>
-            onFilterChange({ status: e.target.value as StatusFilter })
+        <Select
+          value={filters.status || undefined}
+          onValueChange={(val) =>
+            onFilterChange({ status: (val ?? '') as StatusFilter })
           }
-          className="h-8 rounded-lg border border-input bg-background px-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         >
-          <option value="">{t('matches.filters.statusAll')}</option>
-          {Object.values(TenantMatchesControllerListStatus).map((s) => (
-            <option key={s} value={s}>
-              {t(`matches.status.${s}`, { defaultValue: s })}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger>
+            <SelectValue placeholder={t('matches.filters.statusAll')} />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.values(TenantMatchesControllerListStatus).map((s) => (
+              <SelectItem key={s} value={s}>
+                {t(`matches.status.${s}`, { defaultValue: s })}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Venue */}
-        <select
-          value={filters.venueId}
-          onChange={(e) => onFilterChange({ venueId: e.target.value })}
-          className="h-8 rounded-lg border border-input bg-background px-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        <Select
+          value={filters.venueId || undefined}
+          onValueChange={(val) => onFilterChange({ venueId: val ?? '' })}
         >
-          <option value="">{t('matches.filters.venueAll')}</option>
-          {venues.map((v) => (
-            <option key={v.id} value={v.id}>
-              {v.name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger>
+            <SelectValue placeholder={t('matches.filters.venueAll')} />
+          </SelectTrigger>
+          <SelectContent>
+            {venues.map((v) => (
+              <SelectItem key={v.id} value={v.id}>
+                {v.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Sport */}
-        <select
-          value={filters.sport}
-          onChange={(e) =>
-            onFilterChange({ sport: e.target.value as SportFilter })
+        <Select
+          value={filters.sport || undefined}
+          onValueChange={(val) =>
+            onFilterChange({ sport: (val ?? '') as SportFilter })
           }
-          className="h-8 rounded-lg border border-input bg-background px-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         >
-          <option value="">{t('matches.filters.sportAll')}</option>
-          {Object.values(TenantMatchesControllerListSportType).map((s) => (
-            <option key={s} value={s}>
-              {t(`matches.sport.${s}`, { defaultValue: s })}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger>
+            <SelectValue placeholder={t('matches.filters.sportAll')} />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.values(TenantMatchesControllerListSportType).map((s) => (
+              <SelectItem key={s} value={s}>
+                {t(`matches.sport.${s}`, { defaultValue: s })}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Date from */}
         <DatePicker
@@ -272,19 +289,19 @@ function DesktopTable({
           const id = info.row.original.id;
           const isCancelled = info.row.original.status === 'cancelled';
           return (
-            <div className="flex items-center gap-1.5">
-              <Button variant="ghost" size="xs" onClick={() => onView(id)}>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Button variant="secondary" size="lg" onClick={() => onView(id)}>
                 {t('matches.actions.view')}
               </Button>
               {!isCancelled && (
-                <Button variant="outline" size="xs" onClick={() => onEdit(id)}>
+                <Button variant="outline" size="lg" onClick={() => onEdit(id)}>
                   {t('matches.actions.edit')}
                 </Button>
               )}
               {canCancel && !isCancelled && (
                 <Button
                   variant="destructive"
-                  size="xs"
+                  size="lg"
                   onClick={() => onCancel(id)}
                 >
                   {t('matches.actions.cancel')}
@@ -308,7 +325,7 @@ function DesktopTable({
   return (
     <div className="overflow-x-auto rounded-xl border border-border">
       <table className="w-full text-sm">
-        <thead className="border-b border-border bg-muted/40">
+        <thead className="border-b border-border bg-muted">
           {table.getHeaderGroups().map((hg) => (
             <tr key={hg.id}>
               {hg.headers.map((h) => (
@@ -326,7 +343,7 @@ function DesktopTable({
           {table.getRowModel().rows.map((row) => (
             <tr
               key={row.id}
-              className="bg-card transition-colors hover:bg-muted/30"
+              className="bg-card transition-colors hover:bg-muted/50"
             >
               {row.getVisibleCells().map((cell) => (
                 <td key={cell.id} className="px-4 py-3">
@@ -395,8 +412,12 @@ function MobileMatchCard({
           </span>
         </div>
 
-        <div className="flex gap-2">
-          <Button variant="ghost" size="sm" onClick={() => onView(match.id)}>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onView(match.id)}
+          >
             {t('matches.actions.view')}
           </Button>
           {!isCancelled && (
@@ -429,7 +450,7 @@ function TableSkeleton() {
   return (
     <div className="overflow-x-auto rounded-xl border border-border">
       <table className="w-full">
-        <thead className="border-b border-border bg-muted/40">
+        <thead className="border-b border-border bg-muted">
           <tr>
             {Array.from({ length: 6 }).map((_, i) => (
               <th key={i} className="px-4 py-3">

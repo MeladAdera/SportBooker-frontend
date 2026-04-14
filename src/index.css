@@ -13,14 +13,14 @@
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.9644 0.0208 166.1014);
   --secondary-foreground: oklch(0.4335 0.0754 182.2315);
-  --muted: oklch(0.9605 0.0046 258.3248);
+  --muted: oklch(0.93 0.0046 258.3248);
   --muted-foreground: oklch(0.5589 0.0255 233.7233);
   --accent: oklch(0.761 0.2015 149.7403);
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.6257 0.2058 29.0773);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.9436 0.0051 228.8204);
-  --input: oklch(0.9436 0.0051 228.8204);
+  --border: oklch(0.92 0.0051 228.8204);
+  --input: oklch(0.92 0.0051 228.8204);
   --ring: oklch(0.761 0.2015 149.7403);
   --chart-1: oklch(0.761 0.2015 149.7403);
   --chart-2: oklch(0.4335 0.0754 182.2315);
@@ -42,7 +42,7 @@
   --font-mono:
     SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New,
     monospace;
-  --radius: 1rem;
+  --radius: 0.5rem;
   --shadow-x: 0px;
   --shadow-y: 2px;
   --shadow-blur: 10px;
@@ -106,7 +106,7 @@
   --font-mono:
     SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New,
     monospace;
-  --radius: 1rem;
+  --radius: 0.5rem;
   --shadow-x: 0px;
   --shadow-y: 4px;
   --shadow-blur: 12px;
@@ -187,5 +187,13 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  button:enabled,
+  input[type='button']:enabled,
+  input[type='submit']:enabled,
+  input[type='reset']:enabled,
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
   }
 }
