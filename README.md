@@ -27,7 +27,7 @@ Edit `.env` from `.env.example`: **`VITE_API_URL`** and **`VITE_APP_DOMAIN`** ar
 
 **Player flow:** login → discover page → match cards, filters, pagination — documented in **[Player flow](docs/player-flow.md)**.
 
-**Release notes:** **[Changelog](CHANGELOG.md)** — notable changes by version.
+**Admin surfaces:** **[Admin features](docs/admin-features.md)** — platform admin vs tenant operator features, routes, and roles.
 
 ## Scripts
 

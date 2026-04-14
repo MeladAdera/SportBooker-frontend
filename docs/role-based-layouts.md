@@ -4,13 +4,13 @@ This document describes the **player**, **operator** (tenant staff), and **platf
 
 ## Quick reference
 
-| Role(s)                                       | Layout component                                                       | Default URL after login / `/`                                |
-| --------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `player`, `member`                            | [`PlayerLayout`](../src/shared/layouts/PlayerLayout.tsx)               | `/home` ([`getRoleHomePath`](../src/features/auth/utils.ts)) |
-| `super_admin`, `tenant_admin`, `tenant_staff` | [`OperatorLayout`](../src/shared/layouts/OperatorLayout.tsx)           | `/dashboard`                                                 |
-| `platform_admin`                              | [`PlatformAdminLayout`](../src/shared/layouts/PlatformAdminLayout.tsx) | `/admin/tenants`                                             |
+| Role(s)                                       | Layout component                                                       | Default URL after login / `/`                                              |
+| --------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `player`, `member`                            | [`PlayerLayout`](../src/shared/layouts/PlayerLayout.tsx)               | `/home` ([`getRoleHomePath`](../src/features/auth/utils.ts))               |
+| `super_admin`, `tenant_admin`, `tenant_staff` | [`OperatorLayout`](../src/shared/layouts/OperatorLayout.tsx)           | `/operator/dashboard` ([`getRoleHomePath`](../src/features/auth/utils.ts)) |
+| `platform_admin`                              | [`PlatformAdminLayout`](../src/shared/layouts/PlatformAdminLayout.tsx) | `/admin/tenants`                                                           |
 
-**How routing picks a shell:** route guards wrap nested routes and render the matching layout + [`Outlet`](https://reactrouter.com/en/main/components/outlet). There is no single “layout switch” component; the **first guard whose role matches** owns the tree for that URL segment (see [App routes](#app-routes) below).
+**How routing picks a shell:** route guards wrap nested routes and render the matching layout + [`Outlet`](https://reactrouter.com/en/main/components/outlet). Operator URLs live under the path segment **`/operator`** (see [App routes](#app-routes) below) so they do not collide with player routes such as `matches/:id` (both roles used to register the same path; React Router would match the player branch first and redirect operators to `/403`).
 
 ---
 
@@ -48,19 +48,19 @@ This document describes the **player**, **operator** (tenant staff), and **platf
 
 - **Desktop:** persistent **left sidebar** (`md+`), same width pattern as player (`w-56` / `lg:w-64`).
 - **Mobile:** sidebar is **not** always visible. A **hamburger** row opens a **slide-in drawer** (overlay + panel). Drawer closes on route change, Escape, or overlay click. Body scroll is locked while open.
-- **Tenant Settings:** nav item `to="/settings"`, `superAdminOnly: true`. Items with `superAdminOnly` are **omitted from the list** for non–`super_admin` users (not shown disabled).
+- **Tenant Settings:** nav item `to="/operator/settings"`, `superAdminOnly: true`. Items with `superAdminOnly` are **omitted from the list** for non–`super_admin` users (not shown disabled).
 - **Account:** nav item `to="/account"` (i18n `operator.nav.account`). Ensure a matching route exists under `OperatorRoute` when the account screen is built.
 
 **Navigation targets:**
 
-| Path         | i18n key (`operator` namespace) | Visibility                                 |
-| ------------ | ------------------------------- | ------------------------------------------ |
-| `/dashboard` | `nav.dashboard`                 | All operators                              |
-| `/matches`   | `nav.matches`                   | All operators                              |
-| `/venues`    | `nav.venues`                    | All operators                              |
-| `/players`   | `nav.players`                   | All operators                              |
-| `/settings`  | `nav.tenantSettings`            | **`super_admin` only** (hidden for others) |
-| `/account`   | `nav.account`                   | All operators                              |
+| Path                  | i18n key (`operator` namespace) | Visibility                                 |
+| --------------------- | ------------------------------- | ------------------------------------------ |
+| `/operator/dashboard` | `nav.dashboard`                 | All operators                              |
+| `/operator/matches`   | `nav.matches`                   | All operators                              |
+| `/operator/venues`    | `nav.venues`                    | All operators                              |
+| `/operator/players`   | `nav.players`                   | All operators                              |
+| `/operator/settings`  | `nav.tenantSettings`            | **`super_admin` only** (hidden for others) |
+| `/account`            | `nav.account`                   | All operators (route TBD)                  |
 
 **App bar:** [`AppBar`](#4-app-bar-tenant-branding-and-actions) with `profilePath="/account"` (dropdown “Profile” navigates there).
 
@@ -124,9 +124,9 @@ This document describes the **player**, **operator** (tenant staff), and **platf
 
 ## 6. App routes (snapshot)
 
-Defined in [`src/App.tsx`](../src/App.tsx). Public: `/login`, `/register`, `/forgot-password`, `/reset-password`, `/403`, `/discover` → `/home`. Protected children include player paths (`home`, `bookings`, `wallet`, `profile`), operator paths (`dashboard`, `matches`, `venues`, `players`, `settings`), and platform admin (`admin/tenants`, `admin/profile`).
+Defined in [`src/App.tsx`](../src/App.tsx). Public: `/login`, `/register`, `/forgot-password`, `/reset-password`, `/403`, `/discover` → `/home`. Protected children include player paths (`home`, `matches/:id`, `bookings`, `wallet`, `profile`, …), operator paths under **`path="operator"`** (`dashboard`, `matches`, `matches/:id`, `venues`, `players`, `settings`), and platform admin (`admin/tenants`, `admin/profile`).
 
-**Note:** If the operator UI links to `/account`, add a sibling `<Route path="account" element={...} />` under `OperatorRoute` when that page exists.
+**Note:** If the operator UI links to `/account`, add a matching route when that page exists (e.g. under `OperatorRoute` or shared `ProtectedRoute`).
 
 ---
 

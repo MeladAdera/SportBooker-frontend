@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useDebounce } from '@/shared/hooks';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -529,6 +530,8 @@ export function MatchListPage() {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [page, setPage] = useState(1);
 
+  const debouncedSearch = useDebounce(filters.search, 400);
+
   const queryParams = useMemo(
     () => ({
       page,
@@ -538,9 +541,9 @@ export function MatchListPage() {
       ...(filters.sport ? { sportType: filters.sport } : {}),
       ...(filters.dateFrom ? { dateFrom: filters.dateFrom } : {}),
       ...(filters.dateTo ? { dateTo: filters.dateTo } : {}),
-      ...(filters.search ? { search: filters.search } : {}),
+      ...(debouncedSearch ? { search: debouncedSearch } : {}),
     }),
-    [filters, page],
+    [filters, page, debouncedSearch],
   );
 
   const { data, isLoading, isError } =
@@ -567,15 +570,15 @@ export function MatchListPage() {
   }
 
   function handleView(id: string) {
-    navigate(`/matches/${id}`);
+    navigate(`/operator/matches/${id}`);
   }
 
   function handleEdit(id: string) {
-    navigate(`/matches/${id}/edit`);
+    navigate(`/operator/matches/${id}/edit`);
   }
 
   function handleCancel(id: string) {
-    navigate(`/matches/${id}/cancel`);
+    navigate(`/operator/matches/${id}/cancel`);
   }
 
   const actionProps = {
@@ -592,7 +595,7 @@ export function MatchListPage() {
         <h1 className="text-xl font-semibold text-foreground">
           {t('matches.title')}
         </h1>
-        <Button size="sm" onClick={() => navigate('/matches/new')}>
+        <Button size="sm" onClick={() => navigate('/operator/matches/new')}>
           {t('matches.actions.create', { defaultValue: 'New Match' })}
         </Button>
       </div>

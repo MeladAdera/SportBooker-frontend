@@ -63,6 +63,37 @@
     "tenantSettings": "Tenant Settings",
     "account": "Account"
   },
+  "matchDetail": {
+    "back": "Back to Matches",
+    "edit": "Edit Match",
+    "cancel": "Cancel Match",
+    "info": {
+      "venue": "Venue",
+      "venuePhotoAlt": "Photo of {{venue}}",
+      "openInMaps": "Open in Maps",
+      "date": "Date",
+      "time": "Time",
+      "duration": "{{mins}} min",
+      "price": "{{price}} / player",
+      "capacity": "Capacity"
+    },
+    "roster": {
+      "title": "Confirmed Players",
+      "empty": "No confirmed players yet.",
+      "position": {
+        "field_player": "Field Player",
+        "goalkeeper": "Goalkeeper"
+      }
+    },
+    "waitlist": {
+      "title": "Waitlist",
+      "apiGapNotice": "Waitlist data is not yet available from the API."
+    },
+    "error": {
+      "notFound": "Match not found.",
+      "goBack": "Go back"
+    }
+  },
   "settings": {
     "title": "Settings",
     "ziina": {

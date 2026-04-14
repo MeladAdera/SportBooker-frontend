@@ -26,12 +26,16 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { to: '/dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard },
-  { to: '/matches', labelKey: 'nav.matches', icon: Swords },
-  { to: '/venues', labelKey: 'nav.venues', icon: Building2 },
-  { to: '/players', labelKey: 'nav.players', icon: Users },
   {
-    to: '/settings',
+    to: '/operator/dashboard',
+    labelKey: 'nav.dashboard',
+    icon: LayoutDashboard,
+  },
+  { to: '/operator/matches', labelKey: 'nav.matches', icon: Swords },
+  { to: '/operator/venues', labelKey: 'nav.venues', icon: Building2 },
+  { to: '/operator/players', labelKey: 'nav.players', icon: Users },
+  {
+    to: '/operator/settings',
     labelKey: 'nav.tenantSettings',
     icon: Settings,
     superAdminOnly: true,

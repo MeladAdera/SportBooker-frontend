@@ -8,7 +8,7 @@ import { useAuthStore } from '@/stores/authStore';
  *
  * Place this as the index route inside <ProtectedRoute> so that hitting "/"
  * while authenticated always lands the user at the correct starting page for
- * their role (e.g. operators → /dashboard, platform admins → /admin/tenants).
+ * their role (e.g. operators → /operator/dashboard, platform admins → /admin/tenants).
  *
  * The actual layout and route guards (PlayerRoute, OperatorRoute,
  * PlatformAdminRoute) are responsible for rendering the correct shell and

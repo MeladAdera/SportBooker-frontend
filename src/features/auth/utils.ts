@@ -7,7 +7,7 @@ export function getRoleHomePath(role: string): string {
   const r = normalizeRole(role);
   if (r === 'platform_admin') return '/admin/tenants';
   if (['super_admin', 'tenant_admin', 'tenant_staff'].includes(r)) {
-    return '/dashboard';
+    return '/operator/dashboard';
   }
   if (r === 'player' || r === 'member') return '/home';
   return '/home';
