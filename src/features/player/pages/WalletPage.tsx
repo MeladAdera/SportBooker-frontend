@@ -335,6 +335,7 @@ export function WalletPage() {
   const [typeFilter, setTypeFilter] = useState<TxType>('all');
   const [dateRange, setDateRange] = useState<DateRange>({ from: '', to: '' });
   const [topUpOpen, setTopUpOpen] = useState(false);
+  const [spinning, setSpinning] = useState(false);
 
   const { data, isLoading, isFetching, isError, refetch } =
     useUsersControllerGetMyWallet({ page, limit: PAGE_SIZE });
@@ -386,12 +387,18 @@ export function WalletPage() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => refetch()}
+          onClick={() => {
+            setSpinning(true);
+            refetch();
+          }}
           disabled={isFetching}
           aria-label={t('wallet.refresh')}
         >
           <RefreshCw
-            className={cn('size-4', isFetching && 'animate-spin')}
+            className={cn('size-4', spinning && 'animate-spin')}
+            onAnimationIteration={() => {
+              if (!isFetching) setSpinning(false);
+            }}
             aria-hidden
           />
         </Button>
