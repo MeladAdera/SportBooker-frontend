@@ -91,7 +91,10 @@ export function PlayerLayout({ children }: Props) {
         aria-label="Main navigation"
       >
         {NAV_ITEMS.map((item) => (
-          <div key={item.to} className="flex flex-1 items-stretch">
+          <div
+            key={item.to}
+            className="flex flex-1 items-stretch justify-center"
+          >
             <PlayerNavItem item={item} variant="bottom" />
           </div>
         ))}

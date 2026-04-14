@@ -1,4 +1,3 @@
-import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
@@ -60,11 +59,9 @@ if (useAuthStore.persist.hasHydrated()) {
 }
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <HtmlLangDir />
-      <App />
-      <Toaster richColors position="top-right" />
-    </QueryClientProvider>
-  </StrictMode>,
+  <QueryClientProvider client={queryClient}>
+    <HtmlLangDir />
+    <App />
+    <Toaster richColors position="top-right" />
+  </QueryClientProvider>,
 );
