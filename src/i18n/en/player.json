@@ -179,7 +179,14 @@
     "balanceLabel": "Available Balance",
     "refresh": "Refresh wallet",
     "error": "Failed to load wallet. Please try again.",
+    "lowBalance": {
+      "title": "Your balance is running low",
+      "description": "You may not have enough to book a match. Top up now to secure your spot.",
+      "action": "Top Up"
+    },
     "empty": "No transactions yet",
+    "emptyDescription": "Top up your wallet to start booking matches.",
+    "emptyAction": "Top Up Now",
     "types": {
       "deduction": "Deduction",
       "refund": "Refund",

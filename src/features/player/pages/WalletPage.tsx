@@ -17,8 +17,10 @@ import {
   PlusCircle,
   Receipt,
   RefreshCw,
+  TriangleAlert,
 } from 'lucide-react';
 
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -42,6 +44,7 @@ import { TopUpModal } from '../components/TopUpModal';
 // ── Constants ──────────────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 15;
+const LOW_BALANCE_THRESHOLD = 50;
 
 type TxType = WalletTransactionItemDto['type'] | 'all';
 
@@ -316,12 +319,21 @@ function Pagination({
 
 // ── Empty state ────────────────────────────────────────────────────────────────
 
-function EmptyState() {
+function EmptyState({ onTopUp }: { onTopUp: () => void }) {
   const { t } = useTranslation('player');
   return (
-    <div className="flex flex-col items-center justify-center gap-3 py-16 text-center text-muted-foreground">
+    <div className="flex flex-col items-center justify-center gap-4 py-16 text-center text-muted-foreground">
       <Receipt className="size-10 opacity-40" aria-hidden />
-      <p className="text-base font-medium">{t('wallet.empty')}</p>
+      <div className="flex flex-col gap-1">
+        <p className="text-base font-medium text-foreground">
+          {t('wallet.empty')}
+        </p>
+        <p className="text-sm">{t('wallet.emptyDescription')}</p>
+      </div>
+      <Button size="sm" onClick={onTopUp}>
+        <PlusCircle className="size-4" aria-hidden />
+        {t('wallet.emptyAction')}
+      </Button>
     </div>
   );
 }
@@ -410,6 +422,16 @@ export function WalletPage() {
         onTopUp={handleTopUp}
       />
 
+      {!isLoading && balance < LOW_BALANCE_THRESHOLD && (
+        <Alert className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400 [&>svg]:text-amber-500">
+          <TriangleAlert className="size-4" />
+          <AlertTitle>{t('wallet.lowBalance.title')}</AlertTitle>
+          <AlertDescription className="text-amber-700/80 dark:text-amber-400/80">
+            {t('wallet.lowBalance.description')}
+          </AlertDescription>
+        </Alert>
+      )}
+
       {isError && (
         <p
           role="alert"
@@ -450,7 +472,7 @@ export function WalletPage() {
               <TransactionSkeleton key={i} />
             ))
           ) : filtered.length === 0 ? (
-            <EmptyState />
+            <EmptyState onTopUp={handleTopUp} />
           ) : (
             filtered.map((tx) => <TransactionRow key={tx.id} tx={tx} />)
           )}
