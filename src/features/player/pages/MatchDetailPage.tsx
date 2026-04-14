@@ -28,6 +28,7 @@ import { CancelBookingModal } from '@/features/player/components/CancelBookingMo
 import { MAX_GK } from '@/features/player/constants';
 import { unwrap } from '@/api';
 import { useAuthStore } from '@/stores/authStore';
+import type { MatchWaitlistPlayerDto } from '@/api/generated/models/matchWaitlistPlayerDto';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -72,10 +73,19 @@ const SPORT_ICONS: Record<string, React.ElementType> = {
 
 // ── Capacity bar ──────────────────────────────────────────────────────────────
 
-function CapacityBar({ confirmed, max }: { confirmed: number; max: number }) {
+function CapacityBar({
+  confirmed,
+  max,
+  waitlistCount = 0,
+}: {
+  confirmed: number;
+  max: number;
+  waitlistCount?: number;
+}) {
   const { t } = useTranslation('player');
   const pct = max > 0 ? Math.min((confirmed / max) * 100, 100) : 0;
   const isFull = confirmed >= max;
+  const spotsLeft = max - confirmed;
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -105,6 +115,20 @@ function CapacityBar({ confirmed, max }: { confirmed: number; max: number }) {
           aria-valuemax={max}
         />
       </div>
+      <p
+        className={cn(
+          'text-xs',
+          isFull ? 'text-destructive' : 'text-muted-foreground',
+        )}
+      >
+        {isFull
+          ? waitlistCount > 0
+            ? t('matchDetail.capacity.fullWithWaitlist', {
+                count: waitlistCount,
+              })
+            : t('matchDetail.capacity.full')
+          : t('matchDetail.capacity.spotsLeft', { count: spotsLeft })}
+      </p>
     </div>
   );
 }
@@ -169,16 +193,80 @@ function RosterList({ roster }: { roster: MatchDetailResponseDto['roster'] }) {
   );
 }
 
+// ── Waitlist list ─────────────────────────────────────────────────────────────
+
+function WaitlistList({
+  waitlist,
+  currentUserId,
+}: {
+  waitlist: MatchWaitlistPlayerDto[];
+  currentUserId: string | undefined;
+}) {
+  const { t } = useTranslation('player');
+
+  if (waitlist.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        {t('matchDetail.waitlist.empty')}
+      </p>
+    );
+  }
+
+  return (
+    <ul className="divide-y divide-border">
+      {waitlist.map((player) => {
+        const isMe = currentUserId === player.userId;
+        return (
+          <li
+            key={player.userId}
+            className={cn(
+              'flex items-center gap-3 py-2.5',
+              isMe && 'bg-primary/5 -mx-2 px-2 rounded-lg',
+            )}
+          >
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-[10px] font-bold tabular-nums text-amber-700 dark:text-amber-400">
+              {player.queuePosition}
+            </span>
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium uppercase text-muted-foreground">
+              {player.name.charAt(0)}
+            </div>
+            <span
+              className={cn(
+                'flex-1 text-sm font-medium',
+                isMe ? 'text-primary' : 'text-foreground',
+              )}
+            >
+              {player.name}
+            </span>
+            <Badge variant="outline" className="shrink-0 text-xs capitalize">
+              {t(`matchDetail.roster.position.${player.position}`, {
+                defaultValue: player.position.replace('_', ' '),
+              })}
+            </Badge>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 // ── Booking CTA ───────────────────────────────────────────────────────────────
 
 type BookingCtaProps = {
   match: MatchDetailResponseDto;
   myBooking: MyBookingItemDto | undefined;
+  myWaitlistPosition: number | null;
   onBook: () => void;
   onCancel: () => void;
 };
 
-function BookingCta({ match, myBooking, onBook, onCancel }: BookingCtaProps) {
+function BookingCta({
+  match,
+  myBooking,
+  myWaitlistPosition,
+  onBook,
+  onCancel,
+}: BookingCtaProps) {
   const { t } = useTranslation('player');
 
   const matchInPast = isPast(match.scheduledAt);
@@ -221,7 +309,13 @@ function BookingCta({ match, myBooking, onBook, onCancel }: BookingCtaProps) {
     return (
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
-          <Badge variant="secondary">{t('matchDetail.cta.onWaitlist')}</Badge>
+          <Badge variant="secondary">
+            {myWaitlistPosition
+              ? t('matchDetail.cta.onWaitlistPosition', {
+                  position: myWaitlistPosition,
+                })
+              : t('matchDetail.cta.onWaitlist')}
+          </Badge>
         </div>
         <Button
           variant="outline"
@@ -326,6 +420,14 @@ export function MatchDetailPage() {
   const myBookingId = myBookingForThisMatch?.id;
 
   const confirmedCount = match ? match.maxCapacity - match.spotsRemaining : 0;
+
+  const waitlist = match?.waitlist ?? [];
+  const waitlistCount = match?.waitlistCount ?? waitlist.length;
+
+  const myWaitlistEntry = currentUserId
+    ? waitlist.find((p) => p.userId === currentUserId)
+    : undefined;
+  const myWaitlistPosition = myWaitlistEntry?.queuePosition ?? null;
 
   const SportIcon = match
     ? (SPORT_ICONS[match.sportType] ?? Dumbbell)
@@ -451,7 +553,11 @@ export function MatchDetailPage() {
           {/* Capacity + GK */}
           <Card>
             <CardContent className="flex flex-col gap-4 pt-5">
-              <CapacityBar confirmed={confirmedCount} max={match.maxCapacity} />
+              <CapacityBar
+                confirmed={confirmedCount}
+                max={match.maxCapacity}
+                waitlistCount={waitlistCount}
+              />
               <GkSlots roster={match.roster} />
             </CardContent>
           </Card>
@@ -460,6 +566,7 @@ export function MatchDetailPage() {
           <BookingCta
             match={match}
             myBooking={myBookingForThisMatch}
+            myWaitlistPosition={myWaitlistPosition}
             onBook={() => setBookingOpen(true)}
             onCancel={() => setCancelOpen(true)}
           />
@@ -490,6 +597,33 @@ export function MatchDetailPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Waitlist */}
+          {waitlist.length > 0 && (
+            <div className="flex flex-col gap-3">
+              <h2 className="text-sm font-semibold text-foreground">
+                {t('matchDetail.waitlist.title')} ({waitlistCount})
+              </h2>
+
+              {myWaitlistPosition && (
+                <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm font-medium text-amber-700 dark:text-amber-400">
+                  <Clock className="size-4 shrink-0" aria-hidden />
+                  {t('matchDetail.waitlist.yourPosition', {
+                    position: myWaitlistPosition,
+                  })}
+                </div>
+              )}
+
+              <Card>
+                <CardContent className="pt-2 pb-2">
+                  <WaitlistList
+                    waitlist={waitlist}
+                    currentUserId={currentUserId}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       )}
     </div>

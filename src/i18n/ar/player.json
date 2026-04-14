@@ -15,7 +15,11 @@
       "perPlayer": "/ لاعب"
     },
     "capacity": {
-      "label": "المقاعد"
+      "label": "اللاعبون المؤكدون",
+      "spotsLeft": "{{count}} مقعد متبقي",
+      "spotsLeft_other": "{{count}} مقاعد متبقية",
+      "full": "المباراة اكتملت",
+      "fullWithWaitlist": "مكتمل · {{count}} في الانتظار"
     },
     "gkSlots": {
       "label": "حراس المرمى"
@@ -28,6 +32,12 @@
         "goalkeeper": "حارس مرمى"
       }
     },
+    "waitlist": {
+      "title": "قائمة الانتظار",
+      "empty": "لا يوجد أحد في قائمة الانتظار.",
+      "yourPosition": "أنت رقم #{{position}} في قائمة الانتظار",
+      "position": "#{{position}}"
+    },
     "cta": {
       "bookNow": "احجز الآن",
       "booking": "جارٍ الحجز…",
@@ -35,6 +45,7 @@
       "joining": "جارٍ الانضمام…",
       "alreadyBooked": "أنت محجوز",
       "onWaitlist": "أنت في قائمة الانتظار",
+      "onWaitlistPosition": "أنت رقم #{{position}} في قائمة الانتظار",
       "cancelBooking": "إلغاء الحجز",
       "leaveWaitlist": "مغادرة قائمة الانتظار",
       "cancelling": "جارٍ الإلغاء…",
@@ -75,7 +86,8 @@
       "viewBookings": "عرض حجوزاتي"
     },
     "waitlist": {
-      "title": "أنت في قائمة الانتظار",
+      "title": "أنت في قائمة الانتظار (#{{position}})",
+      "titleNoPosition": "أنت في قائمة الانتظار",
       "charged": "تم احتجاز {{amount}} من محفظتك",
       "refundPromise": "سيتم استرداد المبلغ كاملاً إذا ألغيت أو لم تحصل على مقعد مؤكد.",
       "estimatedBalance": "الرصيد المتوقع: {{balance}}",
@@ -226,7 +238,9 @@
     },
     "card": {
       "spotsRemaining": "{{booked}} / {{total}} مقعد",
-      "pricePerPlayer": "{{price}} / لاعب"
+      "fullWithWaitlist": "مكتمل · {{count}} في الانتظار",
+      "pricePerPlayer": "{{price}} / لاعب",
+      "joinWaitlist": "انضم للانتظار"
     },
     "status": {
       "open": "متاح",

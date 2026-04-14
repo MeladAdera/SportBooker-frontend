@@ -75,7 +75,14 @@
       "time": "Time",
       "duration": "{{mins}} min",
       "price": "{{price}} / player",
+      "perPlayer": "/ player",
       "capacity": "Capacity"
+    },
+    "capacity": {
+      "label": "Players confirmed",
+      "spotsLeft": "{{count}} spot left",
+      "spotsLeft_other": "{{count}} spots left",
+      "full": "Match is full"
     },
     "roster": {
       "title": "Confirmed Players",
@@ -87,7 +94,27 @@
     },
     "waitlist": {
       "title": "Waitlist",
-      "apiGapNotice": "Waitlist data is not yet available from the API."
+      "empty": "No one on the waitlist.",
+      "position": "#{{position}}",
+      "table": {
+        "position": "#",
+        "player": "Player",
+        "email": "Email",
+        "role": "Position",
+        "paid": "Paid",
+        "joinedAt": "Joined",
+        "actions": "Actions"
+      },
+      "kick": "Remove",
+      "kicking": "Removing…",
+      "kickSuccess": "Player removed from waitlist. {{amount}} refunded.",
+      "kickError": "Failed to remove player. Please try again.",
+      "kickConfirm": {
+        "title": "Remove from Waitlist",
+        "body": "This will remove {{name}} from the waitlist and refund their payment. This does not trigger promotion.",
+        "confirm": "Remove",
+        "cancel": "Cancel"
+      }
     },
     "error": {
       "notFound": "Match not found.",

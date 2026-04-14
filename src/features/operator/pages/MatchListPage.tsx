@@ -276,11 +276,19 @@ function DesktopTable({
       }),
       colHelper.accessor('confirmedCount', {
         header: t('matches.table.players'),
-        cell: (info) => (
-          <span className="text-sm tabular-nums">
-            {info.getValue()} / {info.row.original.maxCapacity}
-          </span>
-        ),
+        cell: (info) => {
+          const m = info.row.original;
+          return (
+            <span className="text-sm tabular-nums">
+              {info.getValue()} / {m.maxCapacity}
+              {m.waitlistCount > 0 && (
+                <span className="ms-1.5 text-xs text-muted-foreground">
+                  (+{m.waitlistCount} wl)
+                </span>
+              )}
+            </span>
+          );
+        },
       }),
       colHelper.display({
         id: 'actions',
@@ -290,20 +298,16 @@ function DesktopTable({
           const isCancelled = info.row.original.status === 'cancelled';
           return (
             <div className="flex flex-wrap items-center gap-1.5">
-              <Button variant="secondary" size="lg" onClick={() => onView(id)}>
+              <Button variant="secondary" onClick={() => onView(id)}>
                 {t('matches.actions.view')}
               </Button>
               {!isCancelled && (
-                <Button variant="outline" size="lg" onClick={() => onEdit(id)}>
+                <Button variant="outline" onClick={() => onEdit(id)}>
                   {t('matches.actions.edit')}
                 </Button>
               )}
               {canCancel && !isCancelled && (
-                <Button
-                  variant="destructive"
-                  size="lg"
-                  onClick={() => onCancel(id)}
-                >
+                <Button variant="destructive" onClick={() => onCancel(id)}>
                   {t('matches.actions.cancel')}
                 </Button>
               )}
@@ -377,6 +381,7 @@ function MobileMatchCard({
 }: MobileCardProps) {
   const { t } = useTranslation('operator');
   const isCancelled = match.status === 'cancelled';
+  const waitlistCount = match.waitlistCount;
 
   return (
     <Card>
@@ -408,6 +413,11 @@ function MobileMatchCard({
             {t('matches.table.players')}:{' '}
             <span className="text-foreground tabular-nums">
               {match.confirmedCount} / {match.maxCapacity}
+              {waitlistCount > 0 && (
+                <span className="ms-1 text-muted-foreground">
+                  (+{waitlistCount} wl)
+                </span>
+              )}
             </span>
           </span>
         </div>

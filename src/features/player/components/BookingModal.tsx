@@ -129,6 +129,12 @@ function SuccessScreen({
       : null;
 
   if (isWaitlist) {
+    const waitlistPosition =
+      (booking.waitlistPosition as number | null) ?? null;
+    const waitlistNotice =
+      (booking.waitlistNotice as string | null) ??
+      t('booking.waitlist.refundPromise');
+
     return (
       <div className="flex flex-col items-center gap-4 py-2 text-center">
         <span className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/10">
@@ -139,7 +145,9 @@ function SuccessScreen({
         </span>
         <div className="flex flex-col gap-1">
           <p className="text-base font-semibold text-foreground">
-            {t('booking.waitlist.title')}
+            {waitlistPosition
+              ? t('booking.waitlist.title', { position: waitlistPosition })
+              : t('booking.waitlist.titleNoPosition')}
           </p>
           <p className="text-sm text-muted-foreground">
             {t('booking.waitlist.charged', {
@@ -148,7 +156,7 @@ function SuccessScreen({
           </p>
         </div>
         <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-xs text-amber-700 dark:text-amber-400">
-          {t('booking.waitlist.refundPromise')}
+          {waitlistNotice}
         </p>
         {optimisticBalance != null && (
           <p className="text-xs text-muted-foreground">

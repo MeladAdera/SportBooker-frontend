@@ -15,7 +15,11 @@
       "perPlayer": "/ player"
     },
     "capacity": {
-      "label": "Spots"
+      "label": "Players confirmed",
+      "spotsLeft": "{{count}} spot left",
+      "spotsLeft_other": "{{count}} spots left",
+      "full": "Match is full",
+      "fullWithWaitlist": "Full · {{count}} on waitlist"
     },
     "gkSlots": {
       "label": "Goalkeepers"
@@ -28,6 +32,12 @@
         "goalkeeper": "Goalkeeper"
       }
     },
+    "waitlist": {
+      "title": "Waitlist",
+      "empty": "No one on the waitlist.",
+      "yourPosition": "You are #{{position}} on the waitlist",
+      "position": "#{{position}}"
+    },
     "cta": {
       "bookNow": "Book Now",
       "booking": "Booking…",
@@ -35,6 +45,7 @@
       "joining": "Joining…",
       "alreadyBooked": "You're in",
       "onWaitlist": "You're on the waitlist",
+      "onWaitlistPosition": "You're #{{position}} on the waitlist",
       "cancelBooking": "Cancel Booking",
       "leaveWaitlist": "Leave Waitlist",
       "cancelling": "Cancelling…",
@@ -76,7 +87,8 @@
       "viewBookings": "View My Bookings"
     },
     "waitlist": {
-      "title": "You're on the waitlist",
+      "title": "You're on the waitlist (#{{position}})",
+      "titleNoPosition": "You're on the waitlist",
       "charged": "{{amount}} held from your wallet",
       "refundPromise": "Full refund if you cancel or don't get promoted to a confirmed spot.",
       "estimatedBalance": "Estimated new balance: {{balance}}",
@@ -256,7 +268,9 @@
     },
     "card": {
       "spotsRemaining": "{{booked}} / {{total}} spots",
-      "pricePerPlayer": "{{price}} / player"
+      "fullWithWaitlist": "Full · {{count}} on waitlist",
+      "pricePerPlayer": "{{price}} / player",
+      "joinWaitlist": "Join Waitlist"
     },
     "status": {
       "open": "Open",

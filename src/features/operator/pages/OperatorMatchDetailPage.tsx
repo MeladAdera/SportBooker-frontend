@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -7,24 +8,42 @@ import {
   Coins,
   Dumbbell,
   ExternalLink,
-  Info,
   MapPin,
   Shield,
+  Trash2,
   Users,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import { useMatchesControllerGetById } from '@/api/generated/matches/matches';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  useMatchesControllerGetById,
+  getMatchesControllerGetByIdQueryKey,
+} from '@/api/generated/matches/matches';
 import { BookingPosition } from '@/api/generated/models/bookingPosition';
 import { MatchDetailResponseDtoStatus } from '@/api/generated/models/matchDetailResponseDtoStatus';
 import type { MatchDetailResponseDto } from '@/api/generated/models/matchDetailResponseDto';
 import { unwrap } from '@/api';
 import { normalizeRole } from '@/lib/roles';
 import { useAuthStore } from '@/stores/authStore';
+import {
+  useMatchesControllerGetWaitlist,
+  getMatchesControllerGetWaitlistQueryKey,
+  useMatchesControllerRemoveFromWaitlist,
+} from '@/api/generated/matches/matches';
+import type { OperatorWaitlistEntryDto } from '@/api/generated/models/operatorWaitlistEntryDto';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -90,12 +109,13 @@ function CapacityBar({ confirmed, max }: { confirmed: number; max: number }) {
   const { t } = useTranslation('operator');
   const pct = max > 0 ? Math.min((confirmed / max) * 100, 100) : 0;
   const isFull = confirmed >= max;
+  const spotsLeft = max - confirmed;
 
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between text-sm">
         <span className="text-muted-foreground">
-          {t('matchDetail.info.capacity')}
+          {t('matchDetail.capacity.label')}
         </span>
         <span
           className={cn(
@@ -119,6 +139,16 @@ function CapacityBar({ confirmed, max }: { confirmed: number; max: number }) {
           aria-valuemax={max}
         />
       </div>
+      <p
+        className={cn(
+          'text-xs',
+          isFull ? 'text-destructive' : 'text-muted-foreground',
+        )}
+      >
+        {isFull
+          ? t('matchDetail.capacity.full')
+          : t('matchDetail.capacity.spotsLeft', { count: spotsLeft })}
+      </p>
     </div>
   );
 }
@@ -190,6 +220,229 @@ function DetailSkeleton() {
       <Skeleton className="h-4 w-1/4" />
       <Skeleton className="h-2 w-full" />
     </div>
+  );
+}
+
+// ── Kick confirm dialog ─────────────────────────────────────────────────────
+
+function KickConfirmDialog({
+  entry,
+  matchId,
+  open,
+  onOpenChange,
+}: {
+  entry: OperatorWaitlistEntryDto | null;
+  matchId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const { t } = useTranslation('operator');
+  const qc = useQueryClient();
+  const kick = useMatchesControllerRemoveFromWaitlist({
+    mutation: {
+      onSuccess: () => {
+        void qc.invalidateQueries({
+          queryKey: getMatchesControllerGetWaitlistQueryKey(matchId),
+        });
+        void qc.invalidateQueries({
+          queryKey: getMatchesControllerGetByIdQueryKey(matchId),
+        });
+        onOpenChange(false);
+      },
+    },
+  });
+
+  function handleConfirm() {
+    if (!entry) return;
+    kick.mutate({ matchId, bookingId: entry.bookingId });
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onOpenChange(false)}>
+      <DialogContent showCloseButton={!kick.isPending}>
+        <DialogHeader>
+          <DialogTitle>
+            {t('matchDetail.waitlist.kickConfirm.title')}
+          </DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground">
+          {t('matchDetail.waitlist.kickConfirm.body', {
+            name: entry?.name ?? '',
+          })}
+        </p>
+        {kick.isError && (
+          <p
+            role="alert"
+            className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive"
+          >
+            {t('matchDetail.waitlist.kickError')}
+          </p>
+        )}
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={kick.isPending}
+          >
+            {t('matchDetail.waitlist.kickConfirm.cancel')}
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleConfirm}
+            disabled={kick.isPending}
+          >
+            {kick.isPending
+              ? t('matchDetail.waitlist.kicking')
+              : t('matchDetail.waitlist.kickConfirm.confirm')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Operator waitlist section ────────────────────────────────────────────────
+
+function OperatorWaitlistSection({
+  matchId,
+  canKick,
+}: {
+  matchId: string;
+  canKick: boolean;
+}) {
+  const { t } = useTranslation('operator');
+  const [kickTarget, setKickTarget] = useState<OperatorWaitlistEntryDto | null>(
+    null,
+  );
+
+  const {
+    data: waitlistData,
+    isLoading,
+    isError,
+  } = useMatchesControllerGetWaitlist(matchId);
+
+  const waitlist =
+    (unwrap(waitlistData) as unknown as
+      | OperatorWaitlistEntryDto[]
+      | undefined) ?? [];
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col gap-3 pt-4 pb-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-full" />
+          ))}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isError) {
+    return (
+      <p className="text-sm text-destructive">
+        {t('matchDetail.waitlist.kickError')}
+      </p>
+    );
+  }
+
+  if (waitlist.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        {t('matchDetail.waitlist.empty')}
+      </p>
+    );
+  }
+
+  return (
+    <>
+      <Card>
+        <CardContent className="overflow-x-auto pt-0 pb-0">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-xs text-muted-foreground">
+                <th className="py-2.5 pe-2 text-start font-medium">
+                  {t('matchDetail.waitlist.table.position')}
+                </th>
+                <th className="py-2.5 pe-2 text-start font-medium">
+                  {t('matchDetail.waitlist.table.player')}
+                </th>
+                <th className="hidden py-2.5 pe-2 text-start font-medium sm:table-cell">
+                  {t('matchDetail.waitlist.table.email')}
+                </th>
+                <th className="py-2.5 pe-2 text-start font-medium">
+                  {t('matchDetail.waitlist.table.role')}
+                </th>
+                <th className="py-2.5 pe-2 text-end font-medium">
+                  {t('matchDetail.waitlist.table.paid')}
+                </th>
+                {canKick && (
+                  <th className="py-2.5 text-end font-medium">
+                    {t('matchDetail.waitlist.table.actions')}
+                  </th>
+                )}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {waitlist.map((entry) => (
+                <tr key={entry.bookingId}>
+                  <td className="py-2.5 pe-2">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-500/20 text-[10px] font-bold tabular-nums text-amber-700 dark:text-amber-400">
+                      {entry.queuePosition}
+                    </span>
+                  </td>
+                  <td className="py-2.5 pe-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium uppercase text-muted-foreground">
+                        {entry.name.charAt(0)}
+                      </div>
+                      <span className="font-medium text-foreground">
+                        {entry.name}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="hidden py-2.5 pe-2 text-muted-foreground sm:table-cell">
+                    {entry.email}
+                  </td>
+                  <td className="py-2.5 pe-2">
+                    <Badge variant="outline" className="text-xs capitalize">
+                      {t(`matchDetail.roster.position.${entry.position}`, {
+                        defaultValue: entry.position.replace('_', ' '),
+                      })}
+                    </Badge>
+                  </td>
+                  <td className="py-2.5 pe-2 text-end tabular-nums text-foreground">
+                    {formatCurrency(parseFloat(entry.paidAmount))}
+                  </td>
+                  {canKick && (
+                    <td className="py-2.5 text-end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => setKickTarget(entry)}
+                      >
+                        <Trash2 className="size-3.5" aria-hidden />
+                        <span className="sr-only">
+                          {t('matchDetail.waitlist.kick')}
+                        </span>
+                      </Button>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
+
+      <KickConfirmDialog
+        entry={kickTarget}
+        matchId={matchId}
+        open={!!kickTarget}
+        onOpenChange={(open) => !open && setKickTarget(null)}
+      />
+    </>
   );
 }
 
@@ -383,9 +636,10 @@ export function OperatorMatchDetailPage() {
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Coins className="size-4 shrink-0" aria-hidden />
                 <span>
-                  {t('matchDetail.info.price', {
-                    price: match.pricePerPlayer,
-                  })}
+                  <span className="font-medium text-foreground">
+                    {formatCurrency(match.pricePerPlayer)}
+                  </span>{' '}
+                  {t('matchDetail.info.perPlayer')}
                 </span>
               </div>
 
@@ -406,15 +660,12 @@ export function OperatorMatchDetailPage() {
             </Card>
           </div>
 
-          {/* Waitlist — API gap placeholder */}
+          {/* Waitlist */}
           <div className="flex flex-col gap-3">
             <h2 className="text-sm font-semibold text-foreground">
               {t('matchDetail.waitlist.title')}
             </h2>
-            <div className="flex items-start gap-2.5 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-              <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
-              <p>{t('matchDetail.waitlist.apiGapNotice')}</p>
-            </div>
+            <OperatorWaitlistSection matchId={match.id} canKick={canCancel} />
           </div>
         </div>
       )}

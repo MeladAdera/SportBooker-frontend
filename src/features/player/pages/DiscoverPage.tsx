@@ -65,6 +65,7 @@ function MatchCard({ match }: { match: MatchBrowseItemDto }) {
   const Icon = SPORT_ICONS[match.sportType] ?? Dumbbell;
   const formattedDate = formatScheduledAt(match.scheduledAt);
   const bookedSpots = match.maxCapacity - match.spotsRemaining;
+  const waitlistCount = match.waitlistCount;
 
   return (
     <Card
@@ -112,10 +113,12 @@ function MatchCard({ match }: { match: MatchBrowseItemDto }) {
                 : 'text-muted-foreground',
           )}
         >
-          {t('discover.card.spotsRemaining', {
-            booked: bookedSpots,
-            total: match.maxCapacity,
-          })}
+          {match.spotsRemaining === 0 && waitlistCount > 0
+            ? t('discover.card.fullWithWaitlist', { count: waitlistCount })
+            : t('discover.card.spotsRemaining', {
+                booked: bookedSpots,
+                total: match.maxCapacity,
+              })}
         </span>
       </CardFooter>
     </Card>
