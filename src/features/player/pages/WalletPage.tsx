@@ -24,7 +24,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/format';
@@ -255,24 +255,27 @@ function DateRangeFilter({
 }) {
   const { t } = useTranslation('player');
 
+  const fromDate = value.from ? parseISO(value.from) : undefined;
+  const toDate = value.to ? parseISO(value.to) : undefined;
+
   return (
     <div className="flex items-center gap-2">
-      <Input
-        type="date"
-        value={value.from}
-        onChange={(e) => onChange({ ...value, from: e.target.value })}
-        className="w-36"
-        aria-label={t('wallet.filter.dateFrom')}
+      <DatePicker
+        value={fromDate}
+        onChange={(d) =>
+          onChange({ ...value, from: d ? d.toISOString().slice(0, 10) : '' })
+        }
         placeholder={t('wallet.filter.dateFrom')}
+        toDate={toDate}
       />
       <span className="text-xs text-muted-foreground">–</span>
-      <Input
-        type="date"
-        value={value.to}
-        onChange={(e) => onChange({ ...value, to: e.target.value })}
-        className="w-36"
-        aria-label={t('wallet.filter.dateTo')}
+      <DatePicker
+        value={toDate}
+        onChange={(d) =>
+          onChange({ ...value, to: d ? d.toISOString().slice(0, 10) : '' })
+        }
         placeholder={t('wallet.filter.dateTo')}
+        fromDate={fromDate}
       />
     </div>
   );
