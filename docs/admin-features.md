@@ -41,14 +41,15 @@ Users who run **one tenant’s** operations (matches, venues, players, settings)
 
 ### Routes (`src/App.tsx`)
 
-| Path                    | Feature         | Notes                                                                                                     |
-| ----------------------- | --------------- | --------------------------------------------------------------------------------------------------------- |
-| `/operator/dashboard`   | Dashboard       | KPIs from tenant matches API (month window)                                                               |
-| `/operator/matches`     | Match list      | Filters, pagination, TanStack Table / cards; search debounced (`useDebounce`)                             |
-| `/operator/matches/:id` | Match detail    | Full match + roster; waitlist section shows API-gap notice                                                |
-| `/operator/venues`      | Placeholder     | “Venues — coming soon”                                                                                    |
-| `/operator/players`     | Placeholder     | “Players — coming soon”                                                                                   |
-| `/operator/settings`    | Tenant settings | Ziina payment integration ([`TenantSettingsPage`](../src/features/operator/pages/TenantSettingsPage.tsx)) |
+| Path                    | Feature         | Notes                                                                                                             |
+| ----------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `/operator/dashboard`   | Dashboard       | KPIs from tenant matches API (month window)                                                                       |
+| `/operator/matches`     | Match list      | Filters, pagination, TanStack Table / cards; search debounced (`useDebounce`)                                     |
+| `/operator/matches/new` | Create match    | react-hook-form + zod; title, sport (Select), venue (searchable combobox), date + time, duration, capacity, price |
+| `/operator/matches/:id` | Match detail    | Full match + roster; waitlist section shows API-gap notice                                                        |
+| `/operator/venues`      | Placeholder     | “Venues — coming soon”                                                                                            |
+| `/operator/players`     | Placeholder     | “Players — coming soon”                                                                                           |
+| `/operator/settings`    | Tenant settings | Ziina payment integration ([`TenantSettingsPage`](../src/features/operator/pages/TenantSettingsPage.tsx))         |
 
 **Not implemented as routes yet:** `/account` is linked from the operator sidebar and app bar but has no matching route (documented in [role-based-layouts.md](role-based-layouts.md)).
 
@@ -56,6 +57,7 @@ Users who run **one tenant’s** operations (matches, venues, players, settings)
 
 | Capability                                 | `super_admin`          | `tenant_admin` | `tenant_staff` |
 | ------------------------------------------ | ---------------------- | -------------- | -------------- |
+| **Create match** (`/operator/matches/new`) | Yes                    | Yes            | Yes            |
 | **Cancel match** (list + detail)           | Yes                    | Yes            | No             |
 | **Tenant settings** (`/operator/settings`) | Yes (nav item visible) | Hidden         | Hidden         |
 
@@ -76,15 +78,16 @@ Implemented via [`normalizeRole`](../src/lib/roles.ts) checks in [`MatchListPage
 
 ## 4. Related source index
 
-| Concern                | Location                                                              |
-| ---------------------- | --------------------------------------------------------------------- |
-| Route table            | [`src/App.tsx`](../src/App.tsx)                                       |
-| Role → home URL        | [`src/features/auth/utils.ts`](../src/features/auth/utils.ts)         |
-| Operator pages         | [`src/features/operator/pages/`](../src/features/operator/pages/)     |
-| Operator barrel export | [`src/features/operator/index.ts`](../src/features/operator/index.ts) |
+| Concern                | Location                                                                                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Route table            | [`src/App.tsx`](../src/App.tsx)                                                                                                             |
+| Role → home URL        | [`src/features/auth/utils.ts`](../src/features/auth/utils.ts)                                                                               |
+| Operator pages         | [`src/features/operator/pages/`](../src/features/operator/pages/)                                                                           |
+| Operator barrel export | [`src/features/operator/index.ts`](../src/features/operator/index.ts)                                                                       |
+| Shared UI              | `src/components/ui/` — `Select`, `Label`, `DatePicker`, `Input`, `Popover`, `Button`, `Card`, `Badge`, `Skeleton`, `Dialog`, `DropdownMenu` |
 
 ---
 
 ## 5. Version history (archive)
 
-Earlier releases were tracked in `CHANGELOG.md` using [Keep a Changelog](https://keepachangelog.com/). **0.1.0** (2026-04-12) introduced scaffolding, auth, role guards, player features, tenant settings (Ziina), shared UI, API client, and i18n namespaces including `admin` and `operator`. Subsequent operator work (dashboard, match list, match detail, `/operator` routing, debounced search) is summarized in sections 1–2 above.
+Earlier releases were tracked in `CHANGELOG.md` using [Keep a Changelog](https://keepachangelog.com/). **0.1.0** (2026-04-12) introduced scaffolding, auth, role guards, player features, tenant settings (Ziina), shared UI, API client, and i18n namespaces including `admin` and `operator`. Subsequent operator work (dashboard, match list, match detail, `/operator` routing, debounced search, create match form) is summarized in sections 1–2 above.

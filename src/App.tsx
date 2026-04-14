@@ -15,6 +15,7 @@ import { TopUpFailurePage } from '@/features/player/pages/TopUpFailurePage';
 import { DashboardPage } from '@/features/operator/pages/DashboardPage';
 import { MatchListPage } from '@/features/operator/pages/MatchListPage';
 import { OperatorMatchDetailPage } from '@/features/operator/pages/OperatorMatchDetailPage';
+import { CreateMatchPage } from '@/features/operator/pages/CreateMatchPage';
 import { TenantSettingsPage } from '@/features/operator/pages/TenantSettingsPage';
 import { ForbiddenPage } from '@/routes/ForbiddenPage';
 import {
@@ -71,6 +72,7 @@ function App() {
           <Route path="operator" element={<OperatorRoute />}>
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="matches" element={<MatchListPage />} />
+            <Route path="matches/new" element={<CreateMatchPage />} />
             <Route path="matches/:id" element={<OperatorMatchDetailPage />} />
             <Route
               path="venues"

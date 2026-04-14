@@ -94,6 +94,45 @@
       "goBack": "Go back"
     }
   },
+  "createMatch": {
+    "title": "New Match",
+    "back": "Back to Matches",
+    "fields": {
+      "title": "Title",
+      "titlePlaceholder": "e.g. Friday 5-a-side",
+      "sport": "Sport",
+      "sportPlaceholder": "Select a sport",
+      "venue": "Venue",
+      "venuePlaceholder": "Select a venue",
+      "venueLoading": "Loading venues…",
+      "venueSearch": "Search venues…",
+      "date": "Date",
+      "time": "Kick-off time",
+      "duration": "Duration (minutes)",
+      "maxCapacity": "Max players",
+      "price": "Price per player"
+    },
+    "submit": "Create Match",
+    "submitting": "Creating…",
+    "success": "Match created successfully.",
+    "error": {
+      "generic": "Failed to create match. Please try again.",
+      "forbidden": "You do not have permission to create matches."
+    },
+    "validation": {
+      "titleMin": "Title must be at least 3 characters.",
+      "sportRequired": "Please select a sport.",
+      "venueRequired": "Please select a venue.",
+      "dateRequired": "Please pick a date.",
+      "datePast": "Date must be in the future.",
+      "timeRequired": "Please enter a kick-off time.",
+      "durationMin": "Duration must be at least 10 minutes.",
+      "durationMax": "Duration cannot exceed 240 minutes.",
+      "capacityMin": "At least 2 players are required.",
+      "capacityMax": "Capacity cannot exceed 100.",
+      "priceMin": "Price must be 0 or more."
+    }
+  },
   "settings": {
     "title": "Settings",
     "ziina": {

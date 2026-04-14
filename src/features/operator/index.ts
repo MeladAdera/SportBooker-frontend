@@ -5,3 +5,4 @@ export { DashboardPage } from './pages/DashboardPage';
 export { MatchListPage } from './pages/MatchListPage';
 export { TenantSettingsPage } from './pages/TenantSettingsPage';
 export { OperatorMatchDetailPage } from './pages/OperatorMatchDetailPage';
+export { CreateMatchPage } from './pages/CreateMatchPage';
