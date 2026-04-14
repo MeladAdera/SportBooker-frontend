@@ -258,7 +258,25 @@
       "allVenues": "All venues",
       "date": "Date",
       "availableOnly": "Available only",
-      "clearFilters": "Clear filters"
+      "clearFilters": "Clear filters",
+      "sortBy": "Sort by",
+      "days": {
+        "0": "Sun",
+        "1": "Mon",
+        "2": "Tue",
+        "3": "Wed",
+        "4": "Thu",
+        "5": "Fri",
+        "6": "Sat"
+      },
+      "sort": {
+        "dateAsc": "Date ↑",
+        "dateDesc": "Date ↓",
+        "priceAsc": "Price ↑",
+        "priceDesc": "Price ↓",
+        "spotsDesc": "Spots: most first",
+        "spotsAsc": "Spots: fewest first"
+      }
     },
     "sports": {
       "football": "Football",

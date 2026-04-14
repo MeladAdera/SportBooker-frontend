@@ -266,7 +266,16 @@ function DayChips({
   sortBy?: SortOption;
   onSortChange: (sort: SortOption | undefined) => void;
 }) {
-  const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const { t } = useTranslation('player');
+
+  const SORT_LABELS: Record<SortOption, string> = {
+    'date-asc': t('discover.filters.sort.dateAsc'),
+    'date-desc': t('discover.filters.sort.dateDesc'),
+    'price-asc': t('discover.filters.sort.priceAsc'),
+    'price-desc': t('discover.filters.sort.priceDesc'),
+    'spots-desc': t('discover.filters.sort.spotsDesc'),
+    'spots-asc': t('discover.filters.sort.spotsAsc'),
+  };
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
@@ -285,7 +294,7 @@ function DayChips({
                   : 'border-input bg-transparent text-foreground hover:bg-muted',
               )}
             >
-              {DAY_LABELS[day]}
+              {t(`discover.filters.days.${day}`)}
             </button>
           );
         })}
@@ -296,15 +305,18 @@ function DayChips({
         onValueChange={(v) => onSortChange((v as SortOption) || undefined)}
       >
         <SelectTrigger size="sm" className="min-w-[130px]">
-          <SelectValue placeholder="Sort by" />
+          <span className="text-sm">
+            {sortBy ? SORT_LABELS[sortBy] : t('discover.filters.sortBy')}
+          </span>
         </SelectTrigger>
         <SelectContent align="end">
-          <SelectItem value="date-asc">Date ↑</SelectItem>
-          <SelectItem value="date-desc">Date ↓</SelectItem>
-          <SelectItem value="price-asc">Price ↑</SelectItem>
-          <SelectItem value="price-desc">Price ↓</SelectItem>
-          <SelectItem value="spots-desc">Spots: most first</SelectItem>
-          <SelectItem value="spots-asc">Spots: fewest first</SelectItem>
+          {(Object.entries(SORT_LABELS) as [SortOption, string][]).map(
+            ([val, label]) => (
+              <SelectItem key={val} value={val}>
+                {label}
+              </SelectItem>
+            ),
+          )}
         </SelectContent>
       </Select>
     </div>
@@ -327,9 +339,6 @@ function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
     !!filters.sortBy ||
     filters.dayOfWeek !== undefined;
 
-  const selectClass =
-    'h-8 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30';
-
   return (
     <div className="flex flex-col gap-3">
       <DayChips
@@ -339,40 +348,41 @@ function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
         onSortChange={(sort) => onChange({ sortBy: sort, page: 1 })}
       />
       <div className="flex flex-wrap items-center gap-2">
-        <select
-          className={selectClass}
+        <Select
           value={filters.sportType ?? ''}
-          onChange={(e) =>
-            onChange({
-              sportType: (e.target.value as SportType) || undefined,
-              page: 1,
-            })
+          onValueChange={(v) =>
+            onChange({ sportType: (v as SportType) || undefined, page: 1 })
           }
-          aria-label={t('discover.filters.sport')}
         >
-          <option value="">{t('discover.filters.allSports')}</option>
-          {SPORT_TYPES.map((s) => (
-            <option key={s} value={s}>
-              {t(`discover.sports.${s}`)}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger size="sm" className="min-w-[120px]">
+            <SelectValue placeholder={t('discover.filters.allSports')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">{t('discover.filters.allSports')}</SelectItem>
+            {SPORT_TYPES.map((s) => (
+              <SelectItem key={s} value={s}>
+                {t(`discover.sports.${s}`)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-        <select
-          className={selectClass}
+        <Select
           value={filters.venueId ?? ''}
-          onChange={(e) =>
-            onChange({ venueId: e.target.value || undefined, page: 1 })
-          }
-          aria-label={t('discover.filters.venue')}
+          onValueChange={(v) => onChange({ venueId: v || undefined, page: 1 })}
         >
-          <option value="">{t('discover.filters.allVenues')}</option>
-          {venues.map((v) => (
-            <option key={v.id} value={v.id}>
-              {v.name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger size="sm" className="min-w-[140px]">
+            <SelectValue placeholder={t('discover.filters.allVenues')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">{t('discover.filters.allVenues')}</SelectItem>
+            {venues.map((v) => (
+              <SelectItem key={v.id} value={v.id}>
+                {v.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         <DatePicker
           value={filters.date ? new Date(filters.date) : undefined}
