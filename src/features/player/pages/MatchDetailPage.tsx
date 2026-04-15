@@ -170,7 +170,15 @@ function RosterList({ roster }: { roster: MatchDetailResponseDto['roster'] }) {
       {roster.map((player) => (
         <li key={player.userId} className="flex items-center gap-3 py-2.5">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium uppercase text-muted-foreground">
-            {player.name.charAt(0)}
+            {player.photoUrl ? (
+              <img
+                src={player.photoUrl as unknown as string}
+                alt={player.name}
+                className="h-8 w-8 object-cover"
+              />
+            ) : (
+              player.name.charAt(0)
+            )}
           </div>
           <span className="flex-1 text-sm font-medium text-foreground">
             {player.name}
