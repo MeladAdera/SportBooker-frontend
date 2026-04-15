@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { createElement, useMemo, useRef, useState } from 'react';
 import { useDebounce } from '@/shared/hooks';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -39,6 +39,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { unwrap } from '@/api';
 import { cn } from '@/lib/utils';
+import { ALL_SPORTS_ICON, getSportIcon } from '@/lib/sportIcons';
 import { normalizeRole } from '@/lib/roles';
 import { useAuthStore } from '@/stores/authStore';
 import { useTenantMatchesControllerList } from '@/api/generated/tenant-—-matches/tenant-—-matches';
@@ -277,6 +278,9 @@ function FilterBar({
   ];
 
   const activeSort = SORT_OPTIONS.find((o) => o.value === sortBy);
+  const sportTriggerIcon = filters.sport
+    ? getSportIcon(filters.sport)
+    : ALL_SPORTS_ICON;
 
   return (
     <div className="flex flex-col gap-3">
@@ -329,12 +333,21 @@ function FilterBar({
             }
           >
             <SelectTrigger>
+              {createElement(sportTriggerIcon, {
+                className: 'size-3.5 shrink-0 text-muted-foreground',
+                'aria-hidden': true,
+              })}
               <SelectValue placeholder={t('matches.filters.sportAll')} />
             </SelectTrigger>
             <SelectContent>
               {Object.values(TenantMatchesControllerListSportType).map((s) => (
                 <SelectItem key={s} value={s}>
-                  {t(`matches.sport.${s}`, { defaultValue: s })}
+                  <span className="flex items-center gap-1.5">
+                    {createElement(getSportIcon(s), {
+                      className: 'size-3.5 shrink-0 text-muted-foreground',
+                    })}
+                    {t(`matches.sport.${s}`, { defaultValue: s })}
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>

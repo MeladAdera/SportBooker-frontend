@@ -1,16 +1,19 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  createElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowDown,
   ArrowUp,
-  Bike,
   Check,
   ChevronDown,
-  Dumbbell,
   Search,
-  Shield,
-  Swords,
   X,
 } from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -39,6 +42,7 @@ import type { MatchBrowseItemDto } from '@/api/generated/models/matchBrowseItemD
 import type { MatchesControllerListParams } from '@/api/generated/models/matchesControllerListParams';
 import { MatchesControllerListSportType } from '@/api/generated/models/matchesControllerListSportType';
 import { unwrap } from '@/api';
+import { ALL_SPORTS_ICON, getSportIcon } from '@/lib/sportIcons';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -74,13 +78,6 @@ const TYPEWRITER_PHRASES: Record<string, readonly string[]> = {
   ],
 };
 
-const SPORT_ICONS: Record<SportType, React.ElementType> = {
-  football: Shield,
-  padel: Swords,
-  cricket: Bike,
-  generic: Dumbbell,
-};
-
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatScheduledAt(isoString: string): string {
@@ -114,7 +111,7 @@ const STATUS_VARIANT: Record<
 function MatchCard({ match }: { match: MatchBrowseItemDto }) {
   const { t } = useTranslation('player');
   const navigate = useNavigate();
-  const Icon = SPORT_ICONS[match.sportType] ?? Dumbbell;
+  const sportIcon = getSportIcon(match.sportType);
   const formattedDate = formatScheduledAt(match.scheduledAt);
   const bookedSpots = match.maxCapacity - match.spotsRemaining;
   const waitlistCount = match.waitlistCount;
@@ -128,7 +125,10 @@ function MatchCard({ match }: { match: MatchBrowseItemDto }) {
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Icon className="size-4" aria-hidden />
+              {createElement(sportIcon, {
+                className: 'size-4',
+                'aria-hidden': true,
+              })}
             </span>
             <p className="line-clamp-2 text-sm font-medium leading-snug text-card-foreground">
               {match.title}
@@ -432,11 +432,7 @@ function VenueCombobox({
         <ChevronDown className="size-3.5 shrink-0 opacity-60" />
       </PopoverTrigger>
 
-      <PopoverContent
-        align="start"
-        className="w-56 p-0"
-        onOpenAutoFocus={(e) => e.preventDefault()}
-      >
+      <PopoverContent align="start" className="w-56 p-0">
         <div className="border-b border-border p-2">
           <div className="relative">
             <Search className="absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -503,6 +499,9 @@ function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
   if (isVenuesLoading) return <div>Loading...</div>;
 
   const venues = unwrap(venuesData)?.items ?? [];
+  const sportTriggerIcon = filters.sportType
+    ? getSportIcon(filters.sportType)
+    : ALL_SPORTS_ICON;
 
   const hasActiveFilters =
     !!filters.sportType ||
@@ -528,13 +527,29 @@ function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
           }
         >
           <SelectTrigger size="sm" className="min-w-[120px]">
+            {createElement(sportTriggerIcon, {
+              className: 'size-3.5 shrink-0 text-muted-foreground',
+              'aria-hidden': true,
+            })}
             <SelectValue placeholder={t('discover.filters.allSports')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">{t('discover.filters.allSports')}</SelectItem>
+            <SelectItem value="">
+              <span className="flex items-center gap-1.5">
+                {createElement(ALL_SPORTS_ICON, {
+                  className: 'size-3.5 shrink-0 text-muted-foreground',
+                })}
+                {t('discover.filters.allSports')}
+              </span>
+            </SelectItem>
             {SPORT_TYPES.map((s) => (
               <SelectItem key={s} value={s}>
-                {t(`discover.sports.${s}`)}
+                <span className="flex items-center gap-1.5">
+                  {createElement(getSportIcon(s), {
+                    className: 'size-3.5 shrink-0 text-muted-foreground',
+                  })}
+                  {t(`discover.sports.${s}`)}
+                </span>
               </SelectItem>
             ))}
           </SelectContent>

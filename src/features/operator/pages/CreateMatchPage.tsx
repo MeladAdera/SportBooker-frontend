@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { createElement, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -31,6 +31,7 @@ import { useVenuesControllerList } from '@/api/generated/venues/venues';
 import type { VenueBrowseItemDto } from '@/api/generated/models/venueBrowseItemDto';
 import { CreateMatchDtoSportType } from '@/api/generated/models/createMatchDtoSportType';
 import { ApiError, unwrap } from '@/api';
+import { ALL_SPORTS_ICON, getSportIcon } from '@/lib/sportIcons';
 
 // ── Schema ────────────────────────────────────────────────────────────────────
 
@@ -300,27 +301,42 @@ export function CreateMatchPage() {
               <Controller
                 control={control}
                 name="sportType"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger
-                      id="match-sport"
-                      size="default"
-                      className="h-9 w-full"
-                      aria-invalid={!!errors.sportType}
-                    >
-                      <SelectValue
-                        placeholder={t('createMatch.fields.sportPlaceholder')}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.values(CreateMatchDtoSportType).map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {t(`matches.sport.${s}`, { defaultValue: s })}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                render={({ field }) => {
+                  const sportTriggerIcon = field.value
+                    ? getSportIcon(field.value)
+                    : ALL_SPORTS_ICON;
+                  return (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger
+                        id="match-sport"
+                        size="default"
+                        className="h-9 w-full"
+                        aria-invalid={!!errors.sportType}
+                      >
+                        {createElement(sportTriggerIcon, {
+                          className: 'size-3.5 shrink-0 text-muted-foreground',
+                          'aria-hidden': true,
+                        })}
+                        <SelectValue
+                          placeholder={t('createMatch.fields.sportPlaceholder')}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.values(CreateMatchDtoSportType).map((s) => (
+                          <SelectItem key={s} value={s}>
+                            <span className="flex items-center gap-1.5">
+                              {createElement(getSportIcon(s), {
+                                className:
+                                  'size-3.5 shrink-0 text-muted-foreground',
+                              })}
+                              {t(`matches.sport.${s}`, { defaultValue: s })}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  );
+                }}
               />
               <FieldError
                 message={

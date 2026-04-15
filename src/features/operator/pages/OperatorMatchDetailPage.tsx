@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { createElement, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -6,7 +6,6 @@ import {
   Calendar,
   Clock,
   Coins,
-  Dumbbell,
   ExternalLink,
   MapPin,
   Shield,
@@ -36,6 +35,7 @@ import { BookingPosition } from '@/api/generated/models/bookingPosition';
 import { MatchDetailResponseDtoStatus } from '@/api/generated/models/matchDetailResponseDtoStatus';
 import type { MatchDetailResponseDto } from '@/api/generated/models/matchDetailResponseDto';
 import { unwrap } from '@/api';
+import { getSportIcon } from '@/lib/sportIcons';
 import { normalizeRole } from '@/lib/roles';
 import { useAuthStore } from '@/stores/authStore';
 import {
@@ -74,13 +74,6 @@ function formatTime(iso: string) {
 function googleMapsSearchUrl(query: string) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
-
-const SPORT_ICONS: Record<string, React.ElementType> = {
-  football: Shield,
-  padel: Shield,
-  cricket: Shield,
-  generic: Dumbbell,
-};
 
 const STATUS_BADGE: Record<
   string,
@@ -470,9 +463,9 @@ export function OperatorMatchDetailPage() {
 
   const confirmedCount = match ? match.maxCapacity - match.spotsRemaining : 0;
 
-  const SportIcon = match
-    ? (SPORT_ICONS[match.sportType] ?? Dumbbell)
-    : Dumbbell;
+  const sportIcon = match
+    ? getSportIcon(match.sportType)
+    : getSportIcon(undefined);
 
   if (isError) {
     return (
@@ -534,7 +527,10 @@ export function OperatorMatchDetailPage() {
           <div className="relative flex w-full items-end justify-between gap-3">
             <div className="flex items-center gap-3">
               <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 text-primary">
-                <SportIcon className="size-6" aria-hidden />
+                {createElement(sportIcon, {
+                  className: 'size-6',
+                  'aria-hidden': true,
+                })}
               </span>
               <div>
                 <p className="text-xs font-medium uppercase tracking-widest text-primary">

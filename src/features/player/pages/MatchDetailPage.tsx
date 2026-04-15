@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { createElement, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -6,7 +6,6 @@ import {
   Calendar,
   Clock,
   Coins,
-  Dumbbell,
   ExternalLink,
   MapPin,
   Shield,
@@ -27,6 +26,7 @@ import { BookingModal } from '@/features/player/components/BookingModal';
 import { CancelBookingModal } from '@/features/player/components/CancelBookingModal';
 import { MAX_GK } from '@/features/player/constants';
 import { unwrap } from '@/api';
+import { getSportIcon } from '@/lib/sportIcons';
 import { useAuthStore } from '@/stores/authStore';
 import type { MatchWaitlistPlayerDto } from '@/api/generated/models/matchWaitlistPlayerDto';
 
@@ -63,13 +63,6 @@ function isPast(iso: string) {
 function googleMapsSearchUrl(query: string) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
-
-const SPORT_ICONS: Record<string, React.ElementType> = {
-  football: Shield,
-  padel: Shield,
-  cricket: Shield,
-  generic: Dumbbell,
-};
 
 // ── Capacity bar ──────────────────────────────────────────────────────────────
 
@@ -429,9 +422,9 @@ export function MatchDetailPage() {
     : undefined;
   const myWaitlistPosition = myWaitlistEntry?.queuePosition ?? null;
 
-  const SportIcon = match
-    ? (SPORT_ICONS[match.sportType] ?? Dumbbell)
-    : Dumbbell;
+  const sportIcon = match
+    ? getSportIcon(match.sportType)
+    : getSportIcon(undefined);
 
   if (matchError) {
     return (
@@ -478,7 +471,10 @@ export function MatchDetailPage() {
           ) : null}
           <div className="relative flex items-center gap-3">
             <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 text-primary">
-              <SportIcon className="size-6" aria-hidden />
+              {createElement(sportIcon, {
+                className: 'size-6',
+                'aria-hidden': true,
+              })}
             </span>
             <div>
               <p className="text-xs font-medium uppercase tracking-widest text-primary">
