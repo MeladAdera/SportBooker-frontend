@@ -13,6 +13,7 @@ import {
   ArrowUp,
   Check,
   ChevronDown,
+  RefreshCw,
   Search,
   X,
 } from 'lucide-react';
@@ -205,7 +206,8 @@ const SPORT_TYPES = Object.values(MatchesControllerListSportType);
 
 type FilterState = MatchesControllerListParams & {
   page: number;
-  dayOfWeek?: DayOfWeek;
+  /** When set and non-empty, only matches on these weekdays (0=Sun … 6=Sat). */
+  dayOfWeek?: DayOfWeek[];
   sortBy?: SortOption;
 };
 
@@ -270,7 +272,7 @@ function useTypewriter(
 }
 
 /**
- * Seven pill buttons (Sun–Sat) + sort select + availability toggle on one row.
+ * Seven pill buttons (Sun–Sat), multi-select, plus sort on the same row.
  * Day filtering is client-side; sort is also applied client-side.
  */
 function DayChips({
@@ -279,8 +281,8 @@ function DayChips({
   sortBy,
   onSortChange,
 }: {
-  value?: DayOfWeek;
-  onChange: (day: DayOfWeek | undefined) => void;
+  value?: DayOfWeek[];
+  onChange: (days: DayOfWeek[]) => void;
   sortBy?: SortOption;
   onSortChange: (sort: SortOption | undefined) => void;
 }) {
@@ -329,12 +331,18 @@ function DayChips({
     <div className="flex flex-wrap items-center justify-between gap-2">
       <div className="flex flex-wrap gap-2">
         {DAYS_OF_WEEK.map((day) => {
-          const active = value === day;
+          const selected = value ?? [];
+          const active = selected.includes(day);
           return (
             <button
               key={day}
               type="button"
-              onClick={() => onChange(active ? undefined : day)}
+              onClick={() => {
+                const next = active
+                  ? selected.filter((d) => d !== day)
+                  : [...selected, day].sort((a, b) => a - b);
+                onChange(next);
+              }}
               className={cn(
                 'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
                 active
@@ -509,13 +517,15 @@ function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
     !!filters.date ||
     !!filters.available ||
     !!filters.sortBy ||
-    filters.dayOfWeek !== undefined;
+    (filters.dayOfWeek?.length ?? 0) > 0;
 
   return (
     <div className="flex flex-col gap-3">
       <DayChips
         value={filters.dayOfWeek}
-        onChange={(day) => onChange({ dayOfWeek: day, page: 1 })}
+        onChange={(days) =>
+          onChange({ dayOfWeek: days.length > 0 ? days : undefined, page: 1 })
+        }
         sortBy={filters.sortBy}
         onSortChange={(sort) => onChange({ sortBy: sort, page: 1 })}
       />
@@ -659,24 +669,28 @@ const DEFAULT_FILTERS: FilterState = {
 };
 
 export function DiscoverPage() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation('player');
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const [spinning, setSpinning] = useState(false);
   const phrases =
     TYPEWRITER_PHRASES[i18n.language] ?? TYPEWRITER_PHRASES['en']!;
   const typedTitle = useTypewriter(phrases);
 
   const { page, limit, dayOfWeek, sortBy, ...queryParams } = filters;
-  const { data, isLoading, isError } = useMatchesControllerList({
-    ...queryParams,
-    page,
-    limit,
-  });
+  const { data, isLoading, isError, refetch, isFetching } =
+    useMatchesControllerList({
+      ...queryParams,
+      page,
+      limit,
+    });
   const matchesData = unwrap(data);
   const allMatches = matchesData?.items ?? [];
 
   const filtered =
-    dayOfWeek !== undefined
-      ? allMatches.filter((m) => new Date(m.scheduledAt).getDay() === dayOfWeek)
+    dayOfWeek && dayOfWeek.length > 0
+      ? allMatches.filter((m) =>
+          dayOfWeek.includes(new Date(m.scheduledAt).getDay() as DayOfWeek),
+        )
       : allMatches;
 
   const matches = sortBy
@@ -711,10 +725,33 @@ export function DiscoverPage() {
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
-      <h1 className="text-xl font-semibold text-foreground">
-        {typedTitle}
-        <span className="ml-0.5 inline-block h-5 w-0.5 animate-pulse bg-primary align-middle" />
-      </h1>
+      <div className="flex items-start justify-between gap-3">
+        <h1 className="text-xl font-semibold text-foreground">
+          {typedTitle}
+          <span className="ml-0.5 inline-block h-5 w-0.5 animate-pulse bg-primary align-middle" />
+        </h1>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="shrink-0"
+          onClick={() => {
+            setSpinning(true);
+            void refetch();
+          }}
+          disabled={isFetching}
+          aria-label={t('discover.refreshAria')}
+          title={t('discover.refresh')}
+        >
+          <RefreshCw
+            className={cn('size-4', spinning && 'animate-spin')}
+            onAnimationIteration={() => {
+              if (!isFetching) setSpinning(false);
+            }}
+            aria-hidden
+          />
+        </Button>
+      </div>
 
       <FilterBar
         filters={filters}
