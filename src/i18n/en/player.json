@@ -266,6 +266,8 @@
       "date": "Date",
       "availableOnly": "Available only",
       "clearFilters": "Clear filters",
+      "searchVenue": "Search venues…",
+      "noVenueFound": "No venues found",
       "sortBy": "Sort by",
       "days": {
         "0": "Sun",

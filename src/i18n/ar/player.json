@@ -266,6 +266,8 @@
       "date": "التاريخ",
       "availableOnly": "المتاحة فقط",
       "clearFilters": "مسح الفلاتر",
+      "searchVenue": "ابحث عن ملعب…",
+      "noVenueFound": "لا توجد ملاعب",
       "sortBy": "ترتيب حسب",
       "days": {
         "0": "أحد",

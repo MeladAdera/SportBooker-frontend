@@ -17,6 +17,8 @@
       "statusAll": "All statuses",
       "venue": "Venue",
       "venueAll": "All venues",
+      "venueSearch": "Search venues…",
+      "venueNoResults": "No venues found",
       "sport": "Sport",
       "sportAll": "All sports",
       "dateFrom": "From",

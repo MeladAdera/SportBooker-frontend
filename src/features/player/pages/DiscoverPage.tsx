@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowDown,
   ArrowUp,
   Bike,
+  Check,
+  ChevronDown,
   Dumbbell,
   Search,
   Shield,
@@ -17,6 +19,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -371,6 +379,123 @@ function DayChips({
   );
 }
 
+// ── Venue combobox ────────────────────────────────────────────────────────────
+
+type VenueOption = { id: string; name: string };
+
+function VenueCombobox({
+  venues,
+  value,
+  onChange,
+}: {
+  venues: VenueOption[];
+  value?: string;
+  onChange: (id: string | undefined) => void;
+}) {
+  const { t } = useTranslation('player');
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return q ? venues.filter((v) => v.name.toLowerCase().includes(q)) : venues;
+  }, [venues, search]);
+
+  const selectedName = venues.find((v) => v.id === value)?.name;
+
+  function select(id: string | undefined) {
+    onChange(id);
+    setOpen(false);
+    setSearch('');
+  }
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (o) setTimeout(() => inputRef.current?.focus(), 0);
+        else setSearch('');
+      }}
+    >
+      <PopoverTrigger
+        className={cn(
+          'flex h-8 min-w-[140px] items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent px-2.5 text-sm transition-colors',
+          'hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          selectedName ? 'text-foreground' : 'text-muted-foreground',
+        )}
+      >
+        <span className="truncate">
+          {selectedName ?? t('discover.filters.allVenues')}
+        </span>
+        <ChevronDown className="size-3.5 shrink-0 opacity-60" />
+      </PopoverTrigger>
+
+      <PopoverContent
+        align="start"
+        className="w-56 p-0"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <div className="border-b border-border p-2">
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              ref={inputRef}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('discover.filters.searchVenue')}
+              className="h-7 pl-7 text-sm"
+            />
+          </div>
+        </div>
+
+        <div className="max-h-52 overflow-y-auto p-1">
+          <button
+            type="button"
+            onClick={() => select(undefined)}
+            className={cn(
+              'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent',
+              !value && 'font-medium text-foreground',
+            )}
+          >
+            <Check
+              className={cn('size-3.5 shrink-0', value ? 'invisible' : '')}
+            />
+            {t('discover.filters.allVenues')}
+          </button>
+
+          {filtered.length === 0 ? (
+            <p className="px-2 py-4 text-center text-xs text-muted-foreground">
+              {t('discover.filters.noVenueFound')}
+            </p>
+          ) : (
+            filtered.map((v) => (
+              <button
+                key={v.id}
+                type="button"
+                onClick={() => select(v.id)}
+                className={cn(
+                  'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent',
+                  value === v.id && 'font-medium text-foreground',
+                )}
+              >
+                <Check
+                  className={cn(
+                    'size-3.5 shrink-0',
+                    value === v.id ? '' : 'invisible',
+                  )}
+                />
+                {v.name}
+              </button>
+            ))
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
   const { t } = useTranslation('player');
   const { data: venuesData, isLoading: isVenuesLoading } =
@@ -415,22 +540,11 @@ function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
           </SelectContent>
         </Select>
 
-        <Select
-          value={filters.venueId ?? ''}
-          onValueChange={(v) => onChange({ venueId: v || undefined, page: 1 })}
-        >
-          <SelectTrigger size="sm" className="min-w-[140px]">
-            <SelectValue placeholder={t('discover.filters.allVenues')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">{t('discover.filters.allVenues')}</SelectItem>
-            {venues.map((v) => (
-              <SelectItem key={v.id} value={v.id}>
-                {v.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <VenueCombobox
+          venues={venues}
+          value={filters.venueId}
+          onChange={(id) => onChange({ venueId: id, page: 1 })}
+        />
 
         <DatePicker
           value={filters.date ? new Date(filters.date) : undefined}

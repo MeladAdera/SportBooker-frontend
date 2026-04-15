@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useDebounce } from '@/shared/hooks';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +8,14 @@ import {
   flexRender,
   createColumnHelper,
 } from '@tanstack/react-table';
-import { AlertCircle, Search, SlidersHorizontal, X } from 'lucide-react';
+import {
+  AlertCircle,
+  Check,
+  ChevronDown,
+  Search,
+  SlidersHorizontal,
+  X,
+} from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,8 +29,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
 import { unwrap } from '@/api';
+import { cn } from '@/lib/utils';
 import { normalizeRole } from '@/lib/roles';
 import { useAuthStore } from '@/stores/authStore';
 import { useTenantMatchesControllerList } from '@/api/generated/tenant-—-matches/tenant-—-matches';
@@ -99,6 +112,117 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+// ── VenueCombobox ─────────────────────────────────────────────────────────────
+
+function VenueCombobox({
+  venues,
+  value,
+  onChange,
+}: {
+  venues: { id: string; name: string }[];
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  const { t } = useTranslation('operator');
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return q ? venues.filter((v) => v.name.toLowerCase().includes(q)) : venues;
+  }, [venues, search]);
+
+  const selectedName = venues.find((v) => v.id === value)?.name;
+
+  function select(id: string) {
+    onChange(id);
+    setOpen(false);
+    setSearch('');
+  }
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (o) setTimeout(() => inputRef.current?.focus(), 0);
+        else setSearch('');
+      }}
+    >
+      <PopoverTrigger
+        className={cn(
+          'flex h-9 min-w-[140px] items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent px-2.5 text-sm transition-colors',
+          'hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          selectedName ? 'text-foreground' : 'text-muted-foreground',
+        )}
+      >
+        <span className="truncate">
+          {selectedName ?? t('matches.filters.venueAll')}
+        </span>
+        <ChevronDown className="size-3.5 shrink-0 opacity-60" />
+      </PopoverTrigger>
+
+      <PopoverContent align="start" className="w-56 p-0">
+        <div className="border-b border-border p-2">
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              ref={inputRef}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('matches.filters.venueSearch')}
+              className="h-7 pl-7 text-sm"
+            />
+          </div>
+        </div>
+
+        <div className="max-h-52 overflow-y-auto p-1">
+          <button
+            type="button"
+            onClick={() => select('')}
+            className={cn(
+              'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent',
+              !value && 'font-medium text-foreground',
+            )}
+          >
+            <Check
+              className={cn('size-3.5 shrink-0', value ? 'invisible' : '')}
+            />
+            {t('matches.filters.venueAll')}
+          </button>
+
+          {filtered.length === 0 ? (
+            <p className="px-2 py-3 text-center text-sm text-muted-foreground">
+              {t('matches.filters.venueNoResults')}
+            </p>
+          ) : (
+            filtered.map((v) => (
+              <button
+                key={v.id}
+                type="button"
+                onClick={() => select(v.id)}
+                className={cn(
+                  'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent',
+                  value === v.id && 'font-medium text-foreground',
+                )}
+              >
+                <Check
+                  className={cn(
+                    'size-3.5 shrink-0',
+                    value !== v.id && 'invisible',
+                  )}
+                />
+                {v.name}
+              </button>
+            ))
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 // ── FilterBar ────────────────────────────────────────────────────────────────
 
 interface FilterBarProps {
@@ -152,22 +276,12 @@ function FilterBar({
           </SelectContent>
         </Select>
 
-        {/* Venue */}
-        <Select
-          value={filters.venueId || undefined}
-          onValueChange={(val) => onFilterChange({ venueId: val ?? '' })}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={t('matches.filters.venueAll')} />
-          </SelectTrigger>
-          <SelectContent>
-            {venues.map((v) => (
-              <SelectItem key={v.id} value={v.id}>
-                {v.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Venue combobox */}
+        <VenueCombobox
+          venues={venues}
+          value={filters.venueId}
+          onChange={(id) => onFilterChange({ venueId: id })}
+        />
 
         {/* Sport */}
         <Select

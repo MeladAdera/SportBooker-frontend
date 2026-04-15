@@ -17,6 +17,8 @@
       "statusAll": "كل الحالات",
       "venue": "الملعب",
       "venueAll": "كل الملاعب",
+      "venueSearch": "البحث في الملاعب…",
+      "venueNoResults": "لا توجد ملاعب",
       "sport": "الرياضة",
       "sportAll": "كل الرياضات",
       "dateFrom": "من",
