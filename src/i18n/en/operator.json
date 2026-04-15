@@ -146,7 +146,8 @@
     "success": "Match created successfully.",
     "error": {
       "generic": "Failed to create match. Please try again.",
-      "forbidden": "You do not have permission to create matches."
+      "forbidden": "You do not have permission to create matches.",
+      "overlap": "This venue already has a match overlapping that time slot. Please choose a different time."
     },
     "validation": {
       "titleMin": "Title must be at least 3 characters.",
@@ -159,7 +160,8 @@
       "durationMax": "Duration cannot exceed 240 minutes.",
       "capacityMin": "At least 2 players are required.",
       "capacityMax": "Capacity cannot exceed 100.",
-      "priceMin": "Price must be 0 or more."
+      "priceMin": "Price must be at least 1.",
+      "priceInteger": "Price must be a whole number."
     }
   },
   "settings": {

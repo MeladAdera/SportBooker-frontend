@@ -61,7 +61,8 @@ const createMatchSchema = z.object({
     .max(100, 'validation.capacityMax'),
   pricePerPlayer: z
     .number({ error: 'validation.priceMin' })
-    .min(0, 'validation.priceMin'),
+    .min(1, 'validation.priceMin')
+    .refine((v) => Number.isInteger(v), 'validation.priceInteger'),
 });
 
 type FormValues = z.infer<typeof createMatchSchema>;
@@ -201,7 +202,7 @@ export function CreateMatchPage() {
     defaultValues: {
       durationMins: 60,
       maxCapacity: 10,
-      pricePerPlayer: 0,
+      pricePerPlayer: 1,
     },
   });
 
@@ -212,11 +213,17 @@ export function CreateMatchPage() {
         navigate('/operator/matches');
       },
       onError: (err: unknown) => {
-        toast.error(
-          err instanceof ApiError && err.statusCode === 403
-            ? t('createMatch.error.forbidden')
-            : t('createMatch.error.generic'),
-        );
+        if (err instanceof ApiError) {
+          if (err.statusCode === 403) {
+            toast.error(t('createMatch.error.forbidden'));
+          } else if (err.statusCode === 409) {
+            toast.error(t('createMatch.error.overlap'));
+          } else {
+            toast.error(t('createMatch.error.generic'));
+          }
+        } else {
+          toast.error(t('createMatch.error.generic'));
+        }
       },
     },
   });
@@ -465,8 +472,8 @@ export function CreateMatchPage() {
               <Input
                 id="match-price"
                 type="number"
-                min={0}
-                step={0.01}
+                min={1}
+                step={1}
                 {...register('pricePerPlayer', { valueAsNumber: true })}
               />
               <FieldError
