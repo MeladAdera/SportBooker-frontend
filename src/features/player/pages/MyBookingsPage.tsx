@@ -232,7 +232,7 @@ function Pagination({
 
 // ── Tab bar ────────────────────────────────────────────────────────────────────
 
-const TABS: Tab[] = ['upcoming', 'past', 'waitlist', 'cancelled'];
+const TABS: Tab[] = ['upcoming', 'waitlist', 'past', 'cancelled'];
 
 function TabBar({
   active,
@@ -279,6 +279,10 @@ function tabToParams(tab: Tab): {
   return { status: MyBookingItemDtoStatus.cancelled };
 }
 
+function isPast(booking: MyBookingItemDto): boolean {
+  return new Date(booking.matchScheduledAt) < new Date();
+}
+
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export function MyBookingsPage() {
@@ -298,7 +302,14 @@ export function MyBookingsPage() {
   });
 
   const bookingsData = unwrap(data);
-  const bookings = bookingsData?.items ?? [];
+  const rawItems = bookingsData?.items ?? [];
+  // Backend may not filter `upcoming=false` as past-only — enforce client-side
+  const bookings =
+    activeTab === 'upcoming'
+      ? rawItems.filter((b) => !isPast(b))
+      : activeTab === 'past'
+        ? rawItems.filter((b) => isPast(b))
+        : rawItems;
   const total = bookingsData?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
