@@ -172,6 +172,8 @@ function ProfileForm({
   const { t } = useTranslation('player');
   const queryClient = useQueryClient();
   const [serverError, setServerError] = useState<string | null>(null);
+  const setUser = useAuthStore((s) => s.setUser);
+  const currentUser = useAuthStore((s) => s.user);
 
   const {
     register,
@@ -206,6 +208,11 @@ function ProfileForm({
       if (res.status >= 400) {
         setServerError(t('profile.form.photoError'));
         return;
+      }
+      // Sync new photoUrl into the auth store so the AppBar avatar updates immediately
+      const newPhotoUrl = res.data?.data?.photoUrl;
+      if (currentUser && newPhotoUrl) {
+        setUser({ ...currentUser, photoUrl: newPhotoUrl });
       }
     }
 
