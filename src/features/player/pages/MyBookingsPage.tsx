@@ -99,11 +99,11 @@ function BookingCard({ booking }: BookingCardProps) {
       role="button"
       tabIndex={0}
       aria-label={booking.matchTitle}
-      onClick={() => navigate(`/matches/${booking.id}`)}
+      onClick={() => navigate(`/matches/${booking.matchId}`)}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          navigate(`/matches/${booking.id}`);
+          navigate(`/matches/${booking.matchId}`);
         }
       }}
     >
