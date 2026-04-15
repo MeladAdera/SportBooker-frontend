@@ -10,6 +10,8 @@ import {
 } from '@tanstack/react-table';
 import {
   AlertCircle,
+  ArrowDown,
+  ArrowUp,
   Check,
   ChevronDown,
   Search,
@@ -54,6 +56,8 @@ type StatusFilter =
 type SportFilter =
   | ''
   | (typeof TenantMatchesControllerListSportType)[keyof typeof TenantMatchesControllerListSportType];
+
+type SortOption = 'price-asc' | 'price-desc' | 'spots-asc' | 'spots-desc';
 
 interface Filters {
   status: StatusFilter;
@@ -228,18 +232,51 @@ function VenueCombobox({
 interface FilterBarProps {
   filters: Filters;
   venues: { id: string; name: string }[];
+  sortBy: SortOption | undefined;
   onFilterChange: (patch: Partial<Filters>) => void;
+  onSortChange: (sort: SortOption | undefined) => void;
   onClear: () => void;
 }
 
 function FilterBar({
   filters,
   venues,
+  sortBy,
   onFilterChange,
+  onSortChange,
   onClear,
 }: FilterBarProps) {
   const { t } = useTranslation('operator');
   const isDirty = Object.values(filters).some((v) => v !== '');
+
+  const SORT_OPTIONS: {
+    value: SortOption;
+    label: string;
+    icon: React.ElementType;
+  }[] = [
+    {
+      value: 'price-asc',
+      label: t('matches.filters.sort.priceAsc'),
+      icon: ArrowUp,
+    },
+    {
+      value: 'price-desc',
+      label: t('matches.filters.sort.priceDesc'),
+      icon: ArrowDown,
+    },
+    {
+      value: 'spots-desc',
+      label: t('matches.filters.sort.spotsDesc'),
+      icon: ArrowDown,
+    },
+    {
+      value: 'spots-asc',
+      label: t('matches.filters.sort.spotsAsc'),
+      icon: ArrowUp,
+    },
+  ];
+
+  const activeSort = SORT_OPTIONS.find((o) => o.value === sortBy);
 
   return (
     <div className="flex flex-col gap-3">
@@ -256,84 +293,117 @@ function FilterBar({
       </div>
 
       {/* filter row */}
-      <div className="flex flex-wrap gap-2">
-        {/* Status */}
-        <Select
-          value={filters.status || undefined}
-          onValueChange={(val) =>
-            onFilterChange({ status: (val ?? '') as StatusFilter })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={t('matches.filters.statusAll')} />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.values(TenantMatchesControllerListStatus).map((s) => (
-              <SelectItem key={s} value={s}>
-                {t(`matches.status.${s}`, { defaultValue: s })}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Venue combobox */}
-        <VenueCombobox
-          venues={venues}
-          value={filters.venueId}
-          onChange={(id) => onFilterChange({ venueId: id })}
-        />
-
-        {/* Sport */}
-        <Select
-          value={filters.sport || undefined}
-          onValueChange={(val) =>
-            onFilterChange({ sport: (val ?? '') as SportFilter })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={t('matches.filters.sportAll')} />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.values(TenantMatchesControllerListSportType).map((s) => (
-              <SelectItem key={s} value={s}>
-                {t(`matches.sport.${s}`, { defaultValue: s })}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Date from */}
-        <DatePicker
-          value={filters.dateFrom ? new Date(filters.dateFrom) : undefined}
-          onChange={(d) =>
-            onFilterChange({ dateFrom: d ? d.toISOString().slice(0, 10) : '' })
-          }
-          placeholder={t('matches.filters.dateFrom')}
-          toDate={filters.dateTo ? new Date(filters.dateTo) : undefined}
-        />
-
-        {/* Date to */}
-        <DatePicker
-          value={filters.dateTo ? new Date(filters.dateTo) : undefined}
-          onChange={(d) =>
-            onFilterChange({ dateTo: d ? d.toISOString().slice(0, 10) : '' })
-          }
-          placeholder={t('matches.filters.dateTo')}
-          fromDate={filters.dateFrom ? new Date(filters.dateFrom) : undefined}
-        />
-
-        {/* Clear */}
-        {isDirty && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClear}
-            className="gap-1.5"
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-2">
+          {/* Status */}
+          <Select
+            value={filters.status || undefined}
+            onValueChange={(val) =>
+              onFilterChange({ status: (val ?? '') as StatusFilter })
+            }
           >
-            <X className="size-3.5" aria-hidden />
-            {t('matches.filters.clear')}
-          </Button>
-        )}
+            <SelectTrigger>
+              <SelectValue placeholder={t('matches.filters.statusAll')} />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.values(TenantMatchesControllerListStatus).map((s) => (
+                <SelectItem key={s} value={s}>
+                  {t(`matches.status.${s}`, { defaultValue: s })}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Venue combobox */}
+          <VenueCombobox
+            venues={venues}
+            value={filters.venueId}
+            onChange={(id) => onFilterChange({ venueId: id })}
+          />
+
+          {/* Sport */}
+          <Select
+            value={filters.sport || undefined}
+            onValueChange={(val) =>
+              onFilterChange({ sport: (val ?? '') as SportFilter })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={t('matches.filters.sportAll')} />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.values(TenantMatchesControllerListSportType).map((s) => (
+                <SelectItem key={s} value={s}>
+                  {t(`matches.sport.${s}`, { defaultValue: s })}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Date from */}
+          <DatePicker
+            value={filters.dateFrom ? new Date(filters.dateFrom) : undefined}
+            onChange={(d) =>
+              onFilterChange({
+                dateFrom: d ? d.toISOString().slice(0, 10) : '',
+              })
+            }
+            placeholder={t('matches.filters.dateFrom')}
+            toDate={filters.dateTo ? new Date(filters.dateTo) : undefined}
+          />
+
+          {/* Date to */}
+          <DatePicker
+            value={filters.dateTo ? new Date(filters.dateTo) : undefined}
+            onChange={(d) =>
+              onFilterChange({ dateTo: d ? d.toISOString().slice(0, 10) : '' })
+            }
+            placeholder={t('matches.filters.dateTo')}
+            fromDate={filters.dateFrom ? new Date(filters.dateFrom) : undefined}
+          />
+
+          {/* Clear */}
+          {isDirty && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClear}
+              className="gap-1.5"
+            >
+              <X className="size-3.5" aria-hidden />
+              {t('matches.filters.clear')}
+            </Button>
+          )}
+        </div>
+
+        {/* Sort — right side */}
+        <Select
+          value={sortBy ?? ''}
+          onValueChange={(v) => onSortChange((v as SortOption) || undefined)}
+        >
+          <SelectTrigger size="sm" className="min-w-[130px]">
+            <span className="flex items-center gap-1.5 text-sm">
+              {activeSort ? (
+                <>
+                  <activeSort.icon className="size-3.5 shrink-0" />
+                  {activeSort.label}
+                </>
+              ) : (
+                t('matches.filters.sortBy')
+              )}
+            </span>
+          </SelectTrigger>
+          <SelectContent align="end">
+            {SORT_OPTIONS.map(({ value, label, icon: Icon }) => (
+              <SelectItem key={value} value={value}>
+                <span className="flex items-center gap-1.5">
+                  <Icon className="size-3.5 shrink-0 text-muted-foreground" />
+                  {label}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );
@@ -673,6 +743,7 @@ export function MatchListPage() {
     normalized === 'super_admin' || normalized === 'tenant_admin';
 
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const [sortBy, setSortBy] = useState<SortOption | undefined>(undefined);
   const [page, setPage] = useState(1);
 
   const debouncedSearch = useDebounce(filters.search, 400);
@@ -696,8 +767,20 @@ export function MatchListPage() {
   const { data: venuesData } = useVenuesControllerList({ limit: 50 });
 
   const paginated = unwrap(data);
-  const matches: OperatorMatchItemDto[] = paginated?.items ?? [];
   const total: number = paginated?.total ?? 0;
+
+  const matches = useMemo<OperatorMatchItemDto[]>(() => {
+    const items = [...(paginated?.items ?? [])];
+    if (sortBy === 'price-asc')
+      return items.sort((a, b) => a.pricePerPlayer - b.pricePerPlayer);
+    if (sortBy === 'price-desc')
+      return items.sort((a, b) => b.pricePerPlayer - a.pricePerPlayer);
+    if (sortBy === 'spots-asc')
+      return items.sort((a, b) => a.spotsRemaining - b.spotsRemaining);
+    if (sortBy === 'spots-desc')
+      return items.sort((a, b) => b.spotsRemaining - a.spotsRemaining);
+    return items;
+  }, [paginated?.items, sortBy]);
 
   const venues = useMemo(() => {
     const v = unwrap(venuesData);
@@ -757,7 +840,9 @@ export function MatchListPage() {
         <FilterBar
           filters={filters}
           venues={venues}
+          sortBy={sortBy}
           onFilterChange={handleFilterChange}
+          onSortChange={setSortBy}
           onClear={handleClear}
         />
       </div>

@@ -24,7 +24,14 @@
       "dateFrom": "من",
       "dateTo": "إلى",
       "search": "البحث عن مباريات…",
-      "clear": "مسح الفلاتر"
+      "clear": "مسح الفلاتر",
+      "sortBy": "ترتيب حسب",
+      "sort": {
+        "priceAsc": "السعر",
+        "priceDesc": "السعر",
+        "spotsAsc": "المقاعد",
+        "spotsDesc": "المقاعد"
+      }
     },
     "table": {
       "date": "التاريخ",

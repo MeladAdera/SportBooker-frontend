@@ -24,7 +24,14 @@
       "dateFrom": "From",
       "dateTo": "To",
       "search": "Search matches…",
-      "clear": "Clear filters"
+      "clear": "Clear filters",
+      "sortBy": "Sort by",
+      "sort": {
+        "priceAsc": "Price",
+        "priceDesc": "Price",
+        "spotsAsc": "Spots",
+        "spotsDesc": "Spots"
+      }
     },
     "table": {
       "date": "Date",
