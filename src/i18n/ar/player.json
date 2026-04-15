@@ -258,6 +258,8 @@
   },
   "discover": {
     "pageTitle": "اكتشف المباريات",
+    "refresh": "تحديث",
+    "refreshAria": "تحديث قائمة المباريات",
     "filters": {
       "sport": "الرياضة",
       "allSports": "كل الرياضات",

@@ -258,6 +258,8 @@
   },
   "discover": {
     "pageTitle": "Discover Matches",
+    "refresh": "Refresh",
+    "refreshAria": "Refresh match list",
     "filters": {
       "sport": "Sport",
       "allSports": "All sports",
