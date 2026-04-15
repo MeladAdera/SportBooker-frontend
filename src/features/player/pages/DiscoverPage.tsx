@@ -1,12 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Bike, Dumbbell, Search, Shield, Swords, X } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUp,
+  Bike,
+  Dumbbell,
+  Search,
+  Shield,
+  Swords,
+  X,
+} from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -268,14 +278,44 @@ function DayChips({
 }) {
   const { t } = useTranslation('player');
 
-  const SORT_LABELS: Record<SortOption, string> = {
-    'date-asc': t('discover.filters.sort.dateAsc'),
-    'date-desc': t('discover.filters.sort.dateDesc'),
-    'price-asc': t('discover.filters.sort.priceAsc'),
-    'price-desc': t('discover.filters.sort.priceDesc'),
-    'spots-desc': t('discover.filters.sort.spotsDesc'),
-    'spots-asc': t('discover.filters.sort.spotsAsc'),
-  };
+  const SORT_OPTIONS: {
+    value: SortOption;
+    label: string;
+    icon: React.ElementType;
+  }[] = [
+    {
+      value: 'date-asc',
+      label: t('discover.filters.sort.dateAsc'),
+      icon: ArrowUp,
+    },
+    {
+      value: 'date-desc',
+      label: t('discover.filters.sort.dateDesc'),
+      icon: ArrowDown,
+    },
+    {
+      value: 'price-asc',
+      label: t('discover.filters.sort.priceAsc'),
+      icon: ArrowUp,
+    },
+    {
+      value: 'price-desc',
+      label: t('discover.filters.sort.priceDesc'),
+      icon: ArrowDown,
+    },
+    {
+      value: 'spots-desc',
+      label: t('discover.filters.sort.spotsDesc'),
+      icon: ArrowDown,
+    },
+    {
+      value: 'spots-asc',
+      label: t('discover.filters.sort.spotsAsc'),
+      icon: ArrowUp,
+    },
+  ];
+
+  const activeSortOption = SORT_OPTIONS.find((o) => o.value === sortBy);
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
@@ -305,18 +345,26 @@ function DayChips({
         onValueChange={(v) => onSortChange((v as SortOption) || undefined)}
       >
         <SelectTrigger size="sm" className="min-w-[130px]">
-          <span className="text-sm">
-            {sortBy ? SORT_LABELS[sortBy] : t('discover.filters.sortBy')}
+          <span className="flex items-center gap-1.5 text-sm">
+            {activeSortOption ? (
+              <>
+                <activeSortOption.icon className="size-3.5 shrink-0" />
+                {activeSortOption.label}
+              </>
+            ) : (
+              t('discover.filters.sortBy')
+            )}
           </span>
         </SelectTrigger>
         <SelectContent align="end">
-          {(Object.entries(SORT_LABELS) as [SortOption, string][]).map(
-            ([val, label]) => (
-              <SelectItem key={val} value={val}>
+          {SORT_OPTIONS.map(({ value, label, icon: Icon }) => (
+            <SelectItem key={value} value={value}>
+              <span className="flex items-center gap-1.5">
+                <Icon className="size-3.5 shrink-0 text-muted-foreground" />
                 {label}
-              </SelectItem>
-            ),
-          )}
+              </span>
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </div>
@@ -395,17 +443,21 @@ function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
           placeholder={t('discover.filters.date')}
         />
 
-        <label className="flex cursor-pointer select-none items-center gap-1.5 text-sm text-foreground">
-          <input
-            type="checkbox"
-            className="accent-primary"
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="available-filter"
             checked={!!filters.available}
-            onChange={(e) =>
-              onChange({ available: e.target.checked || undefined, page: 1 })
+            onCheckedChange={(checked) =>
+              onChange({ available: checked || undefined, page: 1 })
             }
           />
-          {t('discover.filters.availableOnly')}
-        </label>
+          <label
+            htmlFor="available-filter"
+            className="cursor-pointer select-none text-sm text-foreground"
+          >
+            {t('discover.filters.availableOnly')}
+          </label>
+        </div>
 
         {hasActiveFilters && (
           <Button variant="ghost" size="sm" onClick={onClear} className="gap-1">

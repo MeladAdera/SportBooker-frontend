@@ -493,7 +493,7 @@ function DeleteAccountSection({ onDeleted }: DeleteAccountSectionProps) {
         onDeleted();
       },
       onError: (err: unknown) => {
-        const status = (err as { status?: number } | null)?.status;
+        const status = (err as { statusCode?: number } | null)?.statusCode;
         if (status === 409) {
           setServerError(t('profile.delete.errorUpcomingBookings'));
         } else {
@@ -658,22 +658,11 @@ export function ProfilePage() {
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <User className="size-5 text-muted-foreground" aria-hidden />
-          <h1 className="text-xl font-semibold text-foreground">
-            {t('profile.pageTitle')}
-          </h1>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleLogout}
-          className="text-muted-foreground hover:text-destructive"
-        >
-          <LogOut className="size-4" aria-hidden />
-          {t('profile.logout')}
-        </Button>
+      <div className="flex items-center gap-2">
+        <User className="size-5 text-muted-foreground" aria-hidden />
+        <h1 className="text-xl font-semibold text-foreground">
+          {t('profile.pageTitle')}
+        </h1>
       </div>
 
       {/* Profile info + form */}
@@ -721,6 +710,15 @@ export function ProfilePage() {
           <DeleteAccountSection onDeleted={handleDeleted} />
         </CardContent>
       </Card>
+
+      <Button
+        variant="outline"
+        className="w-full text-muted-foreground hover:text-destructive"
+        onClick={handleLogout}
+      >
+        <LogOut className="size-4" aria-hidden />
+        {t('profile.logout')}
+      </Button>
     </div>
   );
 }

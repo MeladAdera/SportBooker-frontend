@@ -277,10 +277,10 @@
         "6": "Sat"
       },
       "sort": {
-        "dateAsc": "Date ↑",
-        "dateDesc": "Date ↓",
-        "priceAsc": "Price ↑",
-        "priceDesc": "Price ↓",
+        "dateAsc": "Date",
+        "dateDesc": "Date",
+        "priceAsc": "Price",
+        "priceDesc": "Price",
         "spotsDesc": "Spots: most first",
         "spotsAsc": "Spots: fewest first"
       }

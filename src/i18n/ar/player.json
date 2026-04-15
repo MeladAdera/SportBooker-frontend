@@ -75,6 +75,7 @@
     "walletBalance": "{{balance}}",
     "walletBalanceUnknown": "—",
     "insufficientFunds": "رصيد المحفظة غير كافٍ. يرجى إعادة الشحن قبل الحجز.",
+    "insufficientFundsAction": "شحن الرصيد",
     "confirm": "تأكيد الحجز",
     "confirming": "جارٍ التأكيد…",
     "cancel": "إلغاء",
@@ -176,7 +177,6 @@
   "wallet": {
     "pageTitle": "محفظتي",
     "balanceLabel": "الرصيد المتاح",
-    "topUp": "شحن الرصيد",
     "refresh": "تحديث المحفظة",
     "error": "فشل تحميل المحفظة. يرجى المحاولة مجدداً.",
     "lowBalance": {
@@ -202,6 +202,36 @@
       "dateFrom": "من",
       "dateTo": "إلى",
       "clear": "مسح الفلاتر"
+    },
+    "topUp": {
+      "title": "شحن المحفظة",
+      "amountLabel": "المبلغ (درهم)",
+      "amountPlaceholder": "مثال: 100",
+      "min": "الحد الأدنى للشحن هو 10 دراهم",
+      "max": "الحد الأقصى للشحن هو 5,000 درهم",
+      "submit": "شحن الرصيد",
+      "submitting": "جارٍ التحويل…",
+      "success": {
+        "title": "تمت عملية الدفع!",
+        "subtitle": "جارٍ تحديث محفظتك…",
+        "balanceUpdated": "الرصيد الجديد: {{balance}}",
+        "backToWallet": "العودة إلى المحفظة"
+      },
+      "cancel": {
+        "title": "تم إلغاء الدفع",
+        "subtitle": "تم إلغاء عملية الدفع. لم يتم خصم أي مبلغ.",
+        "tryAgain": "حاول مجدداً"
+      },
+      "failure": {
+        "title": "فشلت عملية الدفع",
+        "subtitle": "تعذّرت معالجة الدفع. يرجى المحاولة مجدداً.",
+        "tryAgain": "حاول مجدداً"
+      },
+      "error": {
+        "ziinaNotConfigured": "الشحن الإلكتروني غير متاح لهذا الملعب حالياً. يرجى التواصل مع الدعم.",
+        "rateLimit": "طلبات كثيرة جداً. انتظر لحظة وحاول مجدداً.",
+        "generic": "حدث خطأ ما. يرجى المحاولة مجدداً."
+      }
     }
   },
   "myBookings": {
@@ -247,10 +277,10 @@
         "6": "سبت"
       },
       "sort": {
-        "dateAsc": "التاريخ ↑",
-        "dateDesc": "التاريخ ↓",
-        "priceAsc": "السعر ↑",
-        "priceDesc": "السعر ↓",
+        "dateAsc": "التاريخ",
+        "dateDesc": "التاريخ",
+        "priceAsc": "السعر",
+        "priceDesc": "السعر",
         "spotsDesc": "المقاعد: الأكثر أولاً",
         "spotsAsc": "المقاعد: الأقل أولاً"
       }
