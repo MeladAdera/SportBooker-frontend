@@ -119,30 +119,46 @@ function MatchCard({ match }: { match: MatchBrowseItemDto }) {
 
   return (
     <Card
-      className="cursor-pointer transition-shadow hover:shadow-md"
+      className="cursor-pointer overflow-hidden transition-shadow hover:shadow-md"
       onClick={() => navigate(`/matches/${match.id}`)}
     >
-      <CardContent className="flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              {createElement(sportIcon, {
-                className: 'size-4',
-                'aria-hidden': true,
-              })}
-            </span>
-            <p className="line-clamp-2 text-sm font-medium leading-snug text-card-foreground">
-              {match.title}
-            </p>
-          </div>
-          <Badge
-            variant={STATUS_VARIANT[match.status] ?? 'outline'}
-            className="shrink-0"
-          >
-            {t(`discover.status.${match.status}`, {
-              defaultValue: match.status,
+      {/* Venue image banner */}
+      <div className="relative h-36 w-full bg-muted">
+        {match.venuePictureUrl ? (
+          <img
+            src={match.venuePictureUrl}
+            alt={match.venueName}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            {createElement(sportIcon, {
+              className: 'size-10 text-muted-foreground/40',
+              'aria-hidden': true,
             })}
-          </Badge>
+          </div>
+        )}
+        <Badge
+          variant={STATUS_VARIANT[match.status] ?? 'outline'}
+          className="absolute right-2 top-2 shrink-0"
+        >
+          {t(`discover.status.${match.status}`, {
+            defaultValue: match.status,
+          })}
+        </Badge>
+      </div>
+
+      <CardContent className="flex flex-col gap-3">
+        <div className="flex items-start gap-2">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            {createElement(sportIcon, {
+              className: 'size-4',
+              'aria-hidden': true,
+            })}
+          </span>
+          <p className="line-clamp-2 text-sm font-medium leading-snug text-card-foreground">
+            {match.title}
+          </p>
         </div>
 
         <p className="text-xs text-muted-foreground">{match.venueName}</p>
@@ -180,14 +196,13 @@ function MatchCard({ match }: { match: MatchBrowseItemDto }) {
 
 function MatchCardSkeleton() {
   return (
-    <div className="animate-pulse rounded-xl bg-card ring-1 ring-foreground/10">
+    <div className="animate-pulse overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
+      {/* image banner placeholder */}
+      <div className="h-36 w-full bg-muted" />
       <div className="flex flex-col gap-3 p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-muted" />
-            <div className="h-4 w-32 rounded bg-muted" />
-          </div>
-          <div className="h-5 w-16 rounded-full bg-muted" />
+        <div className="flex items-start gap-2">
+          <div className="h-8 w-8 rounded-lg bg-muted" />
+          <div className="h-4 w-32 rounded bg-muted" />
         </div>
         <div className="h-3 w-24 rounded bg-muted" />
         <div className="h-3 w-36 rounded bg-muted" />
