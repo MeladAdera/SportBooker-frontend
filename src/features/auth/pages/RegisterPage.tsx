@@ -24,7 +24,7 @@ import { passwordStrengthScore, strengthLabelKey } from '../passwordStrength';
 import { registerRequest } from '../api';
 import { getRoleHomePath } from '../utils';
 
-const PHONE_RE = /^\+?[0-9][\d\s\-()]{7,}$/;
+const PHONE_RE = /^\+[1-9]\d{1,14}$/;
 
 const registerSchema = z
   .object({
@@ -55,7 +55,6 @@ const BACKEND_FIELD_MAP: Record<string, keyof RegisterFormValues> = {
   name: 'name',
   password: 'password',
   phone: 'phone',
-  phoneNumber: 'phone',
 };
 
 export function RegisterPage() {

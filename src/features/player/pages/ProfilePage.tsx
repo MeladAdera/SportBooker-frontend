@@ -33,9 +33,15 @@ import { useAuthStore } from '@/stores/authStore';
 
 // ── Schema ─────────────────────────────────────────────────────────────────────
 
+const E164_RE = /^\+[1-9]\d{1,14}$/;
+
 const profileSchema = z.object({
   name: z.string().min(2, 'nameMin'),
-  phone: z.string().max(50, 'phoneMax').optional().or(z.literal('')),
+  phone: z
+    .string()
+    .refine((v) => v === '' || E164_RE.test(v), { message: 'phoneInvalid' })
+    .optional()
+    .or(z.literal('')),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
