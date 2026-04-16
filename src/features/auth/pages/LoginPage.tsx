@@ -47,10 +47,25 @@ export function LoginPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
+
+  const DEV_ACCOUNTS = import.meta.env.DEV
+    ? [
+        { label: 'super-admin', email: 'super-admin@acfc.test' },
+        { label: 'admin', email: 'admin@acfc.test' },
+        { label: 'player', email: 'player@acfc.test' },
+        { label: 'staff', email: 'staff@acfc.test' },
+      ]
+    : null;
+
+  const fillDevAccount = (email: string) => {
+    setValue('email', email, { shouldValidate: true });
+    setValue('password', 'Password123!', { shouldValidate: true });
+  };
 
   const resolveFieldError = (key: string | undefined): string | undefined => {
     if (!key) return undefined;
@@ -69,7 +84,12 @@ export function LoginPage() {
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.statusCode === 401) {
-          setServerError(t('loginPage.errors.invalidCredentials'));
+          const msg = err.message.toLowerCase();
+          if (msg.includes('suspended')) {
+            setServerError(t('loginPage.errors.suspended'));
+          } else {
+            setServerError(t('loginPage.errors.invalidCredentials'));
+          }
         } else if (err.statusCode === 403) {
           const msg = err.message.toLowerCase();
           if (msg.includes('tenant') || msg.includes('club')) {
@@ -160,6 +180,23 @@ export function LoginPage() {
                 noValidate
                 className="flex flex-col gap-4"
               >
+                {DEV_ACCOUNTS && (
+                  <div className="flex flex-wrap gap-1.5 rounded-md border border-dashed border-amber-400/60 bg-amber-50/50 p-2 dark:bg-amber-900/10">
+                    <span className="w-full text-[10px] font-medium uppercase tracking-wide text-amber-600/70 dark:text-amber-400/60">
+                      Dev accounts
+                    </span>
+                    {DEV_ACCOUNTS.map(({ label, email }) => (
+                      <button
+                        key={email}
+                        type="button"
+                        onClick={() => fillDevAccount(email)}
+                        className="rounded-full border border-amber-300 bg-white px-2.5 py-0.5 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-600/40 dark:bg-amber-900/20 dark:text-amber-300 dark:hover:bg-amber-900/40"
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {/* Email field */}
                 <div className="flex flex-col gap-1.5">
                   <label

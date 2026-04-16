@@ -61,7 +61,48 @@
     "venues": "Venues",
     "players": "Players",
     "tenantSettings": "Tenant Settings",
-    "account": "Account"
+    "profile": "My Profile"
+  },
+  "profile": {
+    "pageTitle": "My Profile",
+    "logout": "Log out",
+    "loadError": "Failed to load profile. Please try again.",
+    "photo": {
+      "change": "Change photo",
+      "previewNotice": "Photo will be saved when you click Save."
+    },
+    "form": {
+      "name": "Name",
+      "email": "Email",
+      "emailReadOnly": "Read-only",
+      "role": "Role",
+      "phone": "Phone",
+      "phonePlaceholder": "+971 50 000 0000",
+      "save": "Save Changes",
+      "saveSuccess": "Profile updated successfully.",
+      "photoError": "Failed to upload photo. Please try again.",
+      "error": "Failed to save profile. Please try again.",
+      "validation": {
+        "nameMin": "Name must be at least 2 characters.",
+        "phoneMax": "Phone number is too long."
+      }
+    },
+    "password": {
+      "title": "Change Password",
+      "current": "Current Password",
+      "new": "New Password",
+      "confirm": "Confirm New Password",
+      "revokeOtherSessions": "Sign out from all other devices",
+      "changeBtn": "Update Password",
+      "success": "Password updated successfully.",
+      "errorIncorrect": "Current password is incorrect.",
+      "errorGeneric": "Failed to update password. Please try again.",
+      "validation": {
+        "currentRequired": "Current password is required.",
+        "newMin": "New password must be at least 8 characters.",
+        "confirmMismatch": "Passwords do not match."
+      }
+    }
   },
   "matchDetail": {
     "back": "Back to Matches",
@@ -124,20 +165,33 @@
   "createMatch": {
     "title": "New Match",
     "back": "Back to Matches",
+    "sections": {
+      "details": "Match Details",
+      "schedule": "Schedule",
+      "pricing": "Capacity & Pricing"
+    },
     "fields": {
       "title": "Title",
       "titlePlaceholder": "e.g. Friday 5-a-side",
       "sport": "Sport",
       "sportPlaceholder": "Select a sport",
+      "sportSearch": "Search sports…",
+      "sportEmpty": "No sports found.",
       "venue": "Venue",
       "venuePlaceholder": "Select a venue",
       "venueLoading": "Loading venues…",
       "venueSearch": "Search venues…",
+      "venueEmpty": "No venues found.",
       "date": "Date",
       "time": "Kick-off time",
-      "duration": "Duration (minutes)",
+      "hour": "Hour",
+      "minute": "Minute",
+      "duration": "Duration",
+      "durationOption": "{{mins}} minutes",
       "maxCapacity": "Max players",
-      "price": "Price per player"
+      "price": "Price per player",
+      "currency": "AED",
+      "perPlayer": "/ player"
     },
     "submit": "Create Match",
     "submitting": "Creating…",
@@ -160,8 +214,269 @@
       "priceMin": "Price must be 0 or more."
     }
   },
+  "venueDetail": {
+    "back": "Back to Venues",
+    "openInMaps": "Open in Maps",
+    "sports": "Sports",
+    "notFound": "Venue not found.",
+    "error": "Failed to load venue.",
+    "deactivateConflict": "Cannot deactivate — this venue has active matches."
+  },
+  "venues": {
+    "title": "Venues",
+    "empty": "No venues found.",
+    "createSuccess": "Venue created successfully.",
+    "updateSuccess": "Venue updated successfully.",
+    "deactivateSuccess": "Venue deactivated.",
+    "activateSuccess": "Venue activated.",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "table": {
+      "name": "Name",
+      "address": "Address",
+      "sports": "Sports",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Pitch 1 – Al Quoz",
+      "address": "Address",
+      "addressPlaceholder": "e.g. Al Quoz Industrial Area, Dubai",
+      "mapsUrl": "Google Maps URL",
+      "sportTypes": "Sport Types",
+      "pictureUrl": "Photo URL",
+      "photo": "Photo",
+      "modeUrl": "URL",
+      "modeFile": "Upload",
+      "uploadClick": "Click to upload",
+      "uploadHint": "or drag and drop",
+      "uploadConstraints": "JPEG, PNG, WebP or GIF · max 5 MB",
+      "uploadButton": "Choose file",
+      "clearPhoto": "Remove photo",
+      "currentPhoto": "Current photo",
+      "currentPhotoAlt": "Current venue photo",
+      "optional": "optional",
+      "removePhoto": "Remove current photo"
+    },
+    "filters": {
+      "search": "Search venues…",
+      "sportAll": "All sports",
+      "statusAll": "All statuses"
+    },
+    "actions": {
+      "create": "New Venue",
+      "edit": "Edit",
+      "deactivate": "Deactivate",
+      "activate": "Activate",
+      "map": "Map"
+    },
+    "dialog": {
+      "createTitle": "New Venue",
+      "editTitle": "Edit Venue",
+      "cancel": "Cancel",
+      "save": "Save",
+      "create": "Create Venue",
+      "saving": "Saving…"
+    },
+    "confirm": {
+      "deactivateTitle": "Deactivate Venue",
+      "deactivateBody": "Deactivate {{name}}? This will hide it from new matches. Venues with upcoming or in-progress matches cannot be deactivated.",
+      "deactivateConfirm": "Deactivate",
+      "activateTitle": "Activate Venue",
+      "activateBody": "Activate {{name}}? It will become available for new matches.",
+      "activateConfirm": "Activate"
+    },
+    "error": {
+      "load": "Failed to load venues. Please try again.",
+      "generic": "Something went wrong. Please try again.",
+      "deactivateConflict": "This venue has upcoming or in-progress matches and cannot be deactivated."
+    },
+    "validation": {
+      "nameMin": "Name must be at least 2 characters.",
+      "addressMin": "Address must be at least 3 characters.",
+      "mapsUrlInvalid": "Please enter a valid URL.",
+      "sportTypesMin": "Select at least one sport.",
+      "pictureUrlInvalid": "Please enter a valid image URL.",
+      "pictureRequired": "Please provide a photo URL or upload a file.",
+      "pictureFileType": "Only JPEG, PNG, WebP, or GIF files are allowed.",
+      "pictureFileSize": "File must be under 5 MB."
+    }
+  },
+  "players": {
+    "title": "Players",
+    "empty": "No players found.",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "deleted": "Deleted",
+      "banned": "Banned",
+      "bannedUntil": "Banned until {{date}}",
+      "bannedPermanent": "Permanently banned"
+    },
+    "role": {
+      "super_admin": "Super Admin",
+      "tenant_admin": "Admin",
+      "tenant_staff": "Staff",
+      "player": "Player"
+    },
+    "filters": {
+      "search": "Search by name or email…",
+      "roleAll": "All roles",
+      "statusAll": "All statuses",
+      "includeDeleted": "Include deleted",
+      "bannedAll": "All (banned / not)",
+      "bannedOnly": "Banned only",
+      "notBanned": "Not banned"
+    },
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "registered": "Registered"
+    },
+    "actions": {
+      "view": "View"
+    },
+    "pagination": {
+      "range": "{{from}}–{{to}} of {{total}} players",
+      "loading": "Loading…",
+      "perPage": "Rows per page",
+      "page": "{{page}} / {{total}}",
+      "prev": "Previous",
+      "next": "Next"
+    },
+    "error": {
+      "load": "Failed to load players. Please try again."
+    },
+    "detail": {
+      "back": "Back to Players",
+      "notFound": "Player not found.",
+      "email": "Email",
+      "phone": "Phone",
+      "wallet": "Wallet Balance",
+      "walletValue": "AED {{amount}}",
+      "registered": "Registered",
+      "roleSection": "Role Assignment",
+      "roleSelfHint": "You cannot change your own role.",
+      "roleHigherRankHint": "You cannot modify users with equal or higher rank.",
+      "roleSuccess": "Role updated successfully.",
+      "roleErrorForbidden": "You do not have permission to change this user's role.",
+      "roleErrorSelf": "You cannot change your own role.",
+      "roleErrorGeneric": "Failed to update role. Please try again.",
+      "roleConfirm": {
+        "title": "Change Role",
+        "body": "Change {{name}}'s role to {{role}}? This will update their permissions immediately.",
+        "confirm": "Change Role",
+        "confirming": "Saving…",
+        "cancel": "Cancel"
+      },
+      "banSection": "Suspension",
+      "banStatus": "Ban Status",
+      "bannedAt": "Banned at",
+      "bannedUntil": "Banned until",
+      "bannedPermanent": "Permanent",
+      "banReason": "Reason",
+      "banReasonNone": "No reason provided",
+      "banBtn": "Ban Player",
+      "unbanBtn": "Lift Ban",
+      "unbanning": "Lifting ban…",
+      "unbanSuccess": "Ban lifted successfully.",
+      "unbanError": "Failed to lift ban. Please try again.",
+      "banModal": {
+        "title": "Ban Player",
+        "durationLabel": "Duration",
+        "permanent": "Permanent",
+        "day_one": "{{count}} day",
+        "day_other": "{{count}} days",
+        "reasonLabel": "Reason (internal, not shown to player)",
+        "reasonPlaceholder": "e.g. Repeated no-show without cancellation",
+        "confirm": "Ban Player",
+        "confirming": "Banning…",
+        "cancel": "Cancel"
+      },
+      "banSuccess": "Player banned. {{count}} upcoming booking cancelled and refunded.",
+      "banSuccess_other": "Player banned. {{count}} upcoming bookings cancelled and refunded.",
+      "banError": "Failed to ban player. Please try again.",
+      "banErrorForbidden": "You do not have permission to ban this player.",
+      "banErrorSelf": "You cannot ban yourself.",
+      "bookingHistory": {
+        "title": "Booking History",
+        "empty": "No bookings found.",
+        "error": "Failed to load bookings.",
+        "statusAll": "All statuses",
+        "upcomingOnly": "Upcoming only",
+        "colMatch": "Match",
+        "colVenue": "Venue",
+        "colDate": "Date",
+        "colStatus": "Status",
+        "colPaid": "Paid",
+        "status": {
+          "confirmed": "Confirmed",
+          "cancelled": "Cancelled",
+          "waitlisted": "Waitlisted"
+        }
+      }
+    }
+  },
+  "results": {
+    "title": "Match Results",
+    "notSubmitted": "Results haven't been submitted yet.",
+    "submittedAt": "Submitted {{date}}",
+    "winner": "Winner",
+    "draw": "Draw",
+    "team_a": "Team A",
+    "team_b": "Team B",
+    "goalsLabel": "Goals",
+    "assistsLabel": "Assists",
+    "mvpLabel": "MVP",
+    "noPlayers": "No confirmed players to assign.",
+    "form": {
+      "heading": "Assign teams & enter stats",
+      "player": "Player",
+      "teamSide": "Team",
+      "goals": "Goals",
+      "assists": "Assists",
+      "mvp": "MVP",
+      "winningSide": "Match Outcome",
+      "team_a": "Team A wins",
+      "team_b": "Team B wins",
+      "drawOption": "Draw",
+      "submit": "Submit Results",
+      "submitting": "Submitting…"
+    },
+    "error": {
+      "alreadySubmitted": "Results have already been submitted for this match.",
+      "matchNotCompleted": "This match is not completed yet.",
+      "generic": "Failed to submit results. Please try again."
+    }
+  },
   "settings": {
     "title": "Settings",
+    "general": {
+      "title": "General Settings",
+      "name": "Tenant Name",
+      "slug": "Slug",
+      "slugHint": "Slug is immutable and cannot be changed.",
+      "logoUrl": "Logo URL",
+      "logoUrlPlaceholder": "https://…",
+      "logoUrlClear": "Clear logo",
+      "timezone": "Timezone",
+      "timezoneSearch": "Search timezones…",
+      "timezoneEmpty": "No timezone found.",
+      "cancelCutoffHours": "Cancellation Cutoff (hours)",
+      "cancelCutoffHint": "Hours before match start when cancellations close. Set to 0 for no cutoff.",
+      "save": "Save Settings",
+      "saving": "Saving…",
+      "success": "Settings saved.",
+      "error": {
+        "load": "Failed to load settings.",
+        "generic": "Failed to save settings."
+      }
+    },
     "ziina": {
       "title": "Ziina Payment Integration",
       "description": "Configure your Ziina access token to enable online wallet top-ups for players.",

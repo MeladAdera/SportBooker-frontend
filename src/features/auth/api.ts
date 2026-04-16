@@ -17,7 +17,7 @@ export type RegisterRequestBody = {
   name: string;
   email: string;
   password: string;
-  phone?: string;
+  phone: string;
 };
 
 /** Backend wraps all responses in { data, statusCode }. */
@@ -63,10 +63,8 @@ export async function registerRequest(
     name: body.name.trim(),
     email: body.email.trim(),
     password: body.password,
+    phone: body.phone.trim(),
   };
-  if (body.phone?.trim()) {
-    payload.phone = body.phone.trim();
-  }
 
   const res = await apiFetch('/auth/register', {
     method: 'POST',

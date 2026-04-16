@@ -28,33 +28,11 @@ import { CancelBookingModal } from '@/features/player/components/CancelBookingMo
 import { MAX_GK } from '@/features/player/constants';
 import { unwrap } from '@/api';
 import { useAuthStore } from '@/stores/authStore';
+import { formatDateInTz, formatTimeInTz } from '@/lib/format';
+import { useTenantTimezone } from '@/shared/hooks';
 import type { MatchWaitlistPlayerDto } from '@/api/generated/models/matchWaitlistPlayerDto';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function formatDate(iso: string) {
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
-}
-
-function formatTime(iso: string) {
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(iso));
-  } catch {
-    return '';
-  }
-}
 
 function isPast(iso: string) {
   return new Date(iso).getTime() < Date.now();
@@ -379,6 +357,7 @@ export function MatchDetailPage() {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const currentUserId = useAuthStore((s) => s.user?.id);
+  const tenantTz = useTenantTimezone();
 
   const {
     data: matchData,
@@ -471,7 +450,7 @@ export function MatchDetailPage() {
                 className="absolute inset-0 size-full object-cover"
               />
               <div
-                className="absolute inset-0 bg-linear-to-t from-background via-background/70 to-background/20"
+                className="absolute inset-0 bg-linear-to-t from-background via-background/90 to-background/40"
                 aria-hidden
               />
             </>
@@ -532,13 +511,13 @@ export function MatchDetailPage() {
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Calendar className="size-4 shrink-0" aria-hidden />
-                <span>{formatDate(match.scheduledAt)}</span>
+                <span>{formatDateInTz(match.scheduledAt, tenantTz)}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="size-4 shrink-0" aria-hidden />
                 <span>
-                  {formatTime(match.scheduledAt)} &middot; {match.durationMins}{' '}
-                  {t('matchDetail.info.mins')}
+                  {formatTimeInTz(match.scheduledAt, tenantTz)} &middot;{' '}
+                  {match.durationMins} {t('matchDetail.info.mins')}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">

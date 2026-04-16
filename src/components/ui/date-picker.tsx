@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 
@@ -14,9 +15,7 @@ interface DatePickerProps {
   onChange: (date: Date | undefined) => void;
   placeholder?: string;
   disabled?: boolean;
-  /** ISO date string to disable all days before this date */
   fromDate?: Date;
-  /** ISO date string to disable all days after this date */
   toDate?: Date;
   className?: string;
 }
@@ -30,13 +29,15 @@ export function DatePicker({
   toDate,
   className,
 }: DatePickerProps) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         disabled={disabled}
         className={cn(
-          'flex h-8 items-center gap-2 rounded-lg border border-input bg-background px-2.5 text-sm text-foreground transition-colors',
-          'hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          'flex h-8 items-center gap-2 rounded-lg border border-input bg-transparent px-2.5 text-sm text-foreground transition-colors',
+          'focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none',
           'disabled:pointer-events-none disabled:opacity-50',
           !value && 'text-muted-foreground',
           className,
@@ -49,7 +50,10 @@ export function DatePicker({
         <Calendar
           mode="single"
           selected={value}
-          onSelect={onChange}
+          onSelect={(date) => {
+            onChange(date);
+            setOpen(false);
+          }}
           disabled={(date) => {
             if (fromDate && date < fromDate) return true;
             if (toDate && date > toDate) return true;

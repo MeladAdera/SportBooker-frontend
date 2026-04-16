@@ -31,14 +31,14 @@ const registerSchema = z
     name: z.string().min(1, 'nameRequired').min(2, 'nameMin'),
     email: z.string().min(1, 'emailRequired').email('emailInvalid'),
     password: z.string().min(1, 'passwordRequired').min(8, 'passwordMin'),
-    phone: z.string().optional(),
+    phone: z.string().min(1, 'phoneRequired'),
     acceptTerms: z
       .boolean()
       .refine((v) => v === true, { message: 'termsRequired' }),
   })
   .superRefine((data, ctx) => {
-    const p = data.phone?.trim();
-    if (p && !PHONE_RE.test(p)) {
+    const p = data.phone.trim();
+    if (!PHONE_RE.test(p)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'phoneInvalid',
@@ -120,7 +120,7 @@ export function RegisterPage() {
         name: values.name,
         email: values.email,
         password: values.password,
-        phone: values.phone?.trim() || undefined,
+        phone: values.phone.trim(),
       });
       login(data.accessToken, data.refreshToken, data.expiresIn, data.user);
       navigate(getRoleHomePath(data.user.role), { replace: true });
@@ -361,16 +361,15 @@ export function RegisterPage() {
                     htmlFor="reg-phone"
                     className="text-sm font-medium text-foreground"
                   >
-                    {t('registerPage.phone')}{' '}
-                    <span className="font-normal text-muted-foreground">
-                      ({t('registerPage.optional')})
-                    </span>
+                    {t('registerPage.phone')}
                   </label>
                   <Input
                     id="reg-phone"
                     type="tel"
                     autoComplete="tel"
                     placeholder={t('registerPage.phonePlaceholder')}
+                    required
+                    aria-required="true"
                     aria-invalid={!!errors.phone}
                     {...register('phone')}
                   />
