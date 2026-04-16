@@ -7,7 +7,7 @@ import {
   useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowDown,
   ArrowUp,
@@ -683,10 +683,54 @@ const DEFAULT_FILTERS: FilterState = {
   limit: PAGE_SIZE,
 };
 
+// ── URL ↔ FilterState serialisation ──────────────────────────────────────────
+
+function filtersToParams(filters: FilterState): URLSearchParams {
+  const p = new URLSearchParams();
+  if (filters.page && filters.page !== 1) p.set('page', String(filters.page));
+  if (filters.sportType) p.set('sportType', filters.sportType);
+  if (filters.venueId) p.set('venueId', filters.venueId);
+  if (filters.date) p.set('date', filters.date);
+  if (filters.available) p.set('available', 'true');
+  if (filters.sortBy) p.set('sortBy', filters.sortBy);
+  if (filters.dayOfWeek && filters.dayOfWeek.length > 0)
+    p.set('dayOfWeek', filters.dayOfWeek.join(','));
+  return p;
+}
+
+function paramsToFilters(p: URLSearchParams): FilterState {
+  const page = parseInt(p.get('page') ?? '1', 10);
+  const sportType = p.get('sportType') as SportType | null;
+  const venueId = p.get('venueId') ?? undefined;
+  const date = p.get('date') ?? undefined;
+  const available = p.get('available') === 'true' ? true : undefined;
+  const sortBy = (p.get('sortBy') as SortOption | null) ?? undefined;
+  const dayParam = p.get('dayOfWeek');
+  const dayOfWeek = dayParam
+    ? (dayParam
+        .split(',')
+        .map(Number)
+        .filter((n) => n >= 0 && n <= 6) as DayOfWeek[])
+    : undefined;
+
+  return {
+    page: isNaN(page) || page < 1 ? 1 : page,
+    limit: PAGE_SIZE,
+    ...(sportType ? { sportType } : {}),
+    ...(venueId ? { venueId } : {}),
+    ...(date ? { date } : {}),
+    ...(available ? { available } : {}),
+    ...(sortBy ? { sortBy } : {}),
+    ...(dayOfWeek && dayOfWeek.length > 0 ? { dayOfWeek } : {}),
+  };
+}
+
 export function DiscoverPage() {
   const { i18n, t } = useTranslation('player');
-  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [spinning, setSpinning] = useState(false);
+
+  const filters = useMemo(() => paramsToFilters(searchParams), [searchParams]);
   const phrases =
     TYPEWRITER_PHRASES[i18n.language] ?? TYPEWRITER_PHRASES['en']!;
   const typedTitle = useTypewriter(phrases);
@@ -730,13 +774,18 @@ export function DiscoverPage() {
   const total = matchesData?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
-  const handleFilterChange = useCallback((next: Partial<FilterState>) => {
-    setFilters((prev) => ({ ...prev, ...next }));
-  }, []);
+  const handleFilterChange = useCallback(
+    (next: Partial<FilterState>) => {
+      setSearchParams(filtersToParams({ ...filters, ...next }), {
+        replace: true,
+      });
+    },
+    [filters, setSearchParams],
+  );
 
   const handleClear = useCallback(() => {
-    setFilters(DEFAULT_FILTERS);
-  }, []);
+    setSearchParams(filtersToParams(DEFAULT_FILTERS), { replace: true });
+  }, [setSearchParams]);
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
