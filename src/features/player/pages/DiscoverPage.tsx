@@ -41,6 +41,7 @@ import { useMatchesControllerList } from '@/api/generated/matches/matches';
 import { useVenuesControllerList } from '@/api/generated/venues/venues';
 import type { MatchBrowseItemDto } from '@/api/generated/models/matchBrowseItemDto';
 import type { MatchesControllerListParams } from '@/api/generated/models/matchesControllerListParams';
+import { MatchesControllerListSortBy } from '@/api/generated/models/matchesControllerListSortBy';
 import { MatchesControllerListSportType } from '@/api/generated/models/matchesControllerListSportType';
 import { unwrap } from '@/api';
 import { ALL_SPORTS_ICON, getSportIcon } from '@/lib/sportIcons';
@@ -52,8 +53,14 @@ const PAGE_SIZE = 12;
 type SportType =
   (typeof MatchesControllerListSportType)[keyof typeof MatchesControllerListSportType];
 
+/** UI / URL: JavaScript weekday 0=Sun, 1=Mon … 6=Sat (same as Date.getDay()). */
 const DAYS_OF_WEEK = [0, 1, 2, 3, 4, 5, 6] as const;
 type DayOfWeek = (typeof DAYS_OF_WEEK)[number];
+
+/** Map JS getDay() (0=Sun…6=Sat) → ISO weekday for API / PostgreSQL ISODOW (1=Mon…7=Sun). */
+function jsGetDayToIsoDow(day: DayOfWeek): number {
+  return day === 0 ? 7 : day;
+}
 
 type SortOption =
   | 'date-asc'
@@ -62,6 +69,19 @@ type SortOption =
   | 'price-desc'
   | 'spots-asc'
   | 'spots-desc';
+
+/** Maps UI SortOption → API MatchesControllerListSortBy enum value. */
+function sortOptionToApiSort(sort: SortOption): MatchesControllerListSortBy {
+  const map: Record<SortOption, MatchesControllerListSortBy> = {
+    'date-asc': MatchesControllerListSortBy.scheduled_at_asc,
+    'date-desc': MatchesControllerListSortBy.scheduled_at_desc,
+    'price-asc': MatchesControllerListSortBy.price_asc,
+    'price-desc': MatchesControllerListSortBy.price_desc,
+    'spots-asc': MatchesControllerListSortBy.spots_remaining_asc,
+    'spots-desc': MatchesControllerListSortBy.spots_remaining_desc,
+  };
+  return map[sort];
+}
 
 const TYPEWRITER_PHRASES: Record<string, readonly string[]> = {
   en: [
@@ -219,9 +239,13 @@ function MatchCardSkeleton() {
 
 const SPORT_TYPES = Object.values(MatchesControllerListSportType);
 
-type FilterState = MatchesControllerListParams & {
+type FilterState = Omit<
+  MatchesControllerListParams,
+  'sortBy' | 'dayOfWeek' | 'page' | 'limit'
+> & {
   page: number;
-  /** When set and non-empty, only matches on these weekdays (0=Sun … 6=Sat). */
+  limit?: number;
+  /** JS weekdays 0=Sun … 6=Sat in URL/state; converted to ISO 1–7 only when calling the API. */
   dayOfWeek?: DayOfWeek[];
   sortBy?: SortOption;
 };
@@ -288,7 +312,8 @@ function useTypewriter(
 
 /**
  * Seven pill buttons (Sun–Sat), multi-select, plus sort on the same row.
- * Day filtering is client-side; sort is also applied client-side.
+ * Sort and day filtering are applied server-side before pagination.
+ * Day chips use JS 0–6; `buildApiParams` sends ISO 1–7 on the wire.
  */
 function DayChips({
   value,
@@ -725,6 +750,28 @@ function paramsToFilters(p: URLSearchParams): FilterState {
   };
 }
 
+function buildApiParams(filters: FilterState): MatchesControllerListParams {
+  const {
+    page,
+    limit = PAGE_SIZE,
+    dayOfWeek,
+    sortBy,
+    sportType,
+    venueId,
+    date,
+    available,
+  } = filters;
+  const params: MatchesControllerListParams = { page, limit };
+  if (sportType) params.sportType = sportType;
+  if (venueId) params.venueId = venueId;
+  if (date) params.date = date;
+  if (available) params.available = available;
+  if (sortBy) params.sortBy = sortOptionToApiSort(sortBy);
+  if (dayOfWeek && dayOfWeek.length > 0)
+    params.dayOfWeek = dayOfWeek.map(jsGetDayToIsoDow);
+  return params;
+}
+
 export function DiscoverPage() {
   const { i18n, t } = useTranslation('player');
   const [searchParams, setSearchParams] = useSearchParams();
@@ -735,44 +782,15 @@ export function DiscoverPage() {
     TYPEWRITER_PHRASES[i18n.language] ?? TYPEWRITER_PHRASES['en']!;
   const typedTitle = useTypewriter(phrases);
 
-  const { page, limit, dayOfWeek, sortBy, ...queryParams } = filters;
+  const apiParams = useMemo(() => buildApiParams(filters), [filters]);
+
   const { data, isLoading, isError, refetch, isFetching } =
-    useMatchesControllerList({
-      ...queryParams,
-      page,
-      limit,
-    });
+    useMatchesControllerList(apiParams);
   const matchesData = unwrap(data);
-  const allMatches = matchesData?.items ?? [];
-
-  const filtered =
-    dayOfWeek && dayOfWeek.length > 0
-      ? allMatches.filter((m) =>
-          dayOfWeek.includes(new Date(m.scheduledAt).getDay() as DayOfWeek),
-        )
-      : allMatches;
-
-  const matches = sortBy
-    ? [...filtered].sort((a, b) => {
-        if (sortBy === 'date-asc')
-          return (
-            new Date(a.scheduledAt).getTime() -
-            new Date(b.scheduledAt).getTime()
-          );
-        if (sortBy === 'date-desc')
-          return (
-            new Date(b.scheduledAt).getTime() -
-            new Date(a.scheduledAt).getTime()
-          );
-        if (sortBy === 'price-asc') return a.pricePerPlayer - b.pricePerPlayer;
-        if (sortBy === 'price-desc') return b.pricePerPlayer - a.pricePerPlayer;
-        if (sortBy === 'spots-desc') return b.spotsRemaining - a.spotsRemaining;
-        if (sortBy === 'spots-asc') return a.spotsRemaining - b.spotsRemaining;
-        return 0;
-      })
-    : filtered;
+  const matches = matchesData?.items ?? [];
   const total = matchesData?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
+  const { page } = filters;
 
   const handleFilterChange = useCallback(
     (next: Partial<FilterState>) => {
