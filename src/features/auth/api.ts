@@ -2,7 +2,7 @@ import { apiFetch, ApiError, parseApiErrorBody } from '@/api/client';
 import type { AuthUser } from '@/stores/authStore';
 
 export type LoginRequest = {
-  email: string;
+  identifier: string;
   password: string;
 };
 
