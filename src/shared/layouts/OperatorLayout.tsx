@@ -40,7 +40,7 @@ const NAV_ITEMS: NavItem[] = [
     icon: Settings,
     superAdminOnly: true,
   },
-  { to: '/account', labelKey: 'nav.account', icon: User },
+  { to: '/operator/profile', labelKey: 'nav.profile', icon: User },
 ];
 
 type NavItemProps = {
@@ -121,7 +121,7 @@ export function OperatorLayout({ children }: Props) {
   return (
     <div className="flex min-h-svh flex-col bg-background">
       {/* ── AppBar — full width ──────────────────────────────────── */}
-      <AppBar profilePath="/account" />
+      <AppBar profilePath="/operator/profile" />
 
       {/* ── Below AppBar: sidebar + content ─────────────────────── */}
       <div className="flex flex-1 overflow-hidden">

@@ -42,6 +42,8 @@ import { cn } from '@/lib/utils';
 import { ALL_SPORTS_ICON, getSportIcon } from '@/lib/sportIcons';
 import { normalizeRole } from '@/lib/roles';
 import { useAuthStore } from '@/stores/authStore';
+import { formatDateInTz, toLocalDateString } from '@/lib/format';
+import { useTenantTimezone } from '@/shared/hooks';
 import { useTenantMatchesControllerList } from '@/api/generated/tenant-—-matches/tenant-—-matches';
 import { useVenuesControllerList } from '@/api/generated/venues/venues';
 import type { OperatorMatchItemDto } from '@/api/generated/models/operatorMatchItemDto';
@@ -81,20 +83,6 @@ const DEFAULT_FILTERS: Filters = {
 const PAGE_SIZE = 20;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-function formatDate(iso: string): string {
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
-}
 
 const STATUS_BADGE: Record<
   string,
@@ -357,9 +345,7 @@ function FilterBar({
           <DatePicker
             value={filters.dateFrom ? new Date(filters.dateFrom) : undefined}
             onChange={(d) =>
-              onFilterChange({
-                dateFrom: d ? d.toISOString().slice(0, 10) : '',
-              })
+              onFilterChange({ dateFrom: d ? toLocalDateString(d) : '' })
             }
             placeholder={t('matches.filters.dateFrom')}
             toDate={filters.dateTo ? new Date(filters.dateTo) : undefined}
@@ -369,7 +355,7 @@ function FilterBar({
           <DatePicker
             value={filters.dateTo ? new Date(filters.dateTo) : undefined}
             onChange={(d) =>
-              onFilterChange({ dateTo: d ? d.toISOString().slice(0, 10) : '' })
+              onFilterChange({ dateTo: d ? toLocalDateString(d) : '' })
             }
             placeholder={t('matches.filters.dateTo')}
             fromDate={filters.dateFrom ? new Date(filters.dateFrom) : undefined}
@@ -429,6 +415,7 @@ const colHelper = createColumnHelper<OperatorMatchItemDto>();
 interface DesktopTableProps {
   matches: OperatorMatchItemDto[];
   canCancel: boolean;
+  tz: string;
   onView: (id: string) => void;
   onEdit: (id: string) => void;
   onCancel: (id: string) => void;
@@ -437,6 +424,7 @@ interface DesktopTableProps {
 function DesktopTable({
   matches,
   canCancel,
+  tz,
   onView,
   onEdit,
   onCancel,
@@ -449,7 +437,13 @@ function DesktopTable({
         header: t('matches.table.date'),
         cell: (info) => (
           <span className="whitespace-nowrap text-sm">
-            {formatDate(info.getValue())}
+            {formatDateInTz(info.getValue(), tz, {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
           </span>
         ),
       }),
@@ -514,7 +508,7 @@ function DesktopTable({
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [t, canCancel],
+    [t, canCancel, tz],
   );
 
   const table = useReactTable({
@@ -564,6 +558,7 @@ function DesktopTable({
 interface MobileCardProps {
   match: OperatorMatchItemDto;
   canCancel: boolean;
+  tz: string;
   onView: (id: string) => void;
   onEdit: (id: string) => void;
   onCancel: (id: string) => void;
@@ -572,6 +567,7 @@ interface MobileCardProps {
 function MobileMatchCard({
   match,
   canCancel,
+  tz,
   onView,
   onEdit,
   onCancel,
@@ -587,7 +583,13 @@ function MobileMatchCard({
           <div className="flex flex-col gap-0.5">
             <p className="text-sm font-medium text-foreground">{match.title}</p>
             <p className="text-xs text-muted-foreground">
-              {formatDate(match.scheduledAt)}
+              {formatDateInTz(match.scheduledAt, tz, {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
             </p>
           </div>
           <StatusBadge status={match.status} />
@@ -754,6 +756,7 @@ export function MatchListPage() {
   const normalized = normalizeRole(role);
   const canCancel =
     normalized === 'super_admin' || normalized === 'tenant_admin';
+  const tenantTz = useTenantTimezone();
 
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [sortBy, setSortBy] = useState<SortOption | undefined>(undefined);
@@ -824,6 +827,7 @@ export function MatchListPage() {
 
   const actionProps = {
     canCancel,
+    tz: tenantTz,
     onView: handleView,
     onEdit: handleEdit,
     onCancel: handleCancel,
