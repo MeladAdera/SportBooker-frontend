@@ -225,6 +225,25 @@
       "priceInteger": "Price must be a whole number."
     }
   },
+  "editMatch": {
+    "title": "Edit Match",
+    "back": "Back to match",
+    "backMatches": "Back to matches",
+    "submit": "Save changes",
+    "submitting": "Saving…",
+    "success": "Match updated successfully.",
+    "blockedCancelled": "Cancelled matches cannot be edited.",
+    "blockedCompleted": "Completed matches cannot be edited.",
+    "error": {
+      "notFound": "Match not found.",
+      "generic": "Failed to update match. Please try again.",
+      "forbidden": "You do not have permission to edit this match.",
+      "overlap": "This venue already has a match overlapping that time slot. Please choose a different time."
+    },
+    "validation": {
+      "capacityBelowRoster": "Capacity cannot be less than the number of confirmed players."
+    }
+  },
   "venueDetail": {
     "back": "Back to Venues",
     "openInMaps": "Open in Maps",

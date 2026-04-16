@@ -16,6 +16,7 @@ import { DashboardPage } from '@/features/operator/pages/DashboardPage';
 import { MatchListPage } from '@/features/operator/pages/MatchListPage';
 import { OperatorMatchDetailPage } from '@/features/operator/pages/OperatorMatchDetailPage';
 import { CreateMatchPage } from '@/features/operator/pages/CreateMatchPage';
+import { EditMatchPage } from '@/features/operator/pages/EditMatchPage';
 import { TenantSettingsPage } from '@/features/operator/pages/TenantSettingsPage';
 import { VenuesPage } from '@/features/operator/pages/VenuesPage';
 import { VenueDetailPage } from '@/features/operator/pages/VenueDetailPage';
@@ -78,6 +79,7 @@ function App() {
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="matches" element={<MatchListPage />} />
             <Route path="matches/new" element={<CreateMatchPage />} />
+            <Route path="matches/:id/edit" element={<EditMatchPage />} />
             <Route path="matches/:id" element={<OperatorMatchDetailPage />} />
             <Route path="venues" element={<VenuesPage />} />
             <Route path="venues/:id" element={<VenueDetailPage />} />
