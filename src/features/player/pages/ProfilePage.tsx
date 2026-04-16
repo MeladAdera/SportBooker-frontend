@@ -5,15 +5,35 @@ import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { Camera, KeyRound, Loader2, LogOut, Trash2, User } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import {
+  Camera,
+  KeyRound,
+  Loader2,
+  LogOut,
+  Star,
+  Target,
+  Trash2,
+  Trophy,
+  User,
+} from 'lucide-react';
 import { useAuthControllerChangePassword } from '@/api/generated/auth/auth';
 import type { ApiError } from '@/api/client';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { DatePicker } from '@/components/ui/date-picker';
+import { SearchableCombobox } from '@/components/ui/searchable-combobox';
 import {
   Dialog,
   DialogContent,
@@ -29,7 +49,14 @@ import {
   useUsersControllerDeleteMyAccount,
   getUsersControllerGetMyProfileQueryKey,
 } from '@/api/generated/users/users';
+import { UpdateMyProfileDtoSkillLevel } from '@/api/generated/models/updateMyProfileDtoSkillLevel';
+import { UpdateMyProfileDtoPreferredPosition } from '@/api/generated/models/updateMyProfileDtoPreferredPosition';
+import { UpdateMyProfileDtoDominantFoot } from '@/api/generated/models/updateMyProfileDtoDominantFoot';
+import type { MyProfileResponseDto } from '@/api/generated/models/myProfileResponseDto';
 import { useAuthStore } from '@/stores/authStore';
+import { useLocaleStore } from '@/stores/localeStore';
+import type { Locale } from '@/stores/localeStore';
+import { NATIONALITY_OPTIONS } from '@/lib/nationalities';
 
 // ── Schema ─────────────────────────────────────────────────────────────────────
 
@@ -42,6 +69,17 @@ const profileSchema = z.object({
     .refine((v) => v === '' || E164_RE.test(v), { message: 'phoneInvalid' })
     .optional()
     .or(z.literal('')),
+  // Football profile — all optional
+  dateOfBirth: z.string().optional(),
+  nationality: z
+    .string()
+    .max(100, 'nationalityMax')
+    .optional()
+    .or(z.literal('')),
+  preferredLanguage: z.string().optional(),
+  skillLevel: z.string().optional(),
+  preferredPosition: z.string().optional(),
+  dominantFoot: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -80,13 +118,112 @@ function FormLabel({
   htmlFor,
   children,
 }: {
-  htmlFor: string;
+  htmlFor?: string;
   children: React.ReactNode;
 }) {
   return (
     <label htmlFor={htmlFor} className="text-sm font-medium text-foreground">
       {children}
     </label>
+  );
+}
+
+// ── Stats section ──────────────────────────────────────────────────────────────
+
+type StatsTileProps = {
+  label: string;
+  value: number;
+  icon: React.ElementType;
+  highlight?: boolean;
+};
+
+function StatsTile({ label, value, icon: Icon, highlight }: StatsTileProps) {
+  return (
+    <div
+      className={cn(
+        'flex flex-col items-center gap-1.5 rounded-xl border p-3',
+        highlight && value > 0
+          ? 'border-primary/30 bg-primary/5'
+          : 'border-border bg-muted/30',
+      )}
+    >
+      <Icon
+        className={cn(
+          'size-4',
+          highlight && value > 0 ? 'text-primary' : 'text-muted-foreground',
+        )}
+        aria-hidden
+      />
+      <span
+        className={cn(
+          'text-xl font-bold tabular-nums',
+          highlight && value > 0 ? 'text-primary' : 'text-foreground',
+        )}
+      >
+        {value}
+      </span>
+      <span className="text-center text-[11px] leading-tight text-muted-foreground">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function StatsSection({ stats }: { stats: MyProfileResponseDto['stats'] }) {
+  const { t } = useTranslation('player');
+
+  return (
+    <Card>
+      <CardHeader className="pb-3 pt-5">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Trophy className="size-4 text-primary" aria-hidden />
+          {t('profile.stats.title')}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pb-5">
+        {/* W / L / D row */}
+        <div className="mb-3 grid grid-cols-4 gap-2 sm:grid-cols-7">
+          <StatsTile
+            label={t('profile.stats.matchesPlayed')}
+            value={stats.matchesPlayed}
+            icon={Target}
+          />
+          <StatsTile
+            label={t('profile.stats.wins')}
+            value={stats.wins}
+            icon={Trophy}
+            highlight
+          />
+          <StatsTile
+            label={t('profile.stats.losses')}
+            value={stats.losses}
+            icon={Target}
+          />
+          <StatsTile
+            label={t('profile.stats.draws')}
+            value={stats.draws}
+            icon={Target}
+          />
+          <StatsTile
+            label={t('profile.stats.goals')}
+            value={stats.goalsScored}
+            icon={Target}
+            highlight
+          />
+          <StatsTile
+            label={t('profile.stats.assists')}
+            value={stats.assists}
+            icon={Star}
+          />
+          <StatsTile
+            label={t('profile.stats.mvp')}
+            value={stats.mvpAwards}
+            icon={Star}
+            highlight
+          />
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -159,7 +296,7 @@ type ProfileFormProps = {
   email: string;
   photoPreview: string | null;
   photoFile: File | null;
-  onSuccess: () => void;
+  onSuccess: (savedLanguage?: string) => void;
 };
 
 function ProfileForm({
@@ -179,6 +316,8 @@ function ProfileForm({
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors, isDirty },
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -194,12 +333,21 @@ function ProfileForm({
 
   const isPending = photoMutation.isPending || profileMutation.isPending;
 
+  // Watched values for controlled Select / DatePicker
+  /* eslint-disable react-hooks/incompatible-library */
+  const dobValue = watch('dateOfBirth');
+  const nationality = watch('nationality');
+  const skillLevel = watch('skillLevel');
+  const preferredPosition = watch('preferredPosition');
+  const dominantFoot = watch('dominantFoot');
+  const preferredLanguage = watch('preferredLanguage');
+  /* eslint-enable react-hooks/incompatible-library */
+
   async function onSubmit(values: ProfileFormValues) {
     setServerError(null);
     photoMutation.reset();
     profileMutation.reset();
 
-    // Step 1: upload photo if a new file was picked
     if (photoFile) {
       const res = await photoMutation.mutateAsync(
         { data: { photo: photoFile } },
@@ -216,13 +364,23 @@ function ProfileForm({
       }
     }
 
-    // Step 2: patch text fields only if dirty
     if (isDirty) {
       const res = await profileMutation.mutateAsync(
         {
           data: {
             name: values.name,
             phone: values.phone || undefined,
+            dateOfBirth: values.dateOfBirth || undefined,
+            nationality: values.nationality || undefined,
+            preferredLanguage: values.preferredLanguage || undefined,
+            skillLevel:
+              (values.skillLevel as UpdateMyProfileDtoSkillLevel) || undefined,
+            preferredPosition:
+              (values.preferredPosition as UpdateMyProfileDtoPreferredPosition) ||
+              undefined,
+            dominantFoot:
+              (values.dominantFoot as UpdateMyProfileDtoDominantFoot) ||
+              undefined,
           },
         },
         { onError: () => {} },
@@ -236,7 +394,7 @@ function ProfileForm({
     await queryClient.invalidateQueries({
       queryKey: getUsersControllerGetMyProfileQueryKey(),
     });
-    onSuccess();
+    onSuccess(values.preferredLanguage);
   }
 
   const dirty = isDirty || photoPreview !== null;
@@ -244,7 +402,7 @@ function ProfileForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
       <div className="flex flex-col gap-4">
-        {/* Name */}
+        {/* ── Basic info ── */}
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="name">{t('profile.form.name')}</FormLabel>
           <Input id="name" {...register('name')} autoComplete="name" />
@@ -257,7 +415,6 @@ function ProfileForm({
           />
         </div>
 
-        {/* Email — read-only */}
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="email">{t('profile.form.email')}</FormLabel>
           <div className="flex items-center gap-2">
@@ -275,7 +432,6 @@ function ProfileForm({
           </div>
         </div>
 
-        {/* Phone */}
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="phone">{t('profile.form.phone')}</FormLabel>
           <Input
@@ -292,6 +448,180 @@ function ProfileForm({
                 : undefined
             }
           />
+        </div>
+
+        {/* ── Football Profile ── */}
+        <div className="mt-2 flex flex-col gap-4 border-t pt-4">
+          <div>
+            <p className="text-sm font-semibold text-foreground">
+              {t('profile.footballProfile.title')}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t('profile.footballProfile.subtitle')}
+            </p>
+          </div>
+
+          {/* Date of birth */}
+          <div className="flex flex-col gap-1.5">
+            <FormLabel>{t('profile.footballProfile.dateOfBirth')}</FormLabel>
+            <DatePicker
+              value={dobValue ? parseISO(dobValue) : undefined}
+              onChange={(date) => {
+                setValue(
+                  'dateOfBirth',
+                  date ? format(date, 'yyyy-MM-dd') : '',
+                  { shouldDirty: true },
+                );
+              }}
+              placeholder={t('profile.footballProfile.dateOfBirthPlaceholder')}
+              toDate={new Date()}
+            />
+          </div>
+
+          {/* Nationality — searchable combobox */}
+          <div className="flex flex-col gap-1.5">
+            <FormLabel>{t('profile.footballProfile.nationality')}</FormLabel>
+            <SearchableCombobox
+              options={NATIONALITY_OPTIONS}
+              value={nationality ?? ''}
+              onChange={(v) =>
+                setValue('nationality', v, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
+              placeholder={t('profile.footballProfile.nationalityPlaceholder')}
+              searchPlaceholder={t('profile.footballProfile.nationalitySearch')}
+              emptyLabel={t('profile.footballProfile.nationalityEmpty')}
+              hasError={!!errors.nationality}
+              allowClear
+              clearLabel={t('profile.footballProfile.notSet')}
+            />
+            <FieldError
+              message={
+                errors.nationality?.message
+                  ? t(`profile.form.validation.${errors.nationality.message}`)
+                  : undefined
+              }
+            />
+          </div>
+
+          {/* Skill level + Preferred position in a 2-col row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <FormLabel>{t('profile.footballProfile.skillLevel')}</FormLabel>
+              <Select
+                value={skillLevel || undefined}
+                onValueChange={(v) =>
+                  setValue('skillLevel', v ?? '', {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={t('profile.footballProfile.notSet')}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(UpdateMyProfileDtoSkillLevel).map((v) => (
+                    <SelectItem key={v} value={v}>
+                      {t(`profile.footballProfile.skillLevels.${v}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <FormLabel>
+                {t('profile.footballProfile.preferredPosition')}
+              </FormLabel>
+              <Select
+                value={preferredPosition || undefined}
+                onValueChange={(v) =>
+                  setValue('preferredPosition', v ?? '', {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={t('profile.footballProfile.notSet')}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(UpdateMyProfileDtoPreferredPosition).map(
+                    (v) => (
+                      <SelectItem key={v} value={v}>
+                        {t(`profile.footballProfile.positions.${v}`)}
+                      </SelectItem>
+                    ),
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Dominant foot + Preferred language in a 2-col row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <FormLabel>{t('profile.footballProfile.dominantFoot')}</FormLabel>
+              <Select
+                value={dominantFoot || undefined}
+                onValueChange={(v) =>
+                  setValue('dominantFoot', v ?? '', {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={t('profile.footballProfile.notSet')}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(UpdateMyProfileDtoDominantFoot).map((v) => (
+                    <SelectItem key={v} value={v}>
+                      {t(`profile.footballProfile.feet.${v}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <FormLabel>
+                {t('profile.footballProfile.preferredLanguage')}
+              </FormLabel>
+              <Select
+                value={preferredLanguage || undefined}
+                onValueChange={(v) =>
+                  setValue('preferredLanguage', v ?? '', {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={t('profile.footballProfile.notSet')}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">
+                    {t('profile.footballProfile.languages.en')}
+                  </SelectItem>
+                  <SelectItem value="ar">
+                    {t('profile.footballProfile.languages.ar')}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
         {serverError && (
@@ -591,6 +921,7 @@ function ProfileSkeleton() {
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
       <Skeleton className="h-6 w-32" />
+      <Skeleton className="h-28 w-full rounded-xl" />
       <Card>
         <CardContent className="flex flex-col items-center gap-4 p-6">
           <Skeleton className="size-24 rounded-full" />
@@ -612,6 +943,7 @@ export function ProfilePage() {
   const { t } = useTranslation('player');
   const navigate = useNavigate();
   const logout = useAuthStore((s) => s.logout);
+  const setLocale = useLocaleStore((s) => s.setLocale);
 
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -628,13 +960,17 @@ export function ProfilePage() {
     setSaveSuccess(false);
   }
 
-  function handleSaveSuccess() {
+  function handleSaveSuccess(savedLanguage?: string) {
     setPhotoFile(null);
     if (photoPreview) {
       URL.revokeObjectURL(photoPreview);
       setPhotoPreview(null);
     }
     setSaveSuccess(true);
+
+    if (savedLanguage === 'en' || savedLanguage === 'ar') {
+      setLocale(savedLanguage as Locale);
+    }
   }
 
   async function handleLogout() {
@@ -672,6 +1008,9 @@ export function ProfilePage() {
         </h1>
       </div>
 
+      {/* Stats */}
+      <StatsSection stats={profile.stats} />
+
       {/* Profile info + form */}
       <Card>
         <CardContent className="flex flex-col gap-6 p-6">
@@ -695,6 +1034,12 @@ export function ProfilePage() {
             defaultValues={{
               name: profile.name,
               phone: profile.phone ?? '',
+              dateOfBirth: profile.dateOfBirth ?? '',
+              nationality: profile.nationality ?? '',
+              preferredLanguage: profile.preferredLanguage ?? '',
+              skillLevel: profile.skillLevel ?? '',
+              preferredPosition: profile.preferredPosition ?? '',
+              dominantFoot: profile.dominantFoot ?? '',
             }}
             email={profile.email}
             photoPreview={photoPreview}

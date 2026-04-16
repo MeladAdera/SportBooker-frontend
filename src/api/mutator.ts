@@ -37,18 +37,28 @@ export const customFetch = async <T>(
 export default customFetch;
 
 /**
+ * Extracts the inner DTO type from an Orval discriminated-union response.
+ *
+ * Orval generates responses like:
+ *   `{ data: { data: T; statusCode: number }; status: 200 } | { data: void; status: 4xx }`
+ *
+ * This distributes over the union and pulls `T` from the success variant.
+ */
+type ExtractData<R> = R extends { data: { data: infer T } } ? T : never;
+
+/**
  * Unwraps an Orval response returned by the custom mutator.
  *
  * Generated responses have shape `{ data: { data: T, statusCode }, status, headers }`.
  * Since the mutator throws on non-2xx, the value is always the success variant.
  * This helper extracts the inner DTO (`T`) from the two `data` layers.
  */
-export function unwrap<T>(
-  response: { data: { data: T } | void } | undefined,
-): T | undefined {
+export function unwrap<R extends { data: unknown }>(
+  response: R | undefined,
+): ExtractData<R> | undefined {
   const inner = response?.data;
   if (inner && typeof inner === 'object' && 'data' in inner) {
-    return (inner as { data: T }).data;
+    return (inner as { data: ExtractData<R> }).data;
   }
   return undefined;
 }

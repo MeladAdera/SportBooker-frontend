@@ -117,6 +117,38 @@
         "cancel": "إلغاء"
       }
     },
+    "results": {
+      "title": "نتائج المباراة",
+      "notSubmitted": "لم يتم تسجيل النتائج بعد.",
+      "submittedAt": "تم التسجيل {{date}}",
+      "winner": "الفائز",
+      "draw": "تعادل",
+      "team_a": "الفريق أ",
+      "team_b": "الفريق ب",
+      "goalsLabel": "أهداف",
+      "assistsLabel": "تمريرات",
+      "mvpLabel": "الأفضل",
+      "noPlayers": "لا يوجد لاعبون مؤكدون للتعيين.",
+      "form": {
+        "heading": "تعيين الفرق وإدخال الإحصاءات",
+        "player": "اللاعب",
+        "teamSide": "الفريق",
+        "goals": "أهداف",
+        "assists": "تمريرات",
+        "mvp": "الأفضل",
+        "winningSide": "نتيجة المباراة",
+        "team_a": "الفريق أ يفوز",
+        "team_b": "الفريق ب يفوز",
+        "drawOption": "تعادل",
+        "submit": "تسجيل النتائج",
+        "submitting": "جارٍ التسجيل…"
+      },
+      "error": {
+        "alreadySubmitted": "تم تسجيل النتائج مسبقاً لهذه المباراة.",
+        "matchNotCompleted": "المباراة لم تكتمل بعد.",
+        "generic": "فشل تسجيل النتائج. حاول مجدداً."
+      }
+    },
     "error": {
       "notFound": "المباراة غير موجودة.",
       "goBack": "العودة"
@@ -125,20 +157,33 @@
   "createMatch": {
     "title": "مباراة جديدة",
     "back": "العودة إلى المباريات",
+    "sections": {
+      "details": "تفاصيل المباراة",
+      "schedule": "الجدول الزمني",
+      "pricing": "السعة والتسعير"
+    },
     "fields": {
       "title": "العنوان",
       "titlePlaceholder": "مثال: مباراة خماسية الجمعة",
       "sport": "الرياضة",
       "sportPlaceholder": "اختر رياضة",
+      "sportSearch": "البحث في الرياضات…",
+      "sportEmpty": "لا توجد رياضات.",
       "venue": "الملعب",
       "venuePlaceholder": "اختر ملعباً",
       "venueLoading": "جارٍ تحميل الملاعب…",
       "venueSearch": "البحث في الملاعب…",
+      "venueEmpty": "لا توجد ملاعب.",
       "date": "التاريخ",
       "time": "وقت الانطلاق",
-      "duration": "المدة (بالدقائق)",
+      "hour": "الساعة",
+      "minute": "الدقيقة",
+      "duration": "المدة",
+      "durationOption": "{{mins}} دقيقة",
       "maxCapacity": "الحد الأقصى للاعبين",
-      "price": "السعر لكل لاعب"
+      "price": "السعر لكل لاعب",
+      "currency": "د.إ",
+      "perPlayer": "/ لاعب"
     },
     "submit": "إنشاء المباراة",
     "submitting": "جارٍ الإنشاء…",
@@ -163,12 +208,299 @@
       "priceInteger": "يجب أن يكون السعر عدداً صحيحاً."
     }
   },
+  "venueDetail": {
+    "back": "العودة إلى الملاعب",
+    "openInMaps": "فتح في الخرائط",
+    "sports": "الرياضات",
+    "notFound": "الملعب غير موجود.",
+    "error": "فشل تحميل الملعب.",
+    "deactivateConflict": "لا يمكن التعطيل — يحتوي هذا الملعب على مباريات نشطة."
+  },
+  "venues": {
+    "title": "الملاعب",
+    "empty": "لا توجد ملاعب.",
+    "createSuccess": "تم إنشاء الملعب بنجاح.",
+    "updateSuccess": "تم تحديث الملعب بنجاح.",
+    "deactivateSuccess": "تم تعطيل الملعب.",
+    "activateSuccess": "تم تفعيل الملعب.",
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "table": {
+      "name": "الاسم",
+      "address": "العنوان",
+      "sports": "الرياضات",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "fields": {
+      "name": "الاسم",
+      "namePlaceholder": "مثال: ملعب 1 – القوز",
+      "address": "العنوان",
+      "addressPlaceholder": "مثال: المنطقة الصناعية، القوز، دبي",
+      "mapsUrl": "رابط خرائط جوجل",
+      "sportTypes": "أنواع الرياضة",
+      "pictureUrl": "رابط الصورة",
+      "photo": "الصورة",
+      "modeUrl": "رابط",
+      "modeFile": "رفع",
+      "uploadClick": "انقر للرفع",
+      "uploadHint": "أو اسحب وأفلت",
+      "uploadConstraints": "JPEG أو PNG أو WebP أو GIF · الحد الأقصى 5 ميغابايت",
+      "uploadButton": "اختر ملفاً",
+      "clearPhoto": "إزالة الصورة",
+      "currentPhoto": "الصورة الحالية",
+      "currentPhotoAlt": "الصورة الحالية للملعب",
+      "optional": "اختياري",
+      "removePhoto": "إزالة الصورة الحالية"
+    },
+    "filters": {
+      "search": "البحث في الملاعب…",
+      "sportAll": "كل الرياضات",
+      "statusAll": "كل الحالات"
+    },
+    "actions": {
+      "create": "ملعب جديد",
+      "edit": "تعديل",
+      "deactivate": "تعطيل",
+      "activate": "تفعيل",
+      "map": "الخريطة"
+    },
+    "dialog": {
+      "createTitle": "ملعب جديد",
+      "editTitle": "تعديل الملعب",
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "create": "إنشاء الملعب",
+      "saving": "جارٍ الحفظ…"
+    },
+    "confirm": {
+      "deactivateTitle": "تعطيل الملعب",
+      "deactivateBody": "هل تريد تعطيل {{name}}؟ لن يظهر في المباريات الجديدة. لا يمكن تعطيل الملاعب التي تحتوي على مباريات قادمة أو جارية.",
+      "deactivateConfirm": "تعطيل",
+      "activateTitle": "تفعيل الملعب",
+      "activateBody": "هل تريد تفعيل {{name}}؟ سيصبح متاحاً للمباريات الجديدة.",
+      "activateConfirm": "تفعيل"
+    },
+    "error": {
+      "load": "فشل تحميل الملاعب. حاول مجدداً.",
+      "generic": "حدث خطأ ما. حاول مجدداً.",
+      "deactivateConflict": "يحتوي هذا الملعب على مباريات قادمة أو جارية ولا يمكن تعطيله."
+    },
+    "validation": {
+      "nameMin": "يجب أن يكون الاسم حرفين على الأقل.",
+      "addressMin": "يجب أن يكون العنوان 3 أحرف على الأقل.",
+      "mapsUrlInvalid": "الرجاء إدخال رابط صحيح.",
+      "sportTypesMin": "اختر رياضة واحدة على الأقل.",
+      "pictureUrlInvalid": "الرجاء إدخال رابط صورة صحيح.",
+      "pictureRequired": "الرجاء إدخال رابط صورة أو رفع ملف.",
+      "pictureFileType": "يُسمح فقط بملفات JPEG أو PNG أو WebP أو GIF.",
+      "pictureFileSize": "يجب أن يكون حجم الملف أقل من 5 ميغابايت."
+    }
+  },
+  "players": {
+    "title": "اللاعبون",
+    "empty": "لا يوجد لاعبون.",
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "deleted": "محذوف",
+      "banned": "محظور",
+      "bannedUntil": "محظور حتى {{date}}",
+      "bannedPermanent": "محظور بشكل دائم"
+    },
+    "role": {
+      "super_admin": "مدير عام",
+      "tenant_admin": "مدير",
+      "tenant_staff": "موظف",
+      "player": "لاعب"
+    },
+    "filters": {
+      "search": "ابحث بالاسم أو البريد…",
+      "roleAll": "كل الأدوار",
+      "statusAll": "كل الحالات",
+      "includeDeleted": "تضمين المحذوفين",
+      "bannedAll": "الكل (محظور / غير محظور)",
+      "bannedOnly": "المحظورون فقط",
+      "notBanned": "غير المحظورين"
+    },
+    "table": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "role": "الدور",
+      "status": "الحالة",
+      "registered": "تاريخ التسجيل"
+    },
+    "actions": {
+      "view": "عرض"
+    },
+    "pagination": {
+      "range": "{{from}}–{{to}} من {{total}} لاعب",
+      "loading": "جارٍ التحميل…",
+      "perPage": "صفوف في الصفحة",
+      "page": "{{page}} / {{total}}",
+      "prev": "السابق",
+      "next": "التالي"
+    },
+    "error": {
+      "load": "فشل تحميل اللاعبين. حاول مجدداً."
+    },
+    "detail": {
+      "back": "العودة إلى اللاعبين",
+      "notFound": "اللاعب غير موجود.",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "wallet": "رصيد المحفظة",
+      "walletValue": "{{amount}} درهم",
+      "registered": "تاريخ التسجيل",
+      "roleSection": "تعيين الدور",
+      "roleSelfHint": "لا يمكنك تغيير دورك الخاص.",
+      "roleHigherRankHint": "لا يمكنك تعديل المستخدمين ذوي الرتبة الأعلى أو المساوية.",
+      "roleSuccess": "تم تحديث الدور بنجاح.",
+      "roleErrorForbidden": "ليس لديك صلاحية تغيير دور هذا المستخدم.",
+      "roleErrorSelf": "لا يمكنك تغيير دورك الخاص.",
+      "roleErrorGeneric": "فشل تحديث الدور. حاول مجدداً.",
+      "roleConfirm": {
+        "title": "تغيير الدور",
+        "body": "تغيير دور {{name}} إلى {{role}}؟ سيتم تحديث صلاحياته فوراً.",
+        "confirm": "تغيير الدور",
+        "confirming": "جارٍ الحفظ…",
+        "cancel": "إلغاء"
+      },
+      "banSection": "الإيقاف",
+      "banStatus": "حالة الحظر",
+      "bannedAt": "تاريخ الحظر",
+      "bannedUntil": "الحظر حتى",
+      "bannedPermanent": "دائم",
+      "banReason": "السبب",
+      "banReasonNone": "لم يُحدَّد سبب",
+      "banBtn": "حظر اللاعب",
+      "unbanBtn": "رفع الحظر",
+      "unbanning": "جارٍ رفع الحظر…",
+      "unbanSuccess": "تم رفع الحظر بنجاح.",
+      "unbanError": "فشل رفع الحظر. حاول مجدداً.",
+      "banModal": {
+        "title": "حظر اللاعب",
+        "durationLabel": "المدة",
+        "permanent": "دائم",
+        "day_one": "{{count}} يوم",
+        "day_other": "{{count}} أيام",
+        "reasonLabel": "السبب (داخلي، لا يُعرض للاعب)",
+        "reasonPlaceholder": "مثلاً: عدم حضور متكرر دون إلغاء",
+        "confirm": "حظر اللاعب",
+        "confirming": "جارٍ الحظر…",
+        "cancel": "إلغاء"
+      },
+      "banSuccess": "تم حظر اللاعب. تم إلغاء {{count}} حجز واسترداد المبلغ.",
+      "banSuccess_other": "تم حظر اللاعب. تم إلغاء {{count}} حجوزات واسترداد المبالغ.",
+      "banError": "فشل حظر اللاعب. حاول مجدداً.",
+      "banErrorForbidden": "ليس لديك صلاحية حظر هذا اللاعب.",
+      "banErrorSelf": "لا يمكنك حظر نفسك.",
+      "bookingHistory": {
+        "title": "سجل الحجوزات",
+        "empty": "لا توجد حجوزات.",
+        "error": "فشل تحميل الحجوزات.",
+        "statusAll": "كل الحالات",
+        "upcomingOnly": "القادمة فقط",
+        "colMatch": "المباراة",
+        "colVenue": "الملعب",
+        "colDate": "التاريخ",
+        "colStatus": "الحالة",
+        "colPaid": "المدفوع",
+        "status": {
+          "confirmed": "مؤكد",
+          "cancelled": "ملغى",
+          "waitlisted": "قائمة انتظار"
+        }
+      }
+    }
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "general": {
+      "title": "الإعدادات العامة",
+      "name": "اسم المنشأة",
+      "slug": "المعرّف",
+      "slugHint": "المعرّف ثابت ولا يمكن تغييره.",
+      "logoUrl": "رابط الشعار",
+      "logoUrlPlaceholder": "https://…",
+      "logoUrlClear": "مسح الشعار",
+      "timezone": "المنطقة الزمنية",
+      "timezoneSearch": "البحث في المناطق الزمنية…",
+      "timezoneEmpty": "لا توجد نتائج.",
+      "cancelCutoffHours": "مهلة الإلغاء (ساعات)",
+      "cancelCutoffHint": "عدد الساعات قبل بدء المباراة التي يُغلق فيها الإلغاء. 0 = بدون مهلة.",
+      "save": "حفظ الإعدادات",
+      "saving": "جارٍ الحفظ…",
+      "success": "تم حفظ الإعدادات.",
+      "error": {
+        "load": "فشل تحميل الإعدادات.",
+        "generic": "فشل حفظ الإعدادات."
+      }
+    },
+    "ziina": {
+      "title": "تكامل Ziina للدفع",
+      "description": "أدخل رمز وصول Ziina لتمكين إعادة شحن المحفظة عبر الإنترنت للاعبين.",
+      "tokenLabel": "رمز وصول Ziina",
+      "tokenPlaceholder": "الصق رمز الوصول هنا",
+      "scopesHint": "أنشئ رمزك بصلاحيات write_payment_intents و write_webhooks من",
+      "save": "حفظ الرمز",
+      "saving": "جارٍ الحفظ…",
+      "success": "تم حفظ رمز Ziina وتسجيل الـ Webhook بنجاح.",
+      "error": {
+        "invalid": "الرمز غير صحيح أو تنقصه الصلاحيات المطلوبة. تحقق وحاول مجدداً.",
+        "generic": "فشل حفظ الإعدادات. حاول مجدداً."
+      }
+    }
+  },
   "nav": {
     "dashboard": "لوحة التحكم",
     "matches": "المباريات",
     "venues": "الملاعب",
     "players": "اللاعبون",
     "tenantSettings": "إعدادات المنشأة",
-    "account": "الحساب"
+    "profile": "ملفي الشخصي"
+  },
+  "profile": {
+    "pageTitle": "ملفي الشخصي",
+    "logout": "تسجيل الخروج",
+    "loadError": "فشل تحميل الملف الشخصي. حاول مجدداً.",
+    "photo": {
+      "change": "تغيير الصورة",
+      "previewNotice": "سيتم حفظ الصورة عند الضغط على حفظ."
+    },
+    "form": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "emailReadOnly": "للقراءة فقط",
+      "role": "الدور",
+      "phone": "الهاتف",
+      "phonePlaceholder": "+971 50 000 0000",
+      "save": "حفظ التغييرات",
+      "saveSuccess": "تم تحديث الملف الشخصي بنجاح.",
+      "photoError": "فشل رفع الصورة. حاول مجدداً.",
+      "error": "فشل حفظ الملف الشخصي. حاول مجدداً.",
+      "validation": {
+        "nameMin": "يجب أن يكون الاسم حرفين على الأقل.",
+        "phoneMax": "رقم الهاتف طويل جداً."
+      }
+    },
+    "password": {
+      "title": "تغيير كلمة المرور",
+      "current": "كلمة المرور الحالية",
+      "new": "كلمة المرور الجديدة",
+      "confirm": "تأكيد كلمة المرور الجديدة",
+      "revokeOtherSessions": "تسجيل الخروج من جميع الأجهزة الأخرى",
+      "changeBtn": "تحديث كلمة المرور",
+      "success": "تم تحديث كلمة المرور بنجاح.",
+      "errorIncorrect": "كلمة المرور الحالية غير صحيحة.",
+      "errorGeneric": "فشل تحديث كلمة المرور. حاول مجدداً.",
+      "validation": {
+        "currentRequired": "كلمة المرور الحالية مطلوبة.",
+        "newMin": "يجب أن تكون كلمة المرور الجديدة 8 أحرف على الأقل.",
+        "confirmMismatch": "كلمتا المرور غير متطابقتين."
+      }
+    }
   }
 }

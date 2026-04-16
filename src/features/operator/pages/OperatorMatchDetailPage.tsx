@@ -4,18 +4,22 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   Calendar,
+  CheckCircle2,
   Clock,
   Coins,
   ExternalLink,
+  Loader2,
   MapPin,
   Shield,
+  Star,
   Trash2,
+  Trophy,
   Users,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -23,8 +27,15 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, formatDateInTz, formatTimeInTz } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -34,42 +45,29 @@ import {
 import { BookingPosition } from '@/api/generated/models/bookingPosition';
 import { MatchDetailResponseDtoStatus } from '@/api/generated/models/matchDetailResponseDtoStatus';
 import type { MatchDetailResponseDto } from '@/api/generated/models/matchDetailResponseDto';
+import type { MatchRosterPlayerDto } from '@/api/generated/models/matchRosterPlayerDto';
 import { unwrap } from '@/api';
 import { getSportIcon } from '@/lib/sportIcons';
+import type { ApiError } from '@/api/client';
 import { normalizeRole } from '@/lib/roles';
 import { useAuthStore } from '@/stores/authStore';
+import { useTenantTimezone } from '@/shared/hooks';
 import {
   useMatchesControllerGetWaitlist,
   getMatchesControllerGetWaitlistQueryKey,
   useMatchesControllerRemoveFromWaitlist,
 } from '@/api/generated/matches/matches';
+import {
+  useTenantMatchesControllerGetResults,
+  useTenantMatchesControllerSubmitResults,
+  getTenantMatchesControllerGetResultsQueryKey,
+} from '@/api/generated/tenant-—-matches/tenant-—-matches';
+import type { MatchResultsResponseDto } from '@/api/generated/models/matchResultsResponseDto';
+import { PlayerStatEntryDtoTeamSide } from '@/api/generated/models/playerStatEntryDtoTeamSide';
+import { SubmitMatchResultsDtoWinningSide } from '@/api/generated/models/submitMatchResultsDtoWinningSide';
 import type { OperatorWaitlistEntryDto } from '@/api/generated/models/operatorWaitlistEntryDto';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function formatDate(iso: string) {
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
-}
-
-function formatTime(iso: string) {
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(iso));
-  } catch {
-    return '';
-  }
-}
 
 function googleMapsSearchUrl(query: string) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
@@ -315,9 +313,7 @@ function OperatorWaitlistSection({
   } = useMatchesControllerGetWaitlist(matchId);
 
   const waitlist =
-    (unwrap(waitlistData) as unknown as
-      | OperatorWaitlistEntryDto[]
-      | undefined) ?? [];
+    (unwrap(waitlistData) as OperatorWaitlistEntryDto[] | undefined) ?? [];
 
   if (isLoading) {
     return (
@@ -439,12 +435,503 @@ function OperatorWaitlistSection({
   );
 }
 
+// ── Match Results ─────────────────────────────────────────────────────────────
+
+type PlayerRow = {
+  userId: string;
+  name: string;
+  teamSide: PlayerStatEntryDtoTeamSide;
+  goals: number;
+  assists: number;
+  isMvp: boolean;
+};
+
+type WinnerOption = SubmitMatchResultsDtoWinningSide | 'draw';
+
+function ResultsReadOnly({
+  results,
+  roster,
+}: {
+  results: MatchResultsResponseDto;
+  roster: MatchRosterPlayerDto[];
+}) {
+  const { t } = useTranslation('operator');
+  const tenantTz = useTenantTimezone();
+  const nameMap = Object.fromEntries(roster.map((r) => [r.userId, r.name]));
+
+  const teamA = results.players.filter(
+    (p) => p.teamSide === PlayerStatEntryDtoTeamSide.team_a,
+  );
+  const teamB = results.players.filter(
+    (p) => p.teamSide === PlayerStatEntryDtoTeamSide.team_b,
+  );
+
+  const winnerLabel =
+    results.winningSide == null
+      ? t('matchDetail.results.draw')
+      : t(`matchDetail.results.${results.winningSide}`);
+
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Winner banner */}
+      <div
+        className={cn(
+          'flex items-center gap-2 rounded-xl border px-4 py-3',
+          results.winningSide == null
+            ? 'border-muted bg-muted/40'
+            : 'border-primary/30 bg-primary/5',
+        )}
+      >
+        <Trophy
+          className={cn(
+            'size-4',
+            results.winningSide == null
+              ? 'text-muted-foreground'
+              : 'text-primary',
+          )}
+          aria-hidden
+        />
+        <div className="flex-1">
+          <p className="text-xs text-muted-foreground">
+            {t('matchDetail.results.winner')}
+          </p>
+          <p className="font-semibold text-foreground">{winnerLabel}</p>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {t('matchDetail.results.submittedAt', {
+            date: formatDateInTz(results.createdAt, tenantTz),
+          })}
+        </p>
+      </div>
+
+      {/* Teams grid */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {[
+          { side: PlayerStatEntryDtoTeamSide.team_a, players: teamA },
+          { side: PlayerStatEntryDtoTeamSide.team_b, players: teamB },
+        ].map(({ side, players }) => (
+          <div key={side} className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-foreground">
+                {t(`matchDetail.results.${side}`)}
+              </h3>
+              {results.winningSide === side && (
+                <Badge className="text-[10px]">
+                  {t('matchDetail.results.winner')}
+                </Badge>
+              )}
+            </div>
+            {players.length === 0 ? (
+              <p className="text-xs text-muted-foreground">—</p>
+            ) : (
+              <ul className="divide-y divide-border rounded-xl border">
+                {players.map((p) => {
+                  const displayName = nameMap[p.userId] ?? p.userId;
+                  return (
+                    <li
+                      key={p.userId}
+                      className="flex items-center gap-3 px-3 py-2.5"
+                    >
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium uppercase text-muted-foreground">
+                        {displayName.charAt(0)}
+                      </div>
+                      <span className="flex-1 text-sm text-foreground">
+                        {displayName}
+                      </span>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span title={t('matchDetail.results.goalsLabel')}>
+                          ⚽ {p.goals}
+                        </span>
+                        <span title={t('matchDetail.results.assistsLabel')}>
+                          🅰 {p.assists}
+                        </span>
+                        {p.isMvp && (
+                          <Star
+                            className="size-3.5 fill-amber-400 text-amber-400"
+                            aria-label={t('matchDetail.results.mvpLabel')}
+                          />
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SubmitResultsForm({
+  matchId,
+  roster,
+  onSubmitted,
+}: {
+  matchId: string;
+  roster: MatchRosterPlayerDto[];
+  onSubmitted: () => void;
+}) {
+  const { t } = useTranslation('operator');
+  const qc = useQueryClient();
+
+  const [rows, setRows] = useState<PlayerRow[]>(() =>
+    roster.map((p) => ({
+      userId: p.userId,
+      name: p.name,
+      teamSide: PlayerStatEntryDtoTeamSide.team_a,
+      goals: 0,
+      assists: 0,
+      isMvp: false,
+    })),
+  );
+  const [winner, setWinner] = useState<WinnerOption>('draw');
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  const mutation = useTenantMatchesControllerSubmitResults({
+    mutation: {
+      onSuccess: async () => {
+        await qc.invalidateQueries({
+          queryKey: getTenantMatchesControllerGetResultsQueryKey(matchId),
+        });
+        onSubmitted();
+      },
+      onError: (err: unknown) => {
+        const status = (err as ApiError | null)?.statusCode;
+        if (status === 409) {
+          setServerError(t('matchDetail.results.error.alreadySubmitted'));
+        } else if (status === 400) {
+          setServerError(t('matchDetail.results.error.matchNotCompleted'));
+        } else {
+          setServerError(t('matchDetail.results.error.generic'));
+        }
+      },
+    },
+  });
+
+  function updateRow(
+    userId: string,
+    patch: Partial<Omit<PlayerRow, 'userId' | 'name'>>,
+  ) {
+    setRows((prev) =>
+      prev.map((r) => {
+        if (r.userId !== userId) {
+          // If setting MVP, clear it from other rows
+          if (patch.isMvp) return { ...r, isMvp: false };
+          return r;
+        }
+        return { ...r, ...patch };
+      }),
+    );
+  }
+
+  function handleSubmit() {
+    setServerError(null);
+    mutation.mutate({
+      id: matchId,
+      data: {
+        winningSide:
+          winner === 'draw'
+            ? undefined
+            : (winner as SubmitMatchResultsDtoWinningSide),
+        players: rows.map((r) => ({
+          userId: r.userId,
+          teamSide: r.teamSide,
+          goals: r.goals,
+          assists: r.assists,
+          isMvp: r.isMvp,
+        })),
+      },
+    });
+  }
+
+  if (roster.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        {t('matchDetail.results.noPlayers')}
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="text-xs text-muted-foreground">
+        {t('matchDetail.results.form.heading')}
+      </p>
+
+      {/* Player table */}
+      <Card>
+        <CardContent className="overflow-x-auto p-0">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-xs text-muted-foreground">
+                <th className="py-2.5 ps-3 pe-2 text-start font-medium">
+                  {t('matchDetail.results.form.player')}
+                </th>
+                <th className="py-2.5 pe-2 text-start font-medium">
+                  {t('matchDetail.results.form.teamSide')}
+                </th>
+                <th className="py-2.5 pe-2 text-center font-medium">
+                  {t('matchDetail.results.form.goals')}
+                </th>
+                <th className="py-2.5 pe-2 text-center font-medium">
+                  {t('matchDetail.results.form.assists')}
+                </th>
+                <th className="py-2.5 pe-3 text-center font-medium">
+                  {t('matchDetail.results.form.mvp')}
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {rows.map((row) => (
+                <tr key={row.userId}>
+                  <td className="py-2 ps-3 pe-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium uppercase text-muted-foreground">
+                        {row.name.charAt(0)}
+                      </div>
+                      <span className="font-medium text-foreground">
+                        {row.name}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="py-2 pe-2">
+                    <Select
+                      value={row.teamSide}
+                      onValueChange={(v) =>
+                        updateRow(row.userId, {
+                          teamSide: (v ??
+                            PlayerStatEntryDtoTeamSide.team_a) as PlayerStatEntryDtoTeamSide,
+                        })
+                      }
+                    >
+                      <SelectTrigger className="h-7 w-24 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={PlayerStatEntryDtoTeamSide.team_a}>
+                          {t('matchDetail.results.team_a')}
+                        </SelectItem>
+                        <SelectItem value={PlayerStatEntryDtoTeamSide.team_b}>
+                          {t('matchDetail.results.team_b')}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </td>
+                  <td className="py-2 pe-2">
+                    <input
+                      type="number"
+                      min={0}
+                      value={row.goals}
+                      onChange={(e) =>
+                        updateRow(row.userId, {
+                          goals: Math.max(0, parseInt(e.target.value, 10) || 0),
+                        })
+                      }
+                      className="h-7 w-14 rounded-lg border border-input bg-transparent px-2 text-center text-sm tabular-nums focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+                    />
+                  </td>
+                  <td className="py-2 pe-2">
+                    <input
+                      type="number"
+                      min={0}
+                      value={row.assists}
+                      onChange={(e) =>
+                        updateRow(row.userId, {
+                          assists: Math.max(
+                            0,
+                            parseInt(e.target.value, 10) || 0,
+                          ),
+                        })
+                      }
+                      className="h-7 w-14 rounded-lg border border-input bg-transparent px-2 text-center text-sm tabular-nums focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+                    />
+                  </td>
+                  <td className="py-2 pe-3 text-center">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateRow(row.userId, { isMvp: !row.isMvp })
+                      }
+                      aria-pressed={row.isMvp}
+                      className={cn(
+                        'flex h-7 w-7 items-center justify-center rounded-full border transition-colors',
+                        row.isMvp
+                          ? 'border-amber-400 bg-amber-400/10 text-amber-500'
+                          : 'border-border text-muted-foreground hover:border-amber-300 hover:text-amber-400',
+                      )}
+                    >
+                      <Star
+                        className={cn('size-3.5', row.isMvp && 'fill-current')}
+                        aria-hidden
+                      />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
+
+      {/* Winner selector */}
+      <div className="flex flex-wrap items-center gap-3">
+        <p className="text-sm font-medium text-foreground">
+          {t('matchDetail.results.form.winningSide')}
+        </p>
+        <div className="flex gap-2">
+          {(
+            [
+              {
+                value: SubmitMatchResultsDtoWinningSide.team_a,
+                label: t('matchDetail.results.form.team_a'),
+              },
+              {
+                value: SubmitMatchResultsDtoWinningSide.team_b,
+                label: t('matchDetail.results.form.team_b'),
+              },
+              {
+                value: 'draw' as const,
+                label: t('matchDetail.results.form.drawOption'),
+              },
+            ] satisfies { value: WinnerOption; label: string }[]
+          ).map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setWinner(value)}
+              className={cn(
+                'rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
+                winner === value
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground',
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {serverError && (
+        <p
+          role="alert"
+          className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+        >
+          {serverError}
+        </p>
+      )}
+
+      <Button
+        onClick={handleSubmit}
+        disabled={mutation.isPending}
+        className="w-fit"
+      >
+        {mutation.isPending && (
+          <Loader2 className="size-4 animate-spin" aria-hidden />
+        )}
+        {mutation.isPending
+          ? t('matchDetail.results.form.submitting')
+          : t('matchDetail.results.form.submit')}
+      </Button>
+    </div>
+  );
+}
+
+function MatchResultsSection({
+  matchId,
+  roster,
+}: {
+  matchId: string;
+  roster: MatchRosterPlayerDto[];
+}) {
+  const { t } = useTranslation('operator');
+  const [submitted, setSubmitted] = useState(false);
+
+  const {
+    data: resultsData,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useTenantMatchesControllerGetResults(matchId, {
+    query: { retry: false },
+  });
+
+  const results = unwrap(resultsData);
+
+  const is404 =
+    isError && (error as unknown as ApiError | null)?.statusCode === 404;
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col gap-3 pt-5 pb-5">
+          <Skeleton className="h-12 w-full rounded-xl" />
+          <Skeleton className="h-32 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-3 pt-5">
+        <CardTitle className="flex items-center gap-2 text-base">
+          {results || submitted ? (
+            <CheckCircle2 className="size-4 text-emerald-500" aria-hidden />
+          ) : (
+            <Trophy className="size-4 text-primary" aria-hidden />
+          )}
+          {t('matchDetail.results.title')}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pb-5">
+        {/* Non-404 errors */}
+        {isError && !is404 && !submitted && (
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-destructive">
+              {t('matchDetail.results.error.generic')}
+            </p>
+            <Button variant="outline" size="sm" onClick={() => void refetch()}>
+              Retry
+            </Button>
+          </div>
+        )}
+
+        {/* Results already submitted — read-only view */}
+        {results && !submitted && (
+          <ResultsReadOnly results={results} roster={roster} />
+        )}
+
+        {/* 404 means not submitted yet — show form */}
+        {(is404 || submitted) && !results && (
+          <SubmitResultsForm
+            matchId={matchId}
+            roster={roster}
+            onSubmitted={() => setSubmitted(true)}
+          />
+        )}
+
+        {/* After optimistic submit, show pending message until refetch returns */}
+        {submitted && !results && !is404 && !isLoading && (
+          <p className="text-sm text-muted-foreground">
+            {t('matchDetail.results.notSubmitted')}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export function OperatorMatchDetailPage() {
   const { t } = useTranslation('operator');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const tenantTz = useTenantTimezone();
 
   const role = useAuthStore((s) => s.user?.role ?? '');
   const normalized = normalizeRole(role);
@@ -497,15 +984,9 @@ export function OperatorMatchDetailPage() {
       {isLoading ? (
         <HeroSkeleton />
       ) : (
-        <div
-          className={cn(
-            'relative flex h-52 items-end overflow-hidden px-4 pb-4 md:mx-6 md:rounded-xl md:px-6',
-            !match?.venuePictureUrl &&
-              'bg-linear-to-br from-primary/20 via-primary/10 to-background',
-          )}
-        >
-          {match?.venuePictureUrl ? (
-            <>
+        <div className="flex flex-col gap-0 md:mx-6">
+          {match?.venuePictureUrl && (
+            <div className="relative h-60 overflow-hidden md:rounded-xl">
               <img
                 src={match.venuePictureUrl}
                 alt={
@@ -515,16 +996,19 @@ export function OperatorMatchDetailPage() {
                       })
                     : ''
                 }
-                className="absolute inset-0 size-full object-cover"
+                className="size-full object-cover"
               />
-              <div
-                className="absolute inset-0 bg-linear-to-t from-background via-background/70 to-background/20"
-                aria-hidden
-              />
-            </>
-          ) : null}
+            </div>
+          )}
 
-          <div className="relative flex w-full items-end justify-between gap-3">
+          <div
+            className={cn(
+              'flex w-full items-center justify-between gap-3 px-4 py-3 md:px-6',
+              !match?.venuePictureUrl &&
+                'rounded-xl bg-linear-to-br from-primary/20 via-primary/10 to-background',
+              match?.venuePictureUrl && 'border-b',
+            )}
+          >
             <div className="flex items-center gap-3">
               <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 text-primary">
                 {createElement(sportIcon, {
@@ -616,14 +1100,14 @@ export function OperatorMatchDetailPage() {
               {/* Date */}
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Calendar className="size-4 shrink-0" aria-hidden />
-                <span>{formatDate(match.scheduledAt)}</span>
+                <span>{formatDateInTz(match.scheduledAt, tenantTz)}</span>
               </div>
 
               {/* Time + duration */}
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="size-4 shrink-0" aria-hidden />
                 <span>
-                  {formatTime(match.scheduledAt)} &middot;{' '}
+                  {formatTimeInTz(match.scheduledAt, tenantTz)} &middot;{' '}
                   {t('matchDetail.info.duration', { mins: match.durationMins })}
                 </span>
               </div>
@@ -663,6 +1147,11 @@ export function OperatorMatchDetailPage() {
             </h2>
             <OperatorWaitlistSection matchId={match.id} canKick={canCancel} />
           </div>
+
+          {/* Match results — only shown for completed matches */}
+          {match.status === MatchDetailResponseDtoStatus.completed && (
+            <MatchResultsSection matchId={match.id} roster={match.roster} />
+          )}
         </div>
       )}
     </div>

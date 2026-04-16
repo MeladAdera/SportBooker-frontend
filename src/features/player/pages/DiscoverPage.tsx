@@ -41,10 +41,12 @@ import { useMatchesControllerList } from '@/api/generated/matches/matches';
 import { useVenuesControllerList } from '@/api/generated/venues/venues';
 import type { MatchBrowseItemDto } from '@/api/generated/models/matchBrowseItemDto';
 import type { MatchesControllerListParams } from '@/api/generated/models/matchesControllerListParams';
-import { MatchesControllerListSortBy } from '@/api/generated/models/matchesControllerListSortBy';
 import { MatchesControllerListSportType } from '@/api/generated/models/matchesControllerListSportType';
 import { unwrap } from '@/api';
 import { ALL_SPORTS_ICON, getSportIcon } from '@/lib/sportIcons';
+import { formatDateInTz, toLocalDateString } from '@/lib/format';
+import { useTenantTimezone } from '@/shared/hooks';
+import { MatchesControllerListSortBy } from '@/api/generated/models';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -101,20 +103,6 @@ const TYPEWRITER_PHRASES: Record<string, readonly string[]> = {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function formatScheduledAt(isoString: string): string {
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(isoString));
-  } catch {
-    return isoString;
-  }
-}
-
 const STATUS_VARIANT: Record<
   string,
   'default' | 'secondary' | 'destructive' | 'outline'
@@ -129,11 +117,17 @@ const STATUS_VARIANT: Record<
 
 // ── Match card ────────────────────────────────────────────────────────────────
 
-function MatchCard({ match }: { match: MatchBrowseItemDto }) {
+function MatchCard({ match, tz }: { match: MatchBrowseItemDto; tz: string }) {
   const { t } = useTranslation('player');
   const navigate = useNavigate();
   const sportIcon = getSportIcon(match.sportType);
-  const formattedDate = formatScheduledAt(match.scheduledAt);
+  const formattedDate = formatDateInTz(match.scheduledAt, tz, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
   const bookedSpots = match.maxCapacity - match.spotsRemaining;
   const waitlistCount = match.waitlistCount;
 
@@ -615,7 +609,7 @@ function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
           value={filters.date ? new Date(filters.date) : undefined}
           onChange={(d) =>
             onChange({
-              date: d ? d.toISOString().slice(0, 10) : undefined,
+              date: d ? toLocalDateString(d) : undefined,
               page: 1,
             })
           }
@@ -774,6 +768,7 @@ function buildApiParams(filters: FilterState): MatchesControllerListParams {
 
 export function DiscoverPage() {
   const { i18n, t } = useTranslation('player');
+  const tenantTz = useTenantTimezone();
   const [searchParams, setSearchParams] = useSearchParams();
   const [spinning, setSpinning] = useState(false);
 
@@ -861,7 +856,7 @@ export function DiscoverPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {matches.map((match) => (
-            <MatchCard key={match.id} match={match} />
+            <MatchCard key={match.id} match={match} tz={tenantTz} />
           ))}
         </div>
       )}

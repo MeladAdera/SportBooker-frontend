@@ -13,11 +13,27 @@ export type LoginResponse = {
   user: AuthUser;
 };
 
+export type SkillLevel = 'beginner' | 'intermediate' | 'advanced';
+export type PreferredPosition =
+  | 'goalkeeper'
+  | 'defender'
+  | 'midfielder'
+  | 'forward';
+export type DominantFoot = 'left' | 'right' | 'both';
+
 export type RegisterRequestBody = {
   name: string;
   email: string;
   password: string;
-  phone?: string;
+  phone: string;
+  // Optional player profile fields
+  dateOfBirth?: string;
+  nationality?: string;
+  preferredLanguage?: string;
+  skillLevel?: SkillLevel;
+  preferredPosition?: PreferredPosition;
+  dominantFoot?: DominantFoot;
+  photoUrl?: string;
 };
 
 /** Backend wraps all responses in { data, statusCode }. */
@@ -59,14 +75,24 @@ export async function loginRequest(body: LoginRequest): Promise<LoginResponse> {
 export async function registerRequest(
   body: RegisterRequestBody,
 ): Promise<LoginResponse> {
-  const payload: Record<string, string> = {
+  const payload: Record<string, string | undefined> = {
     name: body.name.trim(),
     email: body.email.trim(),
     password: body.password,
+    phone: body.phone.trim(),
+    dateOfBirth: body.dateOfBirth,
+    nationality: body.nationality,
+    preferredLanguage: body.preferredLanguage,
+    skillLevel: body.skillLevel,
+    preferredPosition: body.preferredPosition,
+    dominantFoot: body.dominantFoot,
+    photoUrl: body.photoUrl,
   };
-  if (body.phone?.trim()) {
-    payload.phone = body.phone.trim();
-  }
+
+  // Strip undefined so the backend doesn't receive null-ish keys for omitted fields
+  Object.keys(payload).forEach(
+    (k) => payload[k] === undefined && delete payload[k],
+  );
 
   const res = await apiFetch('/auth/register', {
     method: 'POST',

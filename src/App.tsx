@@ -17,6 +17,11 @@ import { MatchListPage } from '@/features/operator/pages/MatchListPage';
 import { OperatorMatchDetailPage } from '@/features/operator/pages/OperatorMatchDetailPage';
 import { CreateMatchPage } from '@/features/operator/pages/CreateMatchPage';
 import { TenantSettingsPage } from '@/features/operator/pages/TenantSettingsPage';
+import { VenuesPage } from '@/features/operator/pages/VenuesPage';
+import { VenueDetailPage } from '@/features/operator/pages/VenueDetailPage';
+import { PlayerListPage } from '@/features/operator/pages/PlayerListPage';
+import { PlayerDetailPage } from '@/features/operator/pages/PlayerDetailPage';
+import { OperatorProfilePage } from '@/features/operator/pages/OperatorProfilePage';
 import { ForbiddenPage } from '@/routes/ForbiddenPage';
 import {
   OperatorRoute,
@@ -74,15 +79,12 @@ function App() {
             <Route path="matches" element={<MatchListPage />} />
             <Route path="matches/new" element={<CreateMatchPage />} />
             <Route path="matches/:id" element={<OperatorMatchDetailPage />} />
-            <Route
-              path="venues"
-              element={<Placeholder title="Venues — coming soon" />}
-            />
-            <Route
-              path="players"
-              element={<Placeholder title="Players — coming soon" />}
-            />
+            <Route path="venues" element={<VenuesPage />} />
+            <Route path="venues/:id" element={<VenueDetailPage />} />
+            <Route path="players" element={<PlayerListPage />} />
+            <Route path="players/:id" element={<PlayerDetailPage />} />
             <Route path="settings" element={<TenantSettingsPage />} />
+            <Route path="profile" element={<OperatorProfilePage />} />
           </Route>
 
           {/* ── Platform admin routes ─────────────────────────────── */}

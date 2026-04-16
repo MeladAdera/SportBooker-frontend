@@ -129,6 +129,16 @@
       "change": "Change photo",
       "previewNotice": "Preview — save to apply"
     },
+    "stats": {
+      "title": "My Stats",
+      "matchesPlayed": "Matches",
+      "wins": "Wins",
+      "losses": "Losses",
+      "draws": "Draws",
+      "goals": "Goals",
+      "assists": "Assists",
+      "mvp": "MVP"
+    },
     "form": {
       "name": "Name",
       "email": "Email",
@@ -141,7 +151,43 @@
       "photoError": "Failed to upload photo. Please try again.",
       "validation": {
         "nameMin": "Name must be at least 2 characters.",
-        "phoneInvalid": "Phone must be in E.164 format, e.g. +971501234567"
+        "phoneInvalid": "Phone must be in E.164 format, e.g. +971501234567",
+        "nationalityMax": "Nationality must be 100 characters or fewer."
+      }
+    },
+    "footballProfile": {
+      "title": "Football Profile",
+      "subtitle": "Optional — used to match you with the right games.",
+      "dateOfBirth": "Date of Birth",
+      "dateOfBirthPlaceholder": "Pick a date",
+      "nationality": "Nationality",
+      "nationalityPlaceholder": "Select nationality",
+      "nationalitySearch": "Search nationalities…",
+      "nationalityEmpty": "No nationality matches your search.",
+      "preferredLanguage": "Preferred Language",
+      "skillLevel": "Skill Level",
+      "preferredPosition": "Preferred Position",
+      "dominantFoot": "Dominant Foot",
+      "notSet": "Not set",
+      "skillLevels": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      },
+      "positions": {
+        "goalkeeper": "Goalkeeper",
+        "defender": "Defender",
+        "midfielder": "Midfielder",
+        "forward": "Forward"
+      },
+      "feet": {
+        "left": "Left",
+        "right": "Right",
+        "both": "Both"
+      },
+      "languages": {
+        "en": "English",
+        "ar": "Arabic"
       }
     },
     "password": {
