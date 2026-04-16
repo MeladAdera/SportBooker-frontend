@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { createElement, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -6,7 +6,6 @@ import {
   Calendar,
   Clock,
   Coins,
-  Dumbbell,
   ExternalLink,
   MapPin,
   Shield,
@@ -23,10 +22,12 @@ import { BookingPosition } from '@/api/generated/models/bookingPosition';
 import { MatchDetailResponseDtoStatus } from '@/api/generated/models/matchDetailResponseDtoStatus';
 import type { MatchDetailResponseDto } from '@/api/generated/models/matchDetailResponseDto';
 import type { MyBookingItemDto } from '@/api/generated/models/myBookingItemDto';
+import { MyBookingItemDtoStatus } from '@/api/generated/models/myBookingItemDtoStatus';
 import { BookingModal } from '@/features/player/components/BookingModal';
 import { CancelBookingModal } from '@/features/player/components/CancelBookingModal';
 import { MAX_GK } from '@/features/player/constants';
 import { unwrap } from '@/api';
+import { getSportIcon } from '@/lib/sportIcons';
 import { useAuthStore } from '@/stores/authStore';
 import { formatDateInTz, formatTimeInTz } from '@/lib/format';
 import { useTenantTimezone } from '@/shared/hooks';
@@ -41,13 +42,6 @@ function isPast(iso: string) {
 function googleMapsSearchUrl(query: string) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
-
-const SPORT_ICONS: Record<string, React.ElementType> = {
-  football: Shield,
-  padel: Shield,
-  cricket: Shield,
-  generic: Dumbbell,
-};
 
 // ── Capacity bar ──────────────────────────────────────────────────────────────
 
@@ -155,7 +149,15 @@ function RosterList({ roster }: { roster: MatchDetailResponseDto['roster'] }) {
       {roster.map((player) => (
         <li key={player.userId} className="flex items-center gap-3 py-2.5">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium uppercase text-muted-foreground">
-            {player.name.charAt(0)}
+            {player.photoUrl ? (
+              <img
+                src={player.photoUrl as unknown as string}
+                alt={player.name}
+                className="h-8 w-8 object-cover"
+              />
+            ) : (
+              player.name.charAt(0)
+            )}
           </div>
           <span className="flex-1 text-sm font-medium text-foreground">
             {player.name}
@@ -233,6 +235,8 @@ function WaitlistList({
 type BookingCtaProps = {
   match: MatchDetailResponseDto;
   myBooking: MyBookingItemDto | undefined;
+  /** True when the current user is on the match roster (confirmed slot). */
+  isConfirmedOnRoster: boolean;
   myWaitlistPosition: number | null;
   onBook: () => void;
   onCancel: () => void;
@@ -241,6 +245,7 @@ type BookingCtaProps = {
 function BookingCta({
   match,
   myBooking,
+  isConfirmedOnRoster,
   myWaitlistPosition,
   onBook,
   onCancel,
@@ -264,7 +269,14 @@ function BookingCta({
     return null;
   }
 
-  if (myBooking?.status === 'confirmed') {
+  const treatAsConfirmed =
+    myBooking?.status === MyBookingItemDtoStatus.confirmed ||
+    isConfirmedOnRoster;
+
+  if (treatAsConfirmed) {
+    const canCancel =
+      myBooking?.status === MyBookingItemDtoStatus.confirmed && !!myBooking.id;
+
     return (
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
@@ -272,18 +284,20 @@ function BookingCta({
             {t('matchDetail.cta.alreadyBooked')}
           </Badge>
         </div>
-        <Button
-          variant="outline"
-          className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-          onClick={onCancel}
-        >
-          {t('matchDetail.cta.cancelBooking')}
-        </Button>
+        {canCancel ? (
+          <Button
+            variant="outline"
+            className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            onClick={onCancel}
+          >
+            {t('matchDetail.cta.cancelBooking')}
+          </Button>
+        ) : null}
       </div>
     );
   }
 
-  if (myBooking?.status === 'waitlisted') {
+  if (myBooking?.status === MyBookingItemDtoStatus.waitlisted) {
     return (
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
@@ -375,27 +389,27 @@ export function MatchDetailPage() {
 
   const myBookings = unwrap(bookingsData)?.items ?? [];
 
-  // MyBookingItemDto has no matchId — confirmed status is derived from the roster
-  // (which only includes confirmed players); waitlist is matched by title since the
-  // backend doesn't expose matchId on booking list items yet. TODO: request matchId
-  // from backend to make this exact.
-  const isConfirmedInRoster =
+  const isConfirmedOnRoster =
     !!currentUserId && !!match?.roster.some((p) => p.userId === currentUserId);
 
-  const myWaitlistBooking = match
-    ? myBookings.find(
-        (b) => b.matchTitle === match.title && b.status === 'waitlisted',
-      )
-    : undefined;
+  const confirmedBooking =
+    match &&
+    myBookings.find(
+      (b) =>
+        b.matchId === match.id && b.status === MyBookingItemDtoStatus.confirmed,
+    );
+
+  const waitlistBooking =
+    match &&
+    myBookings.find(
+      (b) =>
+        b.matchId === match.id &&
+        b.status === MyBookingItemDtoStatus.waitlisted,
+    );
 
   const myBookingForThisMatch: MyBookingItemDto | undefined =
-    isConfirmedInRoster
-      ? (myBookings.find(
-          (b) => b.matchTitle === match!.title && b.status === 'confirmed',
-        ) ?? ({ status: 'confirmed' } as MyBookingItemDto))
-      : myWaitlistBooking;
+    confirmedBooking ?? waitlistBooking;
 
-  // We need the booking ID for cancellation — MyBookingItemDto has `id`
   const myBookingId = myBookingForThisMatch?.id;
 
   const confirmedCount = match ? match.maxCapacity - match.spotsRemaining : 0;
@@ -408,9 +422,9 @@ export function MatchDetailPage() {
     : undefined;
   const myWaitlistPosition = myWaitlistEntry?.queuePosition ?? null;
 
-  const SportIcon = match
-    ? (SPORT_ICONS[match.sportType] ?? Dumbbell)
-    : Dumbbell;
+  const sportIcon = match
+    ? getSportIcon(match.sportType)
+    : getSportIcon(undefined);
 
   if (matchError) {
     return (
@@ -457,7 +471,10 @@ export function MatchDetailPage() {
           ) : null}
           <div className="relative flex items-center gap-3">
             <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 text-primary">
-              <SportIcon className="size-6" aria-hidden />
+              {createElement(sportIcon, {
+                className: 'size-6',
+                'aria-hidden': true,
+              })}
             </span>
             <div>
               <p className="text-xs font-medium uppercase tracking-widest text-primary">
@@ -545,6 +562,7 @@ export function MatchDetailPage() {
           <BookingCta
             match={match}
             myBooking={myBookingForThisMatch}
+            isConfirmedOnRoster={isConfirmedOnRoster}
             myWaitlistPosition={myWaitlistPosition}
             onBook={() => setBookingOpen(true)}
             onCancel={() => setCancelOpen(true)}

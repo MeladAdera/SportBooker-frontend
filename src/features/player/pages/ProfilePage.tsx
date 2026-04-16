@@ -60,9 +60,15 @@ import { NATIONALITY_OPTIONS } from '@/lib/nationalities';
 
 // ── Schema ─────────────────────────────────────────────────────────────────────
 
+const E164_RE = /^\+[1-9]\d{1,14}$/;
+
 const profileSchema = z.object({
   name: z.string().min(2, 'nameMin'),
-  phone: z.string().max(50, 'phoneMax').optional().or(z.literal('')),
+  phone: z
+    .string()
+    .refine((v) => v === '' || E164_RE.test(v), { message: 'phoneInvalid' })
+    .optional()
+    .or(z.literal('')),
   // Football profile — all optional
   dateOfBirth: z.string().optional(),
   nationality: z
@@ -303,6 +309,8 @@ function ProfileForm({
   const { t } = useTranslation('player');
   const queryClient = useQueryClient();
   const [serverError, setServerError] = useState<string | null>(null);
+  const setUser = useAuthStore((s) => s.setUser);
+  const currentUser = useAuthStore((s) => s.user);
 
   const {
     register,
@@ -348,6 +356,11 @@ function ProfileForm({
       if (res.status >= 400) {
         setServerError(t('profile.form.photoError'));
         return;
+      }
+      // Sync new photoUrl into the auth store so the AppBar avatar updates immediately
+      const newPhotoUrl = res.data?.data?.photoUrl;
+      if (currentUser && newPhotoUrl) {
+        setUser({ ...currentUser, photoUrl: newPhotoUrl });
       }
     }
 
@@ -817,7 +830,7 @@ function DeleteAccountSection({ onDeleted }: DeleteAccountSectionProps) {
         onDeleted();
       },
       onError: (err: unknown) => {
-        const status = (err as { status?: number } | null)?.status;
+        const status = (err as { statusCode?: number } | null)?.statusCode;
         if (status === 409) {
           setServerError(t('profile.delete.errorUpcomingBookings'));
         } else {
@@ -988,22 +1001,11 @@ export function ProfilePage() {
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <User className="size-5 text-muted-foreground" aria-hidden />
-          <h1 className="text-xl font-semibold text-foreground">
-            {t('profile.pageTitle')}
-          </h1>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleLogout}
-          className="text-muted-foreground hover:text-destructive"
-        >
-          <LogOut className="size-4" aria-hidden />
-          {t('profile.logout')}
-        </Button>
+      <div className="flex items-center gap-2">
+        <User className="size-5 text-muted-foreground" aria-hidden />
+        <h1 className="text-xl font-semibold text-foreground">
+          {t('profile.pageTitle')}
+        </h1>
       </div>
 
       {/* Stats */}
@@ -1060,6 +1062,15 @@ export function ProfilePage() {
           <DeleteAccountSection onDeleted={handleDeleted} />
         </CardContent>
       </Card>
+
+      <Button
+        variant="outline"
+        className="w-full text-muted-foreground hover:text-destructive"
+        onClick={handleLogout}
+      >
+        <LogOut className="size-4" aria-hidden />
+        {t('profile.logout')}
+      </Button>
     </div>
   );
 }

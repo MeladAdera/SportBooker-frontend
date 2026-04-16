@@ -1,12 +1,34 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  createElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { Bike, Dumbbell, Search, Shield, Swords, X } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  ArrowDown,
+  ArrowUp,
+  Check,
+  ChevronDown,
+  RefreshCw,
+  Search,
+  X,
+} from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -21,8 +43,10 @@ import type { MatchBrowseItemDto } from '@/api/generated/models/matchBrowseItemD
 import type { MatchesControllerListParams } from '@/api/generated/models/matchesControllerListParams';
 import { MatchesControllerListSportType } from '@/api/generated/models/matchesControllerListSportType';
 import { unwrap } from '@/api';
+import { ALL_SPORTS_ICON, getSportIcon } from '@/lib/sportIcons';
 import { formatDateInTz, toLocalDateString } from '@/lib/format';
 import { useTenantTimezone } from '@/shared/hooks';
+import { MatchesControllerListSortBy } from '@/api/generated/models';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -31,8 +55,14 @@ const PAGE_SIZE = 12;
 type SportType =
   (typeof MatchesControllerListSportType)[keyof typeof MatchesControllerListSportType];
 
+/** UI / URL: JavaScript weekday 0=Sun, 1=Mon … 6=Sat (same as Date.getDay()). */
 const DAYS_OF_WEEK = [0, 1, 2, 3, 4, 5, 6] as const;
 type DayOfWeek = (typeof DAYS_OF_WEEK)[number];
+
+/** Map JS getDay() (0=Sun…6=Sat) → ISO weekday for API / PostgreSQL ISODOW (1=Mon…7=Sun). */
+function jsGetDayToIsoDow(day: DayOfWeek): number {
+  return day === 0 ? 7 : day;
+}
 
 type SortOption =
   | 'date-asc'
@@ -41,6 +71,19 @@ type SortOption =
   | 'price-desc'
   | 'spots-asc'
   | 'spots-desc';
+
+/** Maps UI SortOption → API MatchesControllerListSortBy enum value. */
+function sortOptionToApiSort(sort: SortOption): MatchesControllerListSortBy {
+  const map: Record<SortOption, MatchesControllerListSortBy> = {
+    'date-asc': MatchesControllerListSortBy.scheduled_at_asc,
+    'date-desc': MatchesControllerListSortBy.scheduled_at_desc,
+    'price-asc': MatchesControllerListSortBy.price_asc,
+    'price-desc': MatchesControllerListSortBy.price_desc,
+    'spots-asc': MatchesControllerListSortBy.spots_remaining_asc,
+    'spots-desc': MatchesControllerListSortBy.spots_remaining_desc,
+  };
+  return map[sort];
+}
 
 const TYPEWRITER_PHRASES: Record<string, readonly string[]> = {
   en: [
@@ -56,13 +99,6 @@ const TYPEWRITER_PHRASES: Record<string, readonly string[]> = {
     'ابحث عن لعبتك المفضلة ...',
     'احجز مقعدك الان...',
   ],
-};
-
-const SPORT_ICONS: Record<SportType, React.ElementType> = {
-  football: Shield,
-  padel: Swords,
-  cricket: Bike,
-  generic: Dumbbell,
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -84,7 +120,7 @@ const STATUS_VARIANT: Record<
 function MatchCard({ match, tz }: { match: MatchBrowseItemDto; tz: string }) {
   const { t } = useTranslation('player');
   const navigate = useNavigate();
-  const Icon = SPORT_ICONS[match.sportType] ?? Dumbbell;
+  const sportIcon = getSportIcon(match.sportType);
   const formattedDate = formatDateInTz(match.scheduledAt, tz, {
     weekday: 'short',
     month: 'short',
@@ -97,27 +133,46 @@ function MatchCard({ match, tz }: { match: MatchBrowseItemDto; tz: string }) {
 
   return (
     <Card
-      className="cursor-pointer transition-shadow hover:shadow-md"
+      className="cursor-pointer overflow-hidden transition-shadow hover:shadow-md"
       onClick={() => navigate(`/matches/${match.id}`)}
     >
-      <CardContent className="flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Icon className="size-4" aria-hidden />
-            </span>
-            <p className="line-clamp-2 text-sm font-medium leading-snug text-card-foreground">
-              {match.title}
-            </p>
-          </div>
-          <Badge
-            variant={STATUS_VARIANT[match.status] ?? 'outline'}
-            className="shrink-0"
-          >
-            {t(`discover.status.${match.status}`, {
-              defaultValue: match.status,
+      {/* Venue image banner */}
+      <div className="relative h-36 w-full bg-muted">
+        {match.venuePictureUrl ? (
+          <img
+            src={match.venuePictureUrl}
+            alt={match.venueName}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            {createElement(sportIcon, {
+              className: 'size-10 text-muted-foreground/40',
+              'aria-hidden': true,
             })}
-          </Badge>
+          </div>
+        )}
+        <Badge
+          variant={STATUS_VARIANT[match.status] ?? 'outline'}
+          className="absolute right-2 top-2 shrink-0"
+        >
+          {t(`discover.status.${match.status}`, {
+            defaultValue: match.status,
+          })}
+        </Badge>
+      </div>
+
+      <CardContent className="flex flex-col gap-3">
+        <div className="flex items-start gap-2">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            {createElement(sportIcon, {
+              className: 'size-4',
+              'aria-hidden': true,
+            })}
+          </span>
+          <p className="line-clamp-2 text-sm font-medium leading-snug text-card-foreground">
+            {match.title}
+          </p>
         </div>
 
         <p className="text-xs text-muted-foreground">{match.venueName}</p>
@@ -155,14 +210,13 @@ function MatchCard({ match, tz }: { match: MatchBrowseItemDto; tz: string }) {
 
 function MatchCardSkeleton() {
   return (
-    <div className="animate-pulse rounded-xl bg-card ring-1 ring-foreground/10">
+    <div className="animate-pulse overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
+      {/* image banner placeholder */}
+      <div className="h-36 w-full bg-muted" />
       <div className="flex flex-col gap-3 p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-muted" />
-            <div className="h-4 w-32 rounded bg-muted" />
-          </div>
-          <div className="h-5 w-16 rounded-full bg-muted" />
+        <div className="flex items-start gap-2">
+          <div className="h-8 w-8 rounded-lg bg-muted" />
+          <div className="h-4 w-32 rounded bg-muted" />
         </div>
         <div className="h-3 w-24 rounded bg-muted" />
         <div className="h-3 w-36 rounded bg-muted" />
@@ -179,9 +233,14 @@ function MatchCardSkeleton() {
 
 const SPORT_TYPES = Object.values(MatchesControllerListSportType);
 
-type FilterState = MatchesControllerListParams & {
+type FilterState = Omit<
+  MatchesControllerListParams,
+  'sortBy' | 'dayOfWeek' | 'page' | 'limit'
+> & {
   page: number;
-  dayOfWeek?: DayOfWeek;
+  limit?: number;
+  /** JS weekdays 0=Sun … 6=Sat in URL/state; converted to ISO 1–7 only when calling the API. */
+  dayOfWeek?: DayOfWeek[];
   sortBy?: SortOption;
 };
 
@@ -246,8 +305,9 @@ function useTypewriter(
 }
 
 /**
- * Seven pill buttons (Sun–Sat) + sort select + availability toggle on one row.
- * Day filtering is client-side; sort is also applied client-side.
+ * Seven pill buttons (Sun–Sat), multi-select, plus sort on the same row.
+ * Sort and day filtering are applied server-side before pagination.
+ * Day chips use JS 0–6; `buildApiParams` sends ISO 1–7 on the wire.
  */
 function DayChips({
   value,
@@ -255,32 +315,68 @@ function DayChips({
   sortBy,
   onSortChange,
 }: {
-  value?: DayOfWeek;
-  onChange: (day: DayOfWeek | undefined) => void;
+  value?: DayOfWeek[];
+  onChange: (days: DayOfWeek[]) => void;
   sortBy?: SortOption;
   onSortChange: (sort: SortOption | undefined) => void;
 }) {
   const { t } = useTranslation('player');
 
-  const SORT_LABELS: Record<SortOption, string> = {
-    'date-asc': t('discover.filters.sort.dateAsc'),
-    'date-desc': t('discover.filters.sort.dateDesc'),
-    'price-asc': t('discover.filters.sort.priceAsc'),
-    'price-desc': t('discover.filters.sort.priceDesc'),
-    'spots-desc': t('discover.filters.sort.spotsDesc'),
-    'spots-asc': t('discover.filters.sort.spotsAsc'),
-  };
+  const SORT_OPTIONS: {
+    value: SortOption;
+    label: string;
+    icon: React.ElementType;
+  }[] = [
+    {
+      value: 'date-asc',
+      label: t('discover.filters.sort.dateAsc'),
+      icon: ArrowUp,
+    },
+    {
+      value: 'date-desc',
+      label: t('discover.filters.sort.dateDesc'),
+      icon: ArrowDown,
+    },
+    {
+      value: 'price-asc',
+      label: t('discover.filters.sort.priceAsc'),
+      icon: ArrowUp,
+    },
+    {
+      value: 'price-desc',
+      label: t('discover.filters.sort.priceDesc'),
+      icon: ArrowDown,
+    },
+    {
+      value: 'spots-desc',
+      label: t('discover.filters.sort.spotsDesc'),
+      icon: ArrowDown,
+    },
+    {
+      value: 'spots-asc',
+      label: t('discover.filters.sort.spotsAsc'),
+      icon: ArrowUp,
+    },
+  ];
+
+  const activeSortOption = SORT_OPTIONS.find((o) => o.value === sortBy);
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
       <div className="flex flex-wrap gap-2">
         {DAYS_OF_WEEK.map((day) => {
-          const active = value === day;
+          const selected = value ?? [];
+          const active = selected.includes(day);
           return (
             <button
               key={day}
               type="button"
-              onClick={() => onChange(active ? undefined : day)}
+              onClick={() => {
+                const next = active
+                  ? selected.filter((d) => d !== day)
+                  : [...selected, day].sort((a, b) => a - b);
+                onChange(next);
+              }}
               className={cn(
                 'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
                 active
@@ -299,21 +395,142 @@ function DayChips({
         onValueChange={(v) => onSortChange((v as SortOption) || undefined)}
       >
         <SelectTrigger size="sm" className="min-w-[130px]">
-          <span className="text-sm">
-            {sortBy ? SORT_LABELS[sortBy] : t('discover.filters.sortBy')}
+          <span className="flex items-center gap-1.5 text-sm">
+            {activeSortOption ? (
+              <>
+                <activeSortOption.icon className="size-3.5 shrink-0" />
+                {activeSortOption.label}
+              </>
+            ) : (
+              t('discover.filters.sortBy')
+            )}
           </span>
         </SelectTrigger>
         <SelectContent align="end">
-          {(Object.entries(SORT_LABELS) as [SortOption, string][]).map(
-            ([val, label]) => (
-              <SelectItem key={val} value={val}>
+          {SORT_OPTIONS.map(({ value, label, icon: Icon }) => (
+            <SelectItem key={value} value={value}>
+              <span className="flex items-center gap-1.5">
+                <Icon className="size-3.5 shrink-0 text-muted-foreground" />
                 {label}
-              </SelectItem>
-            ),
-          )}
+              </span>
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </div>
+  );
+}
+
+// ── Venue combobox ────────────────────────────────────────────────────────────
+
+type VenueOption = { id: string; name: string };
+
+function VenueCombobox({
+  venues,
+  value,
+  onChange,
+}: {
+  venues: VenueOption[];
+  value?: string;
+  onChange: (id: string | undefined) => void;
+}) {
+  const { t } = useTranslation('player');
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return q ? venues.filter((v) => v.name.toLowerCase().includes(q)) : venues;
+  }, [venues, search]);
+
+  const selectedName = venues.find((v) => v.id === value)?.name;
+
+  function select(id: string | undefined) {
+    onChange(id);
+    setOpen(false);
+    setSearch('');
+  }
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (o) setTimeout(() => inputRef.current?.focus(), 0);
+        else setSearch('');
+      }}
+    >
+      <PopoverTrigger
+        className={cn(
+          'flex h-8 min-w-[140px] items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent px-2.5 text-sm transition-colors',
+          'hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          selectedName ? 'text-foreground' : 'text-muted-foreground',
+        )}
+      >
+        <span className="truncate">
+          {selectedName ?? t('discover.filters.allVenues')}
+        </span>
+        <ChevronDown className="size-3.5 shrink-0 opacity-60" />
+      </PopoverTrigger>
+
+      <PopoverContent align="start" className="w-56 p-0">
+        <div className="border-b border-border p-2">
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              ref={inputRef}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('discover.filters.searchVenue')}
+              className="h-7 pl-7 text-sm"
+            />
+          </div>
+        </div>
+
+        <div className="max-h-52 overflow-y-auto p-1">
+          <button
+            type="button"
+            onClick={() => select(undefined)}
+            className={cn(
+              'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent',
+              !value && 'font-medium text-foreground',
+            )}
+          >
+            <Check
+              className={cn('size-3.5 shrink-0', value ? 'invisible' : '')}
+            />
+            {t('discover.filters.allVenues')}
+          </button>
+
+          {filtered.length === 0 ? (
+            <p className="px-2 py-4 text-center text-xs text-muted-foreground">
+              {t('discover.filters.noVenueFound')}
+            </p>
+          ) : (
+            filtered.map((v) => (
+              <button
+                key={v.id}
+                type="button"
+                onClick={() => select(v.id)}
+                className={cn(
+                  'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent',
+                  value === v.id && 'font-medium text-foreground',
+                )}
+              >
+                <Check
+                  className={cn(
+                    'size-3.5 shrink-0',
+                    value === v.id ? '' : 'invisible',
+                  )}
+                />
+                {v.name}
+              </button>
+            ))
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -324,6 +541,9 @@ function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
   if (isVenuesLoading) return <div>Loading...</div>;
 
   const venues = unwrap(venuesData)?.items ?? [];
+  const sportTriggerIcon = filters.sportType
+    ? getSportIcon(filters.sportType)
+    : ALL_SPORTS_ICON;
 
   const hasActiveFilters =
     !!filters.sportType ||
@@ -331,13 +551,15 @@ function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
     !!filters.date ||
     !!filters.available ||
     !!filters.sortBy ||
-    filters.dayOfWeek !== undefined;
+    (filters.dayOfWeek?.length ?? 0) > 0;
 
   return (
     <div className="flex flex-col gap-3">
       <DayChips
         value={filters.dayOfWeek}
-        onChange={(day) => onChange({ dayOfWeek: day, page: 1 })}
+        onChange={(days) =>
+          onChange({ dayOfWeek: days.length > 0 ? days : undefined, page: 1 })
+        }
         sortBy={filters.sortBy}
         onSortChange={(sort) => onChange({ sortBy: sort, page: 1 })}
       />
@@ -349,34 +571,39 @@ function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
           }
         >
           <SelectTrigger size="sm" className="min-w-[120px]">
+            {createElement(sportTriggerIcon, {
+              className: 'size-3.5 shrink-0 text-muted-foreground',
+              'aria-hidden': true,
+            })}
             <SelectValue placeholder={t('discover.filters.allSports')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">{t('discover.filters.allSports')}</SelectItem>
+            <SelectItem value="">
+              <span className="flex items-center gap-1.5">
+                {createElement(ALL_SPORTS_ICON, {
+                  className: 'size-3.5 shrink-0 text-muted-foreground',
+                })}
+                {t('discover.filters.allSports')}
+              </span>
+            </SelectItem>
             {SPORT_TYPES.map((s) => (
               <SelectItem key={s} value={s}>
-                {t(`discover.sports.${s}`)}
+                <span className="flex items-center gap-1.5">
+                  {createElement(getSportIcon(s), {
+                    className: 'size-3.5 shrink-0 text-muted-foreground',
+                  })}
+                  {t(`discover.sports.${s}`)}
+                </span>
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        <Select
-          value={filters.venueId ?? ''}
-          onValueChange={(v) => onChange({ venueId: v || undefined, page: 1 })}
-        >
-          <SelectTrigger size="sm" className="min-w-[140px]">
-            <SelectValue placeholder={t('discover.filters.allVenues')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">{t('discover.filters.allVenues')}</SelectItem>
-            {venues.map((v) => (
-              <SelectItem key={v.id} value={v.id}>
-                {v.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <VenueCombobox
+          venues={venues}
+          value={filters.venueId}
+          onChange={(id) => onChange({ venueId: id, page: 1 })}
+        />
 
         <DatePicker
           value={filters.date ? new Date(filters.date) : undefined}
@@ -389,17 +616,21 @@ function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
           placeholder={t('discover.filters.date')}
         />
 
-        <label className="flex cursor-pointer select-none items-center gap-1.5 text-sm text-foreground">
-          <input
-            type="checkbox"
-            className="accent-primary"
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="available-filter"
             checked={!!filters.available}
-            onChange={(e) =>
-              onChange({ available: e.target.checked || undefined, page: 1 })
+            onCheckedChange={(checked) =>
+              onChange({ available: checked || undefined, page: 1 })
             }
           />
-          {t('discover.filters.availableOnly')}
-        </label>
+          <label
+            htmlFor="available-filter"
+            className="cursor-pointer select-none text-sm text-foreground"
+          >
+            {t('discover.filters.availableOnly')}
+          </label>
+        </div>
 
         {hasActiveFilters && (
           <Button variant="ghost" size="sm" onClick={onClear} className="gap-1">
@@ -471,64 +702,133 @@ const DEFAULT_FILTERS: FilterState = {
   limit: PAGE_SIZE,
 };
 
+// ── URL ↔ FilterState serialisation ──────────────────────────────────────────
+
+function filtersToParams(filters: FilterState): URLSearchParams {
+  const p = new URLSearchParams();
+  if (filters.page && filters.page !== 1) p.set('page', String(filters.page));
+  if (filters.sportType) p.set('sportType', filters.sportType);
+  if (filters.venueId) p.set('venueId', filters.venueId);
+  if (filters.date) p.set('date', filters.date);
+  if (filters.available) p.set('available', 'true');
+  if (filters.sortBy) p.set('sortBy', filters.sortBy);
+  if (filters.dayOfWeek && filters.dayOfWeek.length > 0)
+    p.set('dayOfWeek', filters.dayOfWeek.join(','));
+  return p;
+}
+
+function paramsToFilters(p: URLSearchParams): FilterState {
+  const page = parseInt(p.get('page') ?? '1', 10);
+  const sportType = p.get('sportType') as SportType | null;
+  const venueId = p.get('venueId') ?? undefined;
+  const date = p.get('date') ?? undefined;
+  const available = p.get('available') === 'true' ? true : undefined;
+  const sortBy = (p.get('sortBy') as SortOption | null) ?? undefined;
+  const dayParam = p.get('dayOfWeek');
+  const dayOfWeek = dayParam
+    ? (dayParam
+        .split(',')
+        .map(Number)
+        .filter((n) => n >= 0 && n <= 6) as DayOfWeek[])
+    : undefined;
+
+  return {
+    page: isNaN(page) || page < 1 ? 1 : page,
+    limit: PAGE_SIZE,
+    ...(sportType ? { sportType } : {}),
+    ...(venueId ? { venueId } : {}),
+    ...(date ? { date } : {}),
+    ...(available ? { available } : {}),
+    ...(sortBy ? { sortBy } : {}),
+    ...(dayOfWeek && dayOfWeek.length > 0 ? { dayOfWeek } : {}),
+  };
+}
+
+function buildApiParams(filters: FilterState): MatchesControllerListParams {
+  const {
+    page,
+    limit = PAGE_SIZE,
+    dayOfWeek,
+    sortBy,
+    sportType,
+    venueId,
+    date,
+    available,
+  } = filters;
+  const params: MatchesControllerListParams = { page, limit };
+  if (sportType) params.sportType = sportType;
+  if (venueId) params.venueId = venueId;
+  if (date) params.date = date;
+  if (available) params.available = available;
+  if (sortBy) params.sortBy = sortOptionToApiSort(sortBy);
+  if (dayOfWeek && dayOfWeek.length > 0)
+    params.dayOfWeek = dayOfWeek.map(jsGetDayToIsoDow);
+  return params;
+}
+
 export function DiscoverPage() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation('player');
   const tenantTz = useTenantTimezone();
-  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [spinning, setSpinning] = useState(false);
+
+  const filters = useMemo(() => paramsToFilters(searchParams), [searchParams]);
   const phrases =
     TYPEWRITER_PHRASES[i18n.language] ?? TYPEWRITER_PHRASES['en']!;
   const typedTitle = useTypewriter(phrases);
 
-  const { page, limit, dayOfWeek, sortBy, ...queryParams } = filters;
-  const { data, isLoading, isError } = useMatchesControllerList({
-    ...queryParams,
-    page,
-    limit,
-  });
+  const apiParams = useMemo(() => buildApiParams(filters), [filters]);
+
+  const { data, isLoading, isError, refetch, isFetching } =
+    useMatchesControllerList(apiParams);
   const matchesData = unwrap(data);
-  const allMatches = matchesData?.items ?? [];
-
-  const filtered =
-    dayOfWeek !== undefined
-      ? allMatches.filter((m) => new Date(m.scheduledAt).getDay() === dayOfWeek)
-      : allMatches;
-
-  const matches = sortBy
-    ? [...filtered].sort((a, b) => {
-        if (sortBy === 'date-asc')
-          return (
-            new Date(a.scheduledAt).getTime() -
-            new Date(b.scheduledAt).getTime()
-          );
-        if (sortBy === 'date-desc')
-          return (
-            new Date(b.scheduledAt).getTime() -
-            new Date(a.scheduledAt).getTime()
-          );
-        if (sortBy === 'price-asc') return a.pricePerPlayer - b.pricePerPlayer;
-        if (sortBy === 'price-desc') return b.pricePerPlayer - a.pricePerPlayer;
-        if (sortBy === 'spots-desc') return b.spotsRemaining - a.spotsRemaining;
-        if (sortBy === 'spots-asc') return a.spotsRemaining - b.spotsRemaining;
-        return 0;
-      })
-    : filtered;
+  const matches = matchesData?.items ?? [];
   const total = matchesData?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
+  const { page } = filters;
 
-  const handleFilterChange = useCallback((next: Partial<FilterState>) => {
-    setFilters((prev) => ({ ...prev, ...next }));
-  }, []);
+  const handleFilterChange = useCallback(
+    (next: Partial<FilterState>) => {
+      setSearchParams(filtersToParams({ ...filters, ...next }), {
+        replace: true,
+      });
+    },
+    [filters, setSearchParams],
+  );
 
   const handleClear = useCallback(() => {
-    setFilters(DEFAULT_FILTERS);
-  }, []);
+    setSearchParams(filtersToParams(DEFAULT_FILTERS), { replace: true });
+  }, [setSearchParams]);
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
-      <h1 className="text-xl font-semibold text-foreground">
-        {typedTitle}
-        <span className="ml-0.5 inline-block h-5 w-0.5 animate-pulse bg-primary align-middle" />
-      </h1>
+      <div className="flex items-start justify-between gap-3">
+        <h1 className="text-xl font-semibold text-foreground">
+          {typedTitle}
+          <span className="ml-0.5 inline-block h-5 w-0.5 animate-pulse bg-primary align-middle" />
+        </h1>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="shrink-0"
+          onClick={() => {
+            setSpinning(true);
+            void refetch();
+          }}
+          disabled={isFetching}
+          aria-label={t('discover.refreshAria')}
+          title={t('discover.refresh')}
+        >
+          <RefreshCw
+            className={cn('size-4', spinning && 'animate-spin')}
+            onAnimationIteration={() => {
+              if (!isFetching) setSpinning(false);
+            }}
+            aria-hidden
+          />
+        </Button>
+      </div>
 
       <FilterBar
         filters={filters}

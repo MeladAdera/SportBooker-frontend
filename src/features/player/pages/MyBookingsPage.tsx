@@ -95,26 +95,41 @@ function BookingCard({ booking }: BookingCardProps) {
 
   return (
     <Card
-      className="cursor-pointer transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="cursor-pointer overflow-hidden transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       role="button"
       tabIndex={0}
       aria-label={booking.matchTitle}
-      onClick={() => navigate(`/matches/${booking.id}`)}
+      onClick={() => navigate(`/matches/${booking.matchId}`)}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          navigate(`/matches/${booking.id}`);
+          navigate(`/matches/${booking.matchId}`);
         }
       }}
     >
-      <CardContent className="flex flex-col gap-3 p-4">
-        {/* Title row */}
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="text-sm font-semibold leading-tight text-foreground">
-            {booking.matchTitle}
-          </h3>
+      {/* Venue image banner */}
+      <div className="relative h-32 w-full bg-muted">
+        {booking.venuePictureUrl ? (
+          <img
+            src={booking.venuePictureUrl}
+            alt={booking.venueName}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <MapPin className="size-8 text-muted-foreground/40" aria-hidden />
+          </div>
+        )}
+        <div className="absolute right-2 top-2">
           <StatusBadge status={booking.status} />
         </div>
+      </div>
+
+      <CardContent className="flex flex-col gap-3 p-4">
+        {/* Title */}
+        <h3 className="text-sm font-semibold leading-tight text-foreground">
+          {booking.matchTitle}
+        </h3>
 
         {/* Venue */}
         <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -153,12 +168,10 @@ function BookingCard({ booking }: BookingCardProps) {
 
 function BookingCardSkeleton() {
   return (
-    <Card>
+    <Card className="overflow-hidden">
+      <Skeleton className="h-32 w-full rounded-none" />
       <CardContent className="flex flex-col gap-3 p-4">
-        <div className="flex items-start justify-between gap-2">
-          <Skeleton className="h-4 w-3/5" />
-          <Skeleton className="h-5 w-16 rounded-full" />
-        </div>
+        <Skeleton className="h-4 w-3/5" />
         <Skeleton className="h-4 w-2/5" />
         <div className="flex gap-3">
           <Skeleton className="h-4 w-28" />
@@ -232,7 +245,7 @@ function Pagination({
 
 // ── Tab bar ────────────────────────────────────────────────────────────────────
 
-const TABS: Tab[] = ['upcoming', 'past', 'waitlist', 'cancelled'];
+const TABS: Tab[] = ['upcoming', 'waitlist', 'past', 'cancelled'];
 
 function TabBar({
   active,
@@ -279,6 +292,10 @@ function tabToParams(tab: Tab): {
   return { status: MyBookingItemDtoStatus.cancelled };
 }
 
+function isPast(booking: MyBookingItemDto): boolean {
+  return new Date(booking.matchScheduledAt) < new Date();
+}
+
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export function MyBookingsPage() {
@@ -298,7 +315,14 @@ export function MyBookingsPage() {
   });
 
   const bookingsData = unwrap(data);
-  const bookings = bookingsData?.items ?? [];
+  const rawItems = bookingsData?.items ?? [];
+  // Backend may not filter `upcoming=false` as past-only — enforce client-side
+  const bookings =
+    activeTab === 'upcoming'
+      ? rawItems.filter((b) => !isPast(b))
+      : activeTab === 'past'
+        ? rawItems.filter((b) => isPast(b))
+        : rawItems;
   const total = bookingsData?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 

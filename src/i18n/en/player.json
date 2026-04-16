@@ -144,14 +144,14 @@
       "email": "Email",
       "emailReadOnly": "Read-only",
       "phone": "Phone",
-      "phonePlaceholder": "e.g. +971 50 000 0000",
+      "phonePlaceholder": "e.g. +971501234567",
       "save": "Save changes",
       "saveSuccess": "Profile updated successfully.",
       "error": "Failed to save profile. Please try again.",
       "photoError": "Failed to upload photo. Please try again.",
       "validation": {
         "nameMin": "Name must be at least 2 characters.",
-        "phoneMax": "Phone number is too long.",
+        "phoneInvalid": "Phone must be in E.164 format, e.g. +971501234567",
         "nationalityMax": "Nationality must be 100 characters or fewer."
       }
     },
@@ -304,6 +304,8 @@
   },
   "discover": {
     "pageTitle": "Discover Matches",
+    "refresh": "Refresh",
+    "refreshAria": "Refresh match list",
     "filters": {
       "sport": "Sport",
       "allSports": "All sports",
@@ -312,6 +314,8 @@
       "date": "Date",
       "availableOnly": "Available only",
       "clearFilters": "Clear filters",
+      "searchVenue": "Search venues…",
+      "noVenueFound": "No venues found",
       "sortBy": "Sort by",
       "days": {
         "0": "Sun",
@@ -323,10 +327,10 @@
         "6": "Sat"
       },
       "sort": {
-        "dateAsc": "Date ↑",
-        "dateDesc": "Date ↓",
-        "priceAsc": "Price ↑",
-        "priceDesc": "Price ↓",
+        "dateAsc": "Date",
+        "dateDesc": "Date",
+        "priceAsc": "Price",
+        "priceDesc": "Price",
         "spotsDesc": "Spots: most first",
         "spotsAsc": "Spots: fewest first"
       }

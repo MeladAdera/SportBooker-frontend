@@ -17,12 +17,21 @@
       "statusAll": "All statuses",
       "venue": "Venue",
       "venueAll": "All venues",
+      "venueSearch": "Search venues…",
+      "venueNoResults": "No venues found",
       "sport": "Sport",
       "sportAll": "All sports",
       "dateFrom": "From",
       "dateTo": "To",
       "search": "Search matches…",
-      "clear": "Clear filters"
+      "clear": "Clear filters",
+      "sortBy": "Sort by",
+      "sort": {
+        "priceAsc": "Price",
+        "priceDesc": "Price",
+        "spotsAsc": "Spots",
+        "spotsDesc": "Spots"
+      }
     },
     "table": {
       "date": "Date",
@@ -198,7 +207,8 @@
     "success": "Match created successfully.",
     "error": {
       "generic": "Failed to create match. Please try again.",
-      "forbidden": "You do not have permission to create matches."
+      "forbidden": "You do not have permission to create matches.",
+      "overlap": "This venue already has a match overlapping that time slot. Please choose a different time."
     },
     "validation": {
       "titleMin": "Title must be at least 3 characters.",
@@ -211,7 +221,8 @@
       "durationMax": "Duration cannot exceed 240 minutes.",
       "capacityMin": "At least 2 players are required.",
       "capacityMax": "Capacity cannot exceed 100.",
-      "priceMin": "Price must be 0 or more."
+      "priceMin": "Price must be at least 1.",
+      "priceInteger": "Price must be a whole number."
     }
   },
   "venueDetail": {

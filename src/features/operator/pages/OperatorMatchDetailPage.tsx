@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { createElement, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   Clock,
   Coins,
-  Dumbbell,
   ExternalLink,
   Loader2,
   MapPin,
@@ -48,6 +47,7 @@ import { MatchDetailResponseDtoStatus } from '@/api/generated/models/matchDetail
 import type { MatchDetailResponseDto } from '@/api/generated/models/matchDetailResponseDto';
 import type { MatchRosterPlayerDto } from '@/api/generated/models/matchRosterPlayerDto';
 import { unwrap } from '@/api';
+import { getSportIcon } from '@/lib/sportIcons';
 import type { ApiError } from '@/api/client';
 import { normalizeRole } from '@/lib/roles';
 import { useAuthStore } from '@/stores/authStore';
@@ -72,13 +72,6 @@ import type { OperatorWaitlistEntryDto } from '@/api/generated/models/operatorWa
 function googleMapsSearchUrl(query: string) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
-
-const SPORT_ICONS: Record<string, React.ElementType> = {
-  football: Shield,
-  padel: Shield,
-  cricket: Shield,
-  generic: Dumbbell,
-};
 
 const STATUS_BADGE: Record<
   string,
@@ -957,9 +950,9 @@ export function OperatorMatchDetailPage() {
 
   const confirmedCount = match ? match.maxCapacity - match.spotsRemaining : 0;
 
-  const SportIcon = match
-    ? (SPORT_ICONS[match.sportType] ?? Dumbbell)
-    : Dumbbell;
+  const sportIcon = match
+    ? getSportIcon(match.sportType)
+    : getSportIcon(undefined);
 
   if (isError) {
     return (
@@ -1018,7 +1011,10 @@ export function OperatorMatchDetailPage() {
           >
             <div className="flex items-center gap-3">
               <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 text-primary">
-                <SportIcon className="size-6" aria-hidden />
+                {createElement(sportIcon, {
+                  className: 'size-6',
+                  'aria-hidden': true,
+                })}
               </span>
               <div>
                 <p className="text-xs font-medium uppercase tracking-widest text-primary">

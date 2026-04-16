@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { createElement, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -28,6 +28,7 @@ import { useMatchesControllerCreate } from '@/api/generated/matches/matches';
 import { useVenuesControllerList } from '@/api/generated/venues/venues';
 import { CreateMatchDtoSportType } from '@/api/generated/models/createMatchDtoSportType';
 import { ApiError, unwrap } from '@/api';
+import { ALL_SPORTS_ICON, getSportIcon } from '@/lib/sportIcons';
 import { toZonedISO } from '@/lib/format';
 import { useTenantTimezone } from '@/shared/hooks';
 
@@ -66,7 +67,8 @@ const createMatchSchema = z.object({
     .max(CAPACITY_MAX, 'validation.capacityMax'),
   pricePerPlayer: z
     .number({ error: 'validation.priceMin' })
-    .min(0, 'validation.priceMin'),
+    .min(1, 'validation.priceMin')
+    .refine((v) => Number.isInteger(v), 'validation.priceInteger'),
 });
 
 type FormValues = z.infer<typeof createMatchSchema>;
@@ -150,15 +152,6 @@ export function CreateMatchPage() {
     useVenuesControllerList({ limit: 100 });
   const venues = useMemo(() => unwrap(venuesData)?.items ?? [], [venuesData]);
 
-  const sportOptions = useMemo<SearchableComboboxOption[]>(
-    () =>
-      Object.values(CreateMatchDtoSportType).map((s) => ({
-        value: s,
-        label: t(`matches.sport.${s}`, { defaultValue: s }),
-      })),
-    [t],
-  );
-
   const venueOptions = useMemo<SearchableComboboxOption[]>(
     () => venues.map((v) => ({ value: v.id, label: v.name })),
     [venues],
@@ -174,7 +167,7 @@ export function CreateMatchPage() {
     defaultValues: {
       durationMins: 60,
       maxCapacity: 10,
-      pricePerPlayer: 0,
+      pricePerPlayer: 1,
     },
   });
 
@@ -185,11 +178,17 @@ export function CreateMatchPage() {
         navigate('/operator/matches');
       },
       onError: (err: unknown) => {
-        toast.error(
-          err instanceof ApiError && err.statusCode === 403
-            ? t('createMatch.error.forbidden')
-            : t('createMatch.error.generic'),
-        );
+        if (err instanceof ApiError) {
+          if (err.statusCode === 403) {
+            toast.error(t('createMatch.error.forbidden'));
+          } else if (err.statusCode === 409) {
+            toast.error(t('createMatch.error.overlap'));
+          } else {
+            toast.error(t('createMatch.error.generic'));
+          }
+        } else {
+          toast.error(t('createMatch.error.generic'));
+        }
       },
     },
   });
@@ -252,24 +251,57 @@ export function CreateMatchPage() {
               <FieldError message={resolveError(t, errors.title?.message)} />
             </div>
 
-            {/* Sport + Venue — side by side on desktop */}
+            {/* Sport (icons) + venue — side by side on desktop */}
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <div className="flex flex-col gap-1.5">
-                <Label>{t('createMatch.fields.sport')}</Label>
+                <Label htmlFor="match-sport">
+                  {t('createMatch.fields.sport')}
+                </Label>
                 <Controller
                   control={control}
                   name="sportType"
-                  render={({ field }) => (
-                    <SearchableCombobox
-                      options={sportOptions}
-                      value={field.value ?? ''}
-                      onChange={field.onChange}
-                      placeholder={t('createMatch.fields.sportPlaceholder')}
-                      searchPlaceholder={t('createMatch.fields.sportSearch')}
-                      emptyLabel={t('createMatch.fields.sportEmpty')}
-                      hasError={!!errors.sportType}
-                    />
-                  )}
+                  render={({ field }) => {
+                    const sportTriggerIcon = field.value
+                      ? getSportIcon(field.value)
+                      : ALL_SPORTS_ICON;
+                    return (
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger
+                          id="match-sport"
+                          size="default"
+                          className="h-9 w-full gap-2"
+                          aria-invalid={!!errors.sportType}
+                        >
+                          {createElement(sportTriggerIcon, {
+                            className:
+                              'size-3.5 shrink-0 text-muted-foreground',
+                            'aria-hidden': true,
+                          })}
+                          <SelectValue
+                            placeholder={t(
+                              'createMatch.fields.sportPlaceholder',
+                            )}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.values(CreateMatchDtoSportType).map((s) => (
+                            <SelectItem key={s} value={s}>
+                              <span className="flex items-center gap-1.5">
+                                {createElement(getSportIcon(s), {
+                                  className:
+                                    'size-3.5 shrink-0 text-muted-foreground',
+                                })}
+                                {t(`matches.sport.${s}`, { defaultValue: s })}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    );
+                  }}
                 />
                 <FieldError
                   message={resolveError(t, errors.sportType?.message)}
@@ -277,7 +309,9 @@ export function CreateMatchPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <Label>{t('createMatch.fields.venue')}</Label>
+                <Label htmlFor="match-venue">
+                  {t('createMatch.fields.venue')}
+                </Label>
                 <Controller
                   control={control}
                   name="venueId"
@@ -453,7 +487,6 @@ export function CreateMatchPage() {
             </p>
 
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              {/* Max capacity — stepper */}
               <div className="flex flex-col gap-1.5">
                 <Label>{t('createMatch.fields.maxCapacity')}</Label>
                 <Controller
@@ -475,7 +508,6 @@ export function CreateMatchPage() {
                 />
               </div>
 
-              {/* Price per player — input with currency */}
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="match-price">
                   {t('createMatch.fields.price')}
@@ -493,7 +525,7 @@ export function CreateMatchPage() {
                   <input
                     id="match-price"
                     type="number"
-                    min={0}
+                    min={1}
                     step={1}
                     className="h-full w-full bg-transparent px-2.5 text-sm outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     placeholder="0"

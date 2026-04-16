@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   format,
@@ -343,14 +344,65 @@ function EmptyState({ onTopUp }: { onTopUp: () => void }) {
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 
+// ── URL ↔ wallet filter serialisation ────────────────────────────────────────
+
+function readWalletParams(p: URLSearchParams): {
+  page: number;
+  typeFilter: TxType;
+  dateRange: DateRange;
+} {
+  const page = Math.max(1, parseInt(p.get('page') ?? '1', 10) || 1);
+  const raw = p.get('type') ?? 'all';
+  const typeFilter: TxType = (
+    ['all', ...TX_TYPE_OPTIONS.filter((o) => o !== 'all')] as string[]
+  ).includes(raw)
+    ? (raw as TxType)
+    : 'all';
+  const dateRange: DateRange = {
+    from: p.get('from') ?? '',
+    to: p.get('to') ?? '',
+  };
+  return { page, typeFilter, dateRange };
+}
+
+function writeWalletParams(
+  page: number,
+  typeFilter: TxType,
+  dateRange: DateRange,
+): URLSearchParams {
+  const p = new URLSearchParams();
+  if (page > 1) p.set('page', String(page));
+  if (typeFilter !== 'all') p.set('type', typeFilter);
+  if (dateRange.from) p.set('from', dateRange.from);
+  if (dateRange.to) p.set('to', dateRange.to);
+  return p;
+}
+
 export function WalletPage() {
   const { t } = useTranslation('player');
 
-  const [page, setPage] = useState(1);
-  const [typeFilter, setTypeFilter] = useState<TxType>('all');
-  const [dateRange, setDateRange] = useState<DateRange>({ from: '', to: '' });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { page, typeFilter, dateRange } = useMemo(
+    () => readWalletParams(searchParams),
+    [searchParams],
+  );
+
   const [topUpOpen, setTopUpOpen] = useState(false);
   const [spinning, setSpinning] = useState(false);
+
+  function setPage(next: number) {
+    setSearchParams(writeWalletParams(next, typeFilter, dateRange), {
+      replace: true,
+    });
+  }
+
+  function setTypeFilter(next: TxType) {
+    setSearchParams(writeWalletParams(1, next, dateRange), { replace: true });
+  }
+
+  function setDateRange(next: DateRange) {
+    setSearchParams(writeWalletParams(1, typeFilter, next), { replace: true });
+  }
 
   const { data, isLoading, isFetching, isError, refetch } =
     useUsersControllerGetMyWallet({ page, limit: PAGE_SIZE });
@@ -385,8 +437,9 @@ export function WalletPage() {
     typeFilter !== 'all' || dateRange.from !== '' || dateRange.to !== '';
 
   function handleClearFilters() {
-    setTypeFilter('all');
-    setDateRange({ from: '', to: '' });
+    setSearchParams(writeWalletParams(1, 'all', { from: '', to: '' }), {
+      replace: true,
+    });
   }
 
   function handleTopUp() {
@@ -446,20 +499,8 @@ export function WalletPage() {
 
       {/* ── Filters ─────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-3">
-        <TypeFilter
-          value={typeFilter}
-          onChange={(v) => {
-            setTypeFilter(v);
-            setPage(1);
-          }}
-        />
-        <DateRangeFilter
-          value={dateRange}
-          onChange={(v) => {
-            setDateRange(v);
-            setPage(1);
-          }}
-        />
+        <TypeFilter value={typeFilter} onChange={setTypeFilter} />
+        <DateRangeFilter value={dateRange} onChange={setDateRange} />
         {hasActiveFilters && (
           <Button variant="ghost" size="sm" onClick={handleClearFilters}>
             {t('wallet.filter.clear')}

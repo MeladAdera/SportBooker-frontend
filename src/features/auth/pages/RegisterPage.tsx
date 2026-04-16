@@ -87,7 +87,6 @@ const BACKEND_FIELD_MAP: Record<string, keyof RegisterFormValues> = {
   name: 'name',
   password: 'password',
   phone: 'phone',
-  phoneNumber: 'phone',
 };
 
 const STEP1_FIELDS: Array<keyof RegisterFormValues> = [
