@@ -167,28 +167,36 @@ function RosterList({ roster }: { roster: MatchDetailResponseDto['roster'] }) {
   }
 
   return (
-    <ul className="divide-y divide-border">
+    <ul className="grid grid-cols-2 gap-x-3 gap-y-2.5">
       {roster.map((player) => (
-        <li key={player.userId} className="flex items-center gap-3 py-2.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium uppercase text-muted-foreground">
+        <li
+          key={player.userId}
+          className="flex min-w-0 items-center gap-2 py-1"
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-xl font-medium uppercase text-muted-foreground">
             {player.photoUrl ? (
               <img
                 src={player.photoUrl as unknown as string}
                 alt={player.name}
-                className="h-8 w-8 object-cover"
+                className="h-10 w-10 object-cover"
               />
             ) : (
               player.name.charAt(0)
             )}
           </div>
-          <span className="flex-1 text-sm font-medium text-foreground">
-            {player.name}
-          </span>
-          <Badge variant="outline" className="shrink-0 text-xs capitalize">
-            {t(`matchDetail.roster.position.${player.position}`, {
-              defaultValue: player.position.replace('_', ' '),
-            })}
-          </Badge>
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <span className="truncate text-sm font-medium text-foreground">
+              {player.name}
+            </span>
+            <Badge
+              variant="outline"
+              className="w-fit max-w-full truncate text-[10px] capitalize sm:text-xs"
+            >
+              {t(`matchDetail.roster.position.${player.position}`, {
+                defaultValue: player.position.replace('_', ' '),
+              })}
+            </Badge>
+          </div>
         </li>
       ))}
     </ul>
