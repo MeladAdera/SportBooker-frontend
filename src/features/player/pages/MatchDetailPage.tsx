@@ -22,6 +22,7 @@ import { BookingPosition } from '@/api/generated/models/bookingPosition';
 import { MatchDetailResponseDtoStatus } from '@/api/generated/models/matchDetailResponseDtoStatus';
 import type { MatchDetailResponseDto } from '@/api/generated/models/matchDetailResponseDto';
 import type { MyBookingItemDto } from '@/api/generated/models/myBookingItemDto';
+import { MyBookingItemDtoStatus } from '@/api/generated/models/myBookingItemDtoStatus';
 import { BookingModal } from '@/features/player/components/BookingModal';
 import { CancelBookingModal } from '@/features/player/components/CancelBookingModal';
 import { MAX_GK } from '@/features/player/constants';
@@ -256,6 +257,8 @@ function WaitlistList({
 type BookingCtaProps = {
   match: MatchDetailResponseDto;
   myBooking: MyBookingItemDto | undefined;
+  /** True when the current user is on the match roster (confirmed slot). */
+  isConfirmedOnRoster: boolean;
   myWaitlistPosition: number | null;
   onBook: () => void;
   onCancel: () => void;
@@ -264,6 +267,7 @@ type BookingCtaProps = {
 function BookingCta({
   match,
   myBooking,
+  isConfirmedOnRoster,
   myWaitlistPosition,
   onBook,
   onCancel,
@@ -287,7 +291,14 @@ function BookingCta({
     return null;
   }
 
-  if (myBooking?.status === 'confirmed') {
+  const treatAsConfirmed =
+    myBooking?.status === MyBookingItemDtoStatus.confirmed ||
+    isConfirmedOnRoster;
+
+  if (treatAsConfirmed) {
+    const canCancel =
+      myBooking?.status === MyBookingItemDtoStatus.confirmed && !!myBooking.id;
+
     return (
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
@@ -295,18 +306,20 @@ function BookingCta({
             {t('matchDetail.cta.alreadyBooked')}
           </Badge>
         </div>
-        <Button
-          variant="outline"
-          className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-          onClick={onCancel}
-        >
-          {t('matchDetail.cta.cancelBooking')}
-        </Button>
+        {canCancel ? (
+          <Button
+            variant="outline"
+            className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            onClick={onCancel}
+          >
+            {t('matchDetail.cta.cancelBooking')}
+          </Button>
+        ) : null}
       </div>
     );
   }
 
-  if (myBooking?.status === 'waitlisted') {
+  if (myBooking?.status === MyBookingItemDtoStatus.waitlisted) {
     return (
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
@@ -397,27 +410,27 @@ export function MatchDetailPage() {
 
   const myBookings = unwrap(bookingsData)?.items ?? [];
 
-  // MyBookingItemDto has no matchId — confirmed status is derived from the roster
-  // (which only includes confirmed players); waitlist is matched by title since the
-  // backend doesn't expose matchId on booking list items yet. TODO: request matchId
-  // from backend to make this exact.
-  const isConfirmedInRoster =
+  const isConfirmedOnRoster =
     !!currentUserId && !!match?.roster.some((p) => p.userId === currentUserId);
 
-  const myWaitlistBooking = match
-    ? myBookings.find(
-        (b) => b.matchTitle === match.title && b.status === 'waitlisted',
-      )
-    : undefined;
+  const confirmedBooking =
+    match &&
+    myBookings.find(
+      (b) =>
+        b.matchId === match.id && b.status === MyBookingItemDtoStatus.confirmed,
+    );
+
+  const waitlistBooking =
+    match &&
+    myBookings.find(
+      (b) =>
+        b.matchId === match.id &&
+        b.status === MyBookingItemDtoStatus.waitlisted,
+    );
 
   const myBookingForThisMatch: MyBookingItemDto | undefined =
-    isConfirmedInRoster
-      ? (myBookings.find(
-          (b) => b.matchTitle === match!.title && b.status === 'confirmed',
-        ) ?? ({ status: 'confirmed' } as MyBookingItemDto))
-      : myWaitlistBooking;
+    confirmedBooking ?? waitlistBooking;
 
-  // We need the booking ID for cancellation — MyBookingItemDto has `id`
   const myBookingId = myBookingForThisMatch?.id;
 
   const confirmedCount = match ? match.maxCapacity - match.spotsRemaining : 0;
@@ -570,6 +583,7 @@ export function MatchDetailPage() {
           <BookingCta
             match={match}
             myBooking={myBookingForThisMatch}
+            isConfirmedOnRoster={isConfirmedOnRoster}
             myWaitlistPosition={myWaitlistPosition}
             onBook={() => setBookingOpen(true)}
             onCancel={() => setCancelOpen(true)}
