@@ -16,7 +16,7 @@ export type AuthUser = {
   role: string;
   tenantId?: string;
   phone?: string | null;
-  photoUrl?: string | null;
+  photoUrl?: string;
 };
 
 export type AuthState = {

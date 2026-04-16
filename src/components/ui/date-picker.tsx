@@ -17,6 +17,8 @@ interface DatePickerProps {
   disabled?: boolean;
   fromDate?: Date;
   toDate?: Date;
+  /** Pass "dropdown" to show year + month dropdowns instead of arrow-only navigation. */
+  captionLayout?: 'label' | 'dropdown';
   className?: string;
 }
 
@@ -27,6 +29,7 @@ export function DatePicker({
   disabled = false,
   fromDate,
   toDate,
+  captionLayout = 'label',
   className,
 }: DatePickerProps) {
   const [open, setOpen] = useState(false);
@@ -50,6 +53,9 @@ export function DatePicker({
         <Calendar
           mode="single"
           selected={value}
+          captionLayout={captionLayout}
+          startMonth={fromDate}
+          endMonth={toDate}
           onSelect={(date) => {
             onChange(date);
             setOpen(false);
