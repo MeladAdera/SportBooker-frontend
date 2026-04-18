@@ -7,7 +7,7 @@ import {
   flexRender,
   createColumnHelper,
 } from '@tanstack/react-table';
-import { AlertCircle, Search, Users } from 'lucide-react';
+import { AlertCircle, RefreshCw, Search, Users } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { unwrap } from '@/api';
+import { cn } from '@/lib/utils';
 import { normalizeRole } from '@/lib/roles';
 import { useAuthStore } from '@/stores/authStore';
 import { useDebounce } from '@/shared/hooks';
@@ -85,6 +86,7 @@ export function PlayerListPage() {
   const [bannedFilter, setBannedFilter] = useState<BannedFilter>('');
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const [search, setSearch] = useState('');
+  const [spinning, setSpinning] = useState(false);
   const debouncedSearch = useDebounce(search, 400);
 
   const params = useMemo(
@@ -113,6 +115,8 @@ export function PlayerListPage() {
     data: raw,
     isLoading,
     isError,
+    refetch,
+    isFetching,
   } = useUsersControllerListTenantUsers(params);
 
   const paginated = unwrap(raw);
@@ -228,11 +232,34 @@ export function PlayerListPage() {
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
       {/* ── Header ─────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2">
-        <Users className="size-5 text-muted-foreground" aria-hidden />
-        <h1 className="text-xl font-semibold text-foreground">
-          {t('players.title')}
-        </h1>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Users className="size-5 text-muted-foreground" aria-hidden />
+          <h1 className="text-xl font-semibold text-foreground">
+            {t('players.title')}
+          </h1>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="shrink-0"
+          onClick={() => {
+            setSpinning(true);
+            void refetch();
+          }}
+          disabled={isFetching}
+          aria-label={t('players.refreshAria')}
+          title={t('common.refresh')}
+        >
+          <RefreshCw
+            className={cn('size-4', spinning && 'animate-spin')}
+            onAnimationIteration={() => {
+              if (!isFetching) setSpinning(false);
+            }}
+            aria-hidden
+          />
+        </Button>
       </div>
 
       {/* ── Filters ────────────────────────────────────────────────── */}

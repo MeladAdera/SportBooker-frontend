@@ -1,6 +1,10 @@
 {
+  "common": {
+    "refresh": "Refresh"
+  },
   "dashboard": {
     "title": "Dashboard",
+    "refreshAria": "Refresh dashboard statistics",
     "period": "{{from}} – {{to}}",
     "stats": {
       "todayMatches": "Today's Matches",
@@ -359,6 +363,7 @@
   },
   "players": {
     "title": "Players",
+    "refreshAria": "Refresh player list",
     "empty": "No players found.",
     "status": {
       "active": "Active",

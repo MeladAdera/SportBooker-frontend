@@ -1,6 +1,10 @@
 {
+  "common": {
+    "refresh": "تحديث"
+  },
   "dashboard": {
     "title": "لوحة التحكم",
+    "refreshAria": "تحديث إحصاءات لوحة التحكم",
     "period": "{{from}} – {{to}}",
     "stats": {
       "todayMatches": "مباريات اليوم",
@@ -342,6 +346,7 @@
   },
   "players": {
     "title": "اللاعبون",
+    "refreshAria": "تحديث قائمة اللاعبين",
     "empty": "لا يوجد لاعبون.",
     "status": {
       "active": "نشط",

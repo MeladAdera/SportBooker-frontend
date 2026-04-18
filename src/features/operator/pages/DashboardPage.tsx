@@ -1,11 +1,19 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Activity, CalendarDays, DollarSign, Users } from 'lucide-react';
+import {
+  Activity,
+  CalendarDays,
+  DollarSign,
+  RefreshCw,
+  Users,
+} from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { unwrap } from '@/api';
 import { formatCurrency } from '@/lib/format';
+import { cn } from '@/lib/utils';
 import { useTenantMatchesControllerList } from '@/api/generated/tenant-—-matches/tenant-—-matches';
 import type { OperatorMatchItemDto } from '@/api/generated/models/operatorMatchItemDto';
 
@@ -111,13 +119,15 @@ function StatCard({
 
 export function DashboardPage() {
   const { t, i18n } = useTranslation('operator');
+  const [spinning, setSpinning] = useState(false);
   const { dateFrom, dateTo } = useMemo(() => getMonthBounds(), []);
 
-  const { data, isLoading, isError } = useTenantMatchesControllerList({
-    dateFrom,
-    dateTo,
-    limit: 100,
-  });
+  const { data, isLoading, isError, refetch, isFetching } =
+    useTenantMatchesControllerList({
+      dateFrom,
+      dateTo,
+      limit: 100,
+    });
 
   const paginated = unwrap(data);
   // unwrap peels both data layers: customFetch wrapper + API envelope
@@ -156,11 +166,34 @@ export function DashboardPage() {
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
       {/* ── Header ───────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-0.5">
-        <h1 className="text-xl font-semibold text-foreground">
-          {t('dashboard.title')}
-        </h1>
-        <p className="text-xs text-muted-foreground">{periodLabel}</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-col gap-0.5">
+          <h1 className="text-xl font-semibold text-foreground">
+            {t('dashboard.title')}
+          </h1>
+          <p className="text-xs text-muted-foreground">{periodLabel}</p>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="shrink-0"
+          onClick={() => {
+            setSpinning(true);
+            void refetch();
+          }}
+          disabled={isFetching}
+          aria-label={t('dashboard.refreshAria')}
+          title={t('common.refresh')}
+        >
+          <RefreshCw
+            className={cn('size-4', spinning && 'animate-spin')}
+            onAnimationIteration={() => {
+              if (!isFetching) setSpinning(false);
+            }}
+            aria-hidden
+          />
+        </Button>
       </div>
 
       {/* ── Stats grid ───────────────────────────────────────────── */}
