@@ -22,8 +22,16 @@ import { PageControls } from '@/shared/components/PageControls';
 import { loginRequest } from '../api';
 import { getRoleHomePath } from '../utils';
 
+const E164_RE = /^\+[1-9]\d{6,14}$/;
+
 const loginSchema = z.object({
-  email: z.string().min(1, 'emailRequired').email('emailInvalid'),
+  identifier: z
+    .string()
+    .min(1, 'identifierRequired')
+    .refine(
+      (val) => z.string().email().safeParse(val).success || E164_RE.test(val),
+      'identifierInvalid',
+    ),
   password: z.string().min(1, 'passwordRequired').min(8, 'passwordMin'),
 });
 
@@ -63,7 +71,7 @@ export function LoginPage() {
     : null;
 
   const fillDevAccount = (email: string) => {
-    setValue('email', email, { shouldValidate: true });
+    setValue('identifier', email, { shouldValidate: true });
     setValue('password', 'Password123!', { shouldValidate: true });
   };
 
@@ -197,25 +205,25 @@ export function LoginPage() {
                     ))}
                   </div>
                 )}
-                {/* Email field */}
+                {/* Identifier field (email or phone) */}
                 <div className="flex flex-col gap-1.5">
                   <label
-                    htmlFor="email"
+                    htmlFor="identifier"
                     className="text-sm font-medium text-foreground"
                   >
-                    {t('loginPage.email')}
+                    {t('loginPage.identifier')}
                   </label>
                   <Input
-                    id="email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder={t('loginPage.emailPlaceholder')}
-                    aria-invalid={!!errors.email}
-                    {...register('email')}
+                    id="identifier"
+                    type="text"
+                    autoComplete="username"
+                    placeholder={t('loginPage.identifierPlaceholder')}
+                    aria-invalid={!!errors.identifier}
+                    {...register('identifier')}
                   />
-                  {errors.email && (
+                  {errors.identifier && (
                     <p className="text-xs text-destructive" role="alert">
-                      {resolveFieldError(errors.email.message)}
+                      {resolveFieldError(errors.identifier.message)}
                     </p>
                   )}
                 </div>

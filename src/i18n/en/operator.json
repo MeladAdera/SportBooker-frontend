@@ -225,6 +225,46 @@
       "priceInteger": "Price must be a whole number."
     }
   },
+  "editMatch": {
+    "title": "Edit Match",
+    "back": "Back to match",
+    "backMatches": "Back to matches",
+    "submit": "Save changes",
+    "submitting": "Saving…",
+    "success": "Match updated successfully.",
+    "blockedCancelled": "Cancelled matches cannot be edited.",
+    "blockedCompleted": "Completed matches cannot be edited.",
+    "error": {
+      "notFound": "Match not found.",
+      "generic": "Failed to update match. Please try again.",
+      "forbidden": "You do not have permission to edit this match.",
+      "overlap": "This venue already has a match overlapping that time slot. Please choose a different time."
+    },
+    "validation": {
+      "capacityBelowRoster": "Capacity cannot be less than the number of confirmed players."
+    }
+  },
+  "cancelMatch": {
+    "title": "Cancel match",
+    "subtitle": "This cancels the match and refunds confirmed players to their wallets.",
+    "backDetail": "Back to match",
+    "backMatches": "Back to matches",
+    "confirm": "Cancel match",
+    "keepMatch": "Keep match",
+    "submitting": "Cancelling…",
+    "successToast": "Match cancelled. {{count}} booking(s) closed; {{amount}} refunded to wallets.",
+    "successGeneric": "Match cancelled successfully.",
+    "warning": "This action cannot be undone. All bookings will be cancelled and eligible payments refunded.",
+    "confirmedCount": "{{count}} confirmed player",
+    "confirmedCount_other": "{{count}} confirmed players",
+    "alreadyCancelled": "This match is already cancelled.",
+    "forbidden": "Only tenant admins and super admins can cancel a match.",
+    "error": {
+      "notFound": "Match not found.",
+      "generic": "Failed to cancel match. Please try again.",
+      "forbidden": "You do not have permission to cancel this match."
+    }
+  },
   "venueDetail": {
     "back": "Back to Venues",
     "openInMaps": "Open in Maps",

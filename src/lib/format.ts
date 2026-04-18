@@ -70,6 +70,52 @@ export function toZonedISO(localDate: Date, time: string, tz: string): string {
   return `${y}-${mo}-${d}T${hStr}:${mStr}:00${sign}${offH}:${offM}`;
 }
 
+const QUARTER_MINUTES = [0, 15, 30, 45] as const;
+
+function snapToQuarterMinute(minute: number): number {
+  return QUARTER_MINUTES.reduce((best, m) =>
+    Math.abs(m - minute) < Math.abs(best - minute) ? m : best,
+  );
+}
+
+/**
+ * Reads `scheduledAt` in the tenant zone and returns a calendar {@link Date}
+ * plus `HH:mm` aligned to quarter hours (same grid as the create/edit form).
+ */
+export function scheduledIsoToDateAndTime(
+  iso: string,
+  tz: string,
+): { date: Date; time: string } {
+  const instant = new Date(iso);
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(instant);
+
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((p) => p.type === type)?.value ?? '';
+
+  const y = parseInt(get('year'), 10);
+  const month = parseInt(get('month'), 10);
+  const day = parseInt(get('day'), 10);
+  let hour = parseInt(get('hour'), 10);
+  const rawMinute = parseInt(get('minute'), 10);
+  if (hour === 24) hour = 0;
+
+  const minute = Number.isFinite(rawMinute)
+    ? snapToQuarterMinute(rawMinute)
+    : 0;
+
+  const date = new Date(y, month - 1, day);
+  const time = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+  return { date, time };
+}
+
 /**
  * Extracts YYYY-MM-DD from a Date using the browser's local timezone.
  * Use this when the user picks a calendar day and you need to send that
