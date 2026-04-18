@@ -168,7 +168,8 @@ export function AppBar({ isPlatform = false, profilePath, className }: Props) {
             <DropdownMenuSeparator />
 
             <DropdownMenuItem
-              className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
+              variant="destructive"
+              className="cursor-pointer"
               onClick={() => void handleLogout()}
             >
               <LogOut className="h-4 w-4" aria-hidden />

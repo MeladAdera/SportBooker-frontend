@@ -6,6 +6,7 @@ import './index.css';
 import './i18n/config';
 import i18n from '@/i18n/config';
 import App from './App.tsx';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { HtmlLangDir } from '@/components/HtmlLangDir';
 import { useLocaleStore } from '@/stores/localeStore';
 import { useTenantStore } from '@/stores/tenantStore';
@@ -60,10 +61,12 @@ if (useAuthStore.persist.hasHydrated()) {
 }
 
 createRoot(document.getElementById('root')!).render(
-  <QueryClientProvider client={queryClient}>
-    <HtmlLangDir />
-    <App />
-    <Toaster richColors position="top-right" />
-    <ReactQueryDevtools initialIsOpen={false} />
-  </QueryClientProvider>,
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <HtmlLangDir />
+      <App />
+      <Toaster richColors position="top-right" />
+      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+    </QueryClientProvider>
+  </ErrorBoundary>,
 );

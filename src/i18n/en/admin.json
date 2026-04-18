@@ -1,7 +1,116 @@
 {
-  "dashboard": "Admin dashboard",
   "nav": {
     "tenants": "Tenants",
     "account": "Account"
+  },
+  "tenants": {
+    "title": "Tenants",
+    "createButton": "New Tenant",
+    "filters": {
+      "search": "Search tenants…",
+      "statusAll": "All statuses",
+      "statusActive": "Active",
+      "statusInactive": "Inactive"
+    },
+    "table": {
+      "name": "Name",
+      "slug": "Slug",
+      "status": "Status",
+      "superAdmin": "Super Admin",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "actions": {
+      "view": "View",
+      "activate": "Activate",
+      "deactivate": "Deactivate"
+    },
+    "pagination": {
+      "loading": "Loading…",
+      "range": "{{from}}–{{to}} of {{total}}",
+      "perPage": "Per page",
+      "page": "Page {{page}} of {{total}}",
+      "prev": "Previous",
+      "next": "Next"
+    },
+    "empty": "No tenants found.",
+    "error": {
+      "load": "Failed to load tenants. Please try again."
+    },
+    "create": {
+      "title": "Create Tenant",
+      "description": "Provision a new tenant and its initial super admin account.",
+      "fields": {
+        "name": "Tenant Name",
+        "namePlaceholder": "e.g. Acme Sports Club",
+        "slug": "Slug",
+        "slugPlaceholder": "e.g. acme",
+        "slugHint": "Used in the subdomain and URLs. Lowercase letters, digits and hyphens only.",
+        "adminName": "Admin Name",
+        "adminNamePlaceholder": "e.g. John Smith",
+        "adminEmail": "Admin Email",
+        "adminEmailPlaceholder": "e.g. admin@acme.com",
+        "adminPassword": "Admin Password",
+        "adminPasswordPlaceholder": "Minimum 8 characters"
+      },
+      "submit": "Create",
+      "submitting": "Creating…",
+      "cancel": "Cancel",
+      "success": "Tenant created successfully.",
+      "error": {
+        "generic": "Failed to create tenant. Please try again.",
+        "slugTaken": "This slug is already taken."
+      }
+    }
+  },
+  "tenantDetail": {
+    "backToTenants": "Back to Tenants",
+    "notFound": "Tenant not found.",
+    "error": {
+      "load": "Failed to load tenant details."
+    },
+    "info": {
+      "title": "Tenant Info",
+      "id": "ID",
+      "slug": "Slug",
+      "superAdmin": "Super Admin",
+      "created": "Created",
+      "updated": "Last Updated"
+    },
+    "settings": {
+      "title": "Settings",
+      "name": "Tenant Name",
+      "timezone": "Timezone",
+      "timezoneSearch": "Search timezones…",
+      "timezoneEmpty": "No timezones found.",
+      "logoUrl": "Logo URL",
+      "logoUrlPlaceholder": "https://example.com/logo.png",
+      "cancelCutoffHours": "Cancellation Cutoff (hours)",
+      "cancelCutoffHint": "How many hours before a match players can cancel their booking.",
+      "save": "Save Changes",
+      "saving": "Saving…",
+      "success": "Tenant settings updated.",
+      "error": {
+        "generic": "Failed to save settings. Please try again."
+      }
+    },
+    "activation": {
+      "title": "Tenant Status",
+      "activeDescription": "This tenant is currently active and accessible to its users.",
+      "inactiveDescription": "This tenant is inactive. Users cannot log in or access the platform.",
+      "activate": "Activate Tenant",
+      "deactivate": "Deactivate Tenant",
+      "activating": "Activating…",
+      "deactivating": "Deactivating…",
+      "activateSuccess": "Tenant activated.",
+      "deactivateSuccess": "Tenant deactivated.",
+      "error": "Failed to update tenant status.",
+      "confirmDeactivate": "Are you sure you want to deactivate this tenant? Users will lose access immediately.",
+      "confirmActivate": "Activate this tenant and restore user access?"
+    }
   }
 }

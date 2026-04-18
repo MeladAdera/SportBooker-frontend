@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /operator/
+Disallow: /admin/
+
+Sitemap: https://sportbooker.net/sitemap.xml

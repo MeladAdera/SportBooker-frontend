@@ -1,4 +1,3 @@
-/**
- * Admin feature: super-admin tenant settings; platform admin (separate host) when wired.
- */
-export {};
+export * from './api';
+export { TenantsPage } from './pages/TenantsPage';
+export { TenantDetailPage } from './pages/TenantDetailPage';

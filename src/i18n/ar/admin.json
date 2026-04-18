@@ -1,7 +1,116 @@
 {
-  "dashboard": "لوحة الإدارة",
   "nav": {
     "tenants": "المنشآت",
     "account": "الحساب"
+  },
+  "tenants": {
+    "title": "المنشآت",
+    "createButton": "منشأة جديدة",
+    "filters": {
+      "search": "بحث في المنشآت…",
+      "statusAll": "جميع الحالات",
+      "statusActive": "نشط",
+      "statusInactive": "غير نشط"
+    },
+    "table": {
+      "name": "الاسم",
+      "slug": "المعرّف",
+      "status": "الحالة",
+      "superAdmin": "المسؤول الأعلى",
+      "created": "تاريخ الإنشاء",
+      "actions": "الإجراءات"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "actions": {
+      "view": "عرض",
+      "activate": "تفعيل",
+      "deactivate": "تعطيل"
+    },
+    "pagination": {
+      "loading": "جارٍ التحميل…",
+      "range": "{{from}}–{{to}} من {{total}}",
+      "perPage": "في الصفحة",
+      "page": "صفحة {{page}} من {{total}}",
+      "prev": "السابق",
+      "next": "التالي"
+    },
+    "empty": "لا توجد منشآت.",
+    "error": {
+      "load": "فشل تحميل المنشآت. يرجى المحاولة مجدداً."
+    },
+    "create": {
+      "title": "إنشاء منشأة",
+      "description": "إنشاء منشأة جديدة وحساب المسؤول الأولي.",
+      "fields": {
+        "name": "اسم المنشأة",
+        "namePlaceholder": "مثلاً: نادي أكمي الرياضي",
+        "slug": "المعرّف",
+        "slugPlaceholder": "مثلاً: acme",
+        "slugHint": "يُستخدم في النطاق الفرعي والروابط. أحرف صغيرة وأرقام وشَرطات فقط.",
+        "adminName": "اسم المسؤول",
+        "adminNamePlaceholder": "مثلاً: أحمد محمد",
+        "adminEmail": "البريد الإلكتروني للمسؤول",
+        "adminEmailPlaceholder": "مثلاً: admin@acme.com",
+        "adminPassword": "كلمة مرور المسؤول",
+        "adminPasswordPlaceholder": "8 أحرف على الأقل"
+      },
+      "submit": "إنشاء",
+      "submitting": "جارٍ الإنشاء…",
+      "cancel": "إلغاء",
+      "success": "تم إنشاء المنشأة بنجاح.",
+      "error": {
+        "generic": "فشل إنشاء المنشأة. يرجى المحاولة مجدداً.",
+        "slugTaken": "هذا المعرّف مستخدم بالفعل."
+      }
+    }
+  },
+  "tenantDetail": {
+    "backToTenants": "العودة إلى المنشآت",
+    "notFound": "المنشأة غير موجودة.",
+    "error": {
+      "load": "فشل تحميل تفاصيل المنشأة."
+    },
+    "info": {
+      "title": "معلومات المنشأة",
+      "id": "المعرّف",
+      "slug": "المسار",
+      "superAdmin": "المسؤول الأعلى",
+      "created": "تاريخ الإنشاء",
+      "updated": "آخر تحديث"
+    },
+    "settings": {
+      "title": "الإعدادات",
+      "name": "اسم المنشأة",
+      "timezone": "المنطقة الزمنية",
+      "timezoneSearch": "بحث عن المنطقة الزمنية…",
+      "timezoneEmpty": "لا توجد نتائج.",
+      "logoUrl": "رابط الشعار",
+      "logoUrlPlaceholder": "https://example.com/logo.png",
+      "cancelCutoffHours": "مهلة الإلغاء (بالساعات)",
+      "cancelCutoffHint": "عدد الساعات قبل المباراة التي يُسمح فيها بإلغاء الحجز.",
+      "save": "حفظ التغييرات",
+      "saving": "جارٍ الحفظ…",
+      "success": "تم تحديث إعدادات المنشأة.",
+      "error": {
+        "generic": "فشل حفظ الإعدادات. يرجى المحاولة مجدداً."
+      }
+    },
+    "activation": {
+      "title": "حالة المنشأة",
+      "activeDescription": "هذه المنشأة نشطة ومتاحة للمستخدمين.",
+      "inactiveDescription": "هذه المنشأة غير نشطة. لا يمكن للمستخدمين تسجيل الدخول أو الوصول إلى المنصة.",
+      "activate": "تفعيل المنشأة",
+      "deactivate": "تعطيل المنشأة",
+      "activating": "جارٍ التفعيل…",
+      "deactivating": "جارٍ التعطيل…",
+      "activateSuccess": "تم تفعيل المنشأة.",
+      "deactivateSuccess": "تم تعطيل المنشأة.",
+      "error": "فشل تحديث حالة المنشأة.",
+      "confirmDeactivate": "هل أنت متأكد من تعطيل هذه المنشأة؟ سيفقد المستخدمون الوصول فوراً.",
+      "confirmActivate": "هل تريد تفعيل هذه المنشأة واستعادة وصول المستخدمين؟"
+    }
   }
 }
