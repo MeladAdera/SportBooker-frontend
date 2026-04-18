@@ -66,6 +66,7 @@
   },
   "matchDetail": {
     "back": "العودة إلى المباريات",
+    "viewPlayerProfile": "عرض ملف اللاعب",
     "edit": "تعديل المباراة",
     "cancel": "إلغاء المباراة",
     "info": {
@@ -391,6 +392,7 @@
       "notFound": "اللاعب غير موجود.",
       "email": "البريد الإلكتروني",
       "phone": "الهاتف",
+      "whatsappChat": "فتح المحادثة في واتساب",
       "wallet": "رصيد المحفظة",
       "walletValue": "{{amount}} درهم",
       "registered": "تاريخ التسجيل",

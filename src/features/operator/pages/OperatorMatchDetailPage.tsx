@@ -1,6 +1,6 @@
 import { createElement, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   Calendar,
@@ -181,9 +181,13 @@ function RosterList({ roster }: { roster: MatchDetailResponseDto['roster'] }) {
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium uppercase text-muted-foreground">
               {player.name.charAt(0)}
             </div>
-            <span className="flex-1 text-sm font-medium text-foreground">
+            <Link
+              to={`/operator/players/${player.userId}`}
+              className="flex-1 text-sm font-medium text-primary hover:underline"
+              title={t('matchDetail.viewPlayerProfile')}
+            >
               {player.name}
-            </span>
+            </Link>
             <Badge variant="outline" className="shrink-0 text-xs capitalize">
               {t(`matchDetail.roster.position.${player.position}`, {
                 defaultValue: player.position.replace('_', ' '),
@@ -385,9 +389,13 @@ function OperatorWaitlistSection({
                       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium uppercase text-muted-foreground">
                         {entry.name.charAt(0)}
                       </div>
-                      <span className="font-medium text-foreground">
+                      <Link
+                        to={`/operator/players/${entry.userId}`}
+                        className="font-medium text-primary hover:underline"
+                        title={t('matchDetail.viewPlayerProfile')}
+                      >
                         {entry.name}
-                      </span>
+                      </Link>
                     </div>
                   </td>
                   <td className="hidden py-2.5 pe-2 text-muted-foreground sm:table-cell">

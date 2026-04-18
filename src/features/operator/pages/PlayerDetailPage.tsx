@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { unwrap, ApiError } from '@/api';
+import { WhatsAppContactButton } from '@/features/operator/components/WhatsAppContactButton';
 import { normalizeRole } from '@/lib/roles';
 import { useAuthStore } from '@/stores/authStore';
 import {
@@ -617,8 +618,9 @@ export function PlayerDetailPage() {
                     <dt className="text-muted-foreground">
                       {t('players.detail.phone')}
                     </dt>
-                    <dd className="font-medium text-foreground">
-                      {user.phone}
+                    <dd className="flex flex-wrap items-center gap-2 font-medium text-foreground">
+                      <span>{user.phone}</span>
+                      <WhatsAppContactButton phone={user.phone} />
                     </dd>
                   </div>
                 )}

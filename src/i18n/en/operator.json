@@ -115,6 +115,7 @@
   },
   "matchDetail": {
     "back": "Back to Matches",
+    "viewPlayerProfile": "View player profile",
     "edit": "Edit Match",
     "cancel": "Cancel Match",
     "info": {
@@ -408,6 +409,7 @@
       "notFound": "Player not found.",
       "email": "Email",
       "phone": "Phone",
+      "whatsappChat": "Open chat in WhatsApp",
       "wallet": "Wallet Balance",
       "walletValue": "AED {{amount}}",
       "registered": "Registered",
