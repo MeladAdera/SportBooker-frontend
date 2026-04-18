@@ -55,12 +55,12 @@ function unwrapData<T extends Record<string, unknown>>(json: unknown): T {
 }
 
 export async function loginRequest(body: LoginRequest): Promise<LoginResponse> {
-  // Nest `LoginDto` expects `email` + `password`; extra keys (e.g. `identifier`) are rejected.
+  // Backend `LoginDto` expects `identifier` + `password`.
   const res = await apiFetch('/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      email: body.identifier.trim(),
+      identifier: body.identifier.trim(),
       password: body.password,
     }),
   });
