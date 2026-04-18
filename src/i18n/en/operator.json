@@ -83,7 +83,6 @@
     "form": {
       "name": "Name",
       "email": "Email",
-      "emailReadOnly": "Read-only",
       "role": "Role",
       "phone": "Phone",
       "phonePlaceholder": "+971 50 000 0000",
@@ -93,6 +92,7 @@
       "error": "Failed to save profile. Please try again.",
       "validation": {
         "nameMin": "Name must be at least 2 characters.",
+        "emailInvalid": "Enter a valid email address.",
         "phoneMax": "Phone number is too long."
       }
     },

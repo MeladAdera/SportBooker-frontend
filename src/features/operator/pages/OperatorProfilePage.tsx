@@ -27,6 +27,7 @@ import { normalizeRole } from '@/lib/roles';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'nameMin'),
+  email: z.string().email('emailInvalid'),
   phone: z.string().max(50, 'phoneMax').optional().or(z.literal('')),
 });
 
@@ -160,7 +161,6 @@ function AvatarSection({
 
 type ProfileFormProps = {
   defaultValues: ProfileFormValues;
-  email: string;
   role: string;
   photoPreview: string | null;
   photoFile: File | null;
@@ -169,7 +169,6 @@ type ProfileFormProps = {
 
 function ProfileForm({
   defaultValues,
-  email,
   role,
   photoPreview,
   photoFile,
@@ -178,6 +177,8 @@ function ProfileForm({
   const { t } = useTranslation('operator');
   const queryClient = useQueryClient();
   const [serverError, setServerError] = useState<string | null>(null);
+  const setUser = useAuthStore((s) => s.setUser);
+  const currentUser = useAuthStore((s) => s.user);
 
   const {
     register,
@@ -216,12 +217,26 @@ function ProfileForm({
 
     if (isDirty) {
       const res = await profileMutation.mutateAsync(
-        { data: { name: values.name, phone: values.phone || undefined } },
+        {
+          data: {
+            name: values.name,
+            email: values.email.trim(),
+            phone: values.phone || undefined,
+          },
+        },
         { onError: () => {} },
       );
       if (res.status >= 400) {
         setServerError(t('profile.form.error'));
         return;
+      }
+      const newEmail =
+        res.status === 200 && res.data?.data?.email
+          ? res.data.data.email
+          : values.email.trim();
+      const baseUser = useAuthStore.getState().user ?? currentUser;
+      if (baseUser) {
+        setUser({ ...baseUser, email: newEmail });
       }
     }
 
@@ -249,22 +264,21 @@ function ProfileForm({
           />
         </div>
 
-        {/* Email + role — read-only */}
         <div className="flex flex-col gap-1.5">
           <FormLabel htmlFor="email">{t('profile.form.email')}</FormLabel>
-          <div className="flex items-center gap-2">
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              readOnly
-              disabled
-              className="flex-1"
-            />
-            <Badge variant="secondary" className="shrink-0 text-xs">
-              {t('profile.form.emailReadOnly')}
-            </Badge>
-          </div>
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            {...register('email')}
+          />
+          <FieldError
+            message={
+              errors.email?.message
+                ? t(`profile.form.validation.${errors.email.message}`)
+                : undefined
+            }
+          />
         </div>
 
         {/* Role */}
@@ -592,8 +606,11 @@ export function OperatorProfilePage() {
           )}
 
           <ProfileForm
-            defaultValues={{ name: profile.name, phone: profile.phone ?? '' }}
-            email={profile.email}
+            defaultValues={{
+              name: profile.name,
+              email: profile.email,
+              phone: profile.phone ?? '',
+            }}
             role={userRole}
             photoPreview={photoPreview}
             photoFile={photoFile}

@@ -142,7 +142,6 @@
     "form": {
       "name": "Name",
       "email": "Email",
-      "emailReadOnly": "Read-only",
       "phone": "Phone",
       "phonePlaceholder": "e.g. +971501234567",
       "save": "Save changes",
@@ -151,6 +150,7 @@
       "photoError": "Failed to upload photo. Please try again.",
       "validation": {
         "nameMin": "Name must be at least 2 characters.",
+        "emailInvalid": "Enter a valid email address.",
         "phoneInvalid": "Phone must be in E.164 format, e.g. +971501234567",
         "nationalityMax": "Nationality must be 100 characters or fewer."
       }
