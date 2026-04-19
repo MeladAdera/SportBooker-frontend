@@ -144,6 +144,51 @@
         "phoneInvalid": "يجب أن يكون رقم الهاتف بصيغة E.164، مثال: +971501234567"
       }
     },
+    "footballProfile": {
+      "title": "الملف الرياضي",
+      "subtitle": "اختياري — يُستخدم لتوزيعك على المباريات المناسبة.",
+      "dateOfBirth": "تاريخ الميلاد",
+      "dateOfBirthPlaceholder": "اختر تاريخاً",
+      "nationality": "الجنسية",
+      "nationalityPlaceholder": "اختر الجنسية",
+      "nationalitySearch": "ابحث عن جنسية…",
+      "nationalityEmpty": "لا توجد جنسية مطابقة.",
+      "preferredLanguage": "اللغة المفضلة",
+      "skillLevel": "المستوى",
+      "preferredPosition": "المركز المفضل",
+      "dominantFoot": "القدم المسيطرة",
+      "preferredDays": "أيام اللعب المفضلة",
+      "days": {
+        "monday": "الإث",
+        "tuesday": "الثل",
+        "wednesday": "الأر",
+        "thursday": "الخم",
+        "friday": "الجم",
+        "saturday": "السب",
+        "sunday": "الأح"
+      },
+      "notSet": "غير محدد",
+      "skillLevels": {
+        "beginner": "مبتدئ",
+        "intermediate": "متوسط",
+        "advanced": "متقدم"
+      },
+      "positions": {
+        "goalkeeper": "حارس",
+        "defender": "مدافع",
+        "midfielder": "وسط",
+        "forward": "مهاجم"
+      },
+      "feet": {
+        "left": "يسرى",
+        "right": "يمنى",
+        "both": "كلتاهما"
+      },
+      "languages": {
+        "en": "الإنجليزية",
+        "ar": "العربية"
+      }
+    },
     "password": {
       "title": "تغيير كلمة المرور",
       "current": "كلمة المرور الحالية",

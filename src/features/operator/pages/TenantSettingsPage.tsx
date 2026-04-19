@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
-import { ExternalLink, Loader2, Settings } from 'lucide-react';
+import { ExternalLink, Loader2, Settings, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { apiFetch } from '@/api/client';
 import {
   Select,
   SelectContent,
@@ -374,6 +375,95 @@ function GeneralSettingsCard({
   );
 }
 
+// ── LogoUploadCard ────────────────────────────────────────────────────────────
+
+function LogoUploadCard() {
+  const { t } = useTranslation('operator');
+  const queryClient = useQueryClient();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  async function handleFile(file: File) {
+    const objectUrl = URL.createObjectURL(file);
+    setPreview(objectUrl);
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append('logo', file);
+      const res = await apiFetch('/tenant/settings/logo', {
+        method: 'POST',
+        body: form,
+      });
+      if (!res.ok) throw new Error('upload failed');
+      toast.success(t('settings.general.logoUploadSuccess'));
+      queryClient.invalidateQueries({
+        queryKey: getTenantSettingsControllerGetSettingsQueryKey(),
+      });
+    } catch {
+      toast.error(t('settings.general.logoUploadError'));
+      URL.revokeObjectURL(objectUrl);
+      setPreview(null);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <h2 className="mb-2 text-base font-semibold text-foreground">
+          {t('settings.general.logoUpload')}
+        </h2>
+        <p className="mb-4 text-xs text-muted-foreground">
+          {t('settings.general.logoUploadHint')}
+        </p>
+
+        <div className="flex items-center gap-4">
+          {preview && (
+            <img
+              src={preview}
+              alt="logo preview"
+              className="h-12 w-12 rounded-lg object-cover ring-1 ring-border"
+            />
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={uploading}
+            onClick={() => inputRef.current?.click()}
+          >
+            {uploading ? (
+              <>
+                <Loader2 className="me-2 size-4 animate-spin" aria-hidden />
+                {t('settings.general.logoUploading')}
+              </>
+            ) : (
+              <>
+                <Upload className="me-2 size-4" aria-hidden />
+                {t('settings.general.logoUploadLabel')}
+              </>
+            )}
+          </Button>
+        </div>
+
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          className="sr-only"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleFile(file);
+            e.target.value = '';
+          }}
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
 // ── ZiinaCard ─────────────────────────────────────────────────────────────────
 
 function ZiinaCard() {
@@ -524,6 +614,8 @@ export function TenantSettingsPage() {
           defaultValues={generalDefaults}
         />
       )}
+
+      <LogoUploadCard />
 
       <ZiinaCard />
     </div>

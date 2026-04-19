@@ -150,3 +150,16 @@ export async function deactivateTenant(id: string): Promise<TenantDetail> {
   });
   return parseResponse<TenantDetail>(res);
 }
+
+export async function uploadTenantLogo(
+  id: string,
+  file: File,
+): Promise<TenantDetail> {
+  const form = new FormData();
+  form.append('logo', file);
+  const res = await apiFetch(`/admin/tenants/${id}/logo`, {
+    method: 'POST',
+    body: form,
+  });
+  return parseResponse<TenantDetail>(res);
+}

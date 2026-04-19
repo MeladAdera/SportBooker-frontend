@@ -1,11 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { AlertCircle, ArrowLeft, Building2, Loader2 } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowLeft,
+  Building2,
+  Loader2,
+  Upload,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +33,7 @@ import {
   deactivateTenant,
   getTenant,
   updateTenant,
+  uploadTenantLogo,
   type UpdateTenantDto,
   type TenantDetail,
 } from '../api';
@@ -88,6 +95,9 @@ function SettingsCard({ tenant }: SettingsCardProps) {
   const { t } = useTranslation('admin');
   const queryClient = useQueryClient();
   const [tzSearch, setTzSearch] = useState('');
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   const filteredTz = useMemo(
     () =>
@@ -134,6 +144,24 @@ function SettingsCard({ tenant }: SettingsCardProps) {
     },
     onError: () => toast.error(t('tenantDetail.settings.error.generic')),
   });
+
+  async function handleLogoFile(file: File) {
+    const objectUrl = URL.createObjectURL(file);
+    setLogoPreview(objectUrl);
+    setLogoUploading(true);
+    try {
+      const updated = await uploadTenantLogo(tenant.id, file);
+      toast.success(t('tenantDetail.settings.logoUploadSuccess'));
+      queryClient.setQueryData(adminTenantsKeys.detail(tenant.id), updated);
+      queryClient.invalidateQueries({ queryKey: adminTenantsKeys.all });
+    } catch {
+      toast.error(t('tenantDetail.settings.logoUploadError'));
+      URL.revokeObjectURL(objectUrl);
+      setLogoPreview(null);
+    } finally {
+      setLogoUploading(false);
+    }
+  }
 
   function onSubmit(values: SettingsFormValues) {
     mutation.mutate({
@@ -231,6 +259,53 @@ function SettingsCard({ tenant }: SettingsCardProps) {
                 {errors.logoUrl.message}
               </p>
             )}
+          </div>
+
+          {/* Logo file upload */}
+          <div className="flex flex-col gap-1.5">
+            <Label>{t('tenantDetail.settings.logoUploadLabel')}</Label>
+            <p className="text-xs text-muted-foreground">
+              {t('tenantDetail.settings.logoUploadHint')}
+            </p>
+            <div className="flex items-center gap-3">
+              {(logoPreview ?? tenant.logoUrl) && (
+                <img
+                  src={logoPreview ?? tenant.logoUrl ?? undefined}
+                  alt="logo"
+                  className="h-10 w-10 rounded-lg object-cover ring-1 ring-border"
+                />
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={logoUploading}
+                onClick={() => logoInputRef.current?.click()}
+              >
+                {logoUploading ? (
+                  <>
+                    <Loader2 className="me-2 size-4 animate-spin" aria-hidden />
+                    {t('tenantDetail.settings.logoUploading')}
+                  </>
+                ) : (
+                  <>
+                    <Upload className="me-2 size-4" aria-hidden />
+                    {t('tenantDetail.settings.logoUpload')}
+                  </>
+                )}
+              </Button>
+            </div>
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleLogoFile(file);
+                e.target.value = '';
+              }}
+            />
           </div>
 
           {/* Cancel Cutoff */}

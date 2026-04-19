@@ -168,6 +168,16 @@
       "skillLevel": "Skill Level",
       "preferredPosition": "Preferred Position",
       "dominantFoot": "Dominant Foot",
+      "preferredDays": "Preferred Play Days",
+      "days": {
+        "monday": "Mon",
+        "tuesday": "Tue",
+        "wednesday": "Wed",
+        "thursday": "Thu",
+        "friday": "Fri",
+        "saturday": "Sat",
+        "sunday": "Sun"
+      },
       "notSet": "Not set",
       "skillLevels": {
         "beginner": "Beginner",

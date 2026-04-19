@@ -20,6 +20,14 @@ export type PreferredPosition =
   | 'midfielder'
   | 'forward';
 export type DominantFoot = 'left' | 'right' | 'both';
+export type DayOfWeek =
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
+  | 'saturday'
+  | 'sunday';
 
 export type RegisterRequestBody = {
   name: string;
@@ -34,6 +42,7 @@ export type RegisterRequestBody = {
   preferredPosition?: PreferredPosition;
   dominantFoot?: DominantFoot;
   photoUrl?: string;
+  preferredDays?: DayOfWeek[];
 };
 
 /** Backend wraps all responses in { data, statusCode }. */
@@ -84,7 +93,7 @@ export type RegisterResponse = {
 export async function registerRequest(
   body: RegisterRequestBody,
 ): Promise<RegisterResponse> {
-  const payload: Record<string, string | undefined> = {
+  const payload: Record<string, unknown> = {
     name: body.name.trim(),
     email: body.email.trim(),
     password: body.password,
@@ -96,6 +105,7 @@ export async function registerRequest(
     preferredPosition: body.preferredPosition,
     dominantFoot: body.dominantFoot,
     photoUrl: body.photoUrl,
+    preferredDays: body.preferredDays?.length ? body.preferredDays : undefined,
   };
 
   // Strip undefined so the backend doesn't receive null-ish keys for omitted fields

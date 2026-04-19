@@ -48,6 +48,7 @@ import {
   useUsersControllerDeleteMyAccount,
   getUsersControllerGetMyProfileQueryKey,
 } from '@/api/generated/users/users';
+import type { UpdateMyProfileDto } from '@/api/generated/models/updateMyProfileDto';
 import { UpdateMyProfileDtoSkillLevel } from '@/api/generated/models/updateMyProfileDtoSkillLevel';
 import { UpdateMyProfileDtoPreferredPosition } from '@/api/generated/models/updateMyProfileDtoPreferredPosition';
 import { UpdateMyProfileDtoDominantFoot } from '@/api/generated/models/updateMyProfileDtoDominantFoot';
@@ -60,6 +61,16 @@ import { NATIONALITY_OPTIONS } from '@/lib/nationalities';
 // ── Schema ─────────────────────────────────────────────────────────────────────
 
 const E164_RE = /^\+[1-9]\d{1,14}$/;
+
+const ALL_DAYS = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
+] as const;
 
 const profileSchema = z.object({
   name: z.string().min(2, 'nameMin'),
@@ -80,6 +91,7 @@ const profileSchema = z.object({
   skillLevel: z.string().optional(),
   preferredPosition: z.string().optional(),
   dominantFoot: z.string().optional(),
+  preferredDays: z.array(z.string()).optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -125,6 +137,48 @@ function FormLabel({
     <label htmlFor={htmlFor} className="text-sm font-medium text-foreground">
       {children}
     </label>
+  );
+}
+
+// ── DaysToggle ─────────────────────────────────────────────────────────────────
+
+type DaysToggleProps = {
+  selected: string[];
+  onChange: (days: string[]) => void;
+  options: { value: string; label: string }[];
+};
+
+function DaysToggle({ selected, onChange, options }: DaysToggleProps) {
+  function toggle(day: string) {
+    if (selected.includes(day)) {
+      onChange(selected.filter((d) => d !== day));
+    } else {
+      onChange([...selected, day]);
+    }
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {options.map((opt) => {
+        const active = selected.includes(opt.value);
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => toggle(opt.value)}
+            className={cn(
+              'rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all duration-150',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+              active
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-border bg-background text-muted-foreground hover:border-foreground/25 hover:text-foreground',
+            )}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
   );
 }
 
@@ -339,6 +393,7 @@ function ProfileForm({
   const preferredPosition = watch('preferredPosition');
   const dominantFoot = watch('dominantFoot');
   const preferredLanguage = watch('preferredLanguage');
+  const preferredDays = watch('preferredDays') ?? [];
   /* eslint-enable react-hooks/incompatible-library */
 
   async function onSubmit(values: ProfileFormValues) {
@@ -363,6 +418,9 @@ function ProfileForm({
     }
 
     if (isDirty) {
+      type ExtendedProfileDto = UpdateMyProfileDto & {
+        preferredDays?: string[];
+      };
       const res = await profileMutation.mutateAsync(
         {
           data: {
@@ -380,7 +438,8 @@ function ProfileForm({
             dominantFoot:
               (values.dominantFoot as UpdateMyProfileDtoDominantFoot) ||
               undefined,
-          },
+            preferredDays: values.preferredDays ?? [],
+          } as ExtendedProfileDto,
         },
         { onError: () => {} },
       );
@@ -629,6 +688,23 @@ function ProfileForm({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Preferred Days */}
+          <div className="flex flex-col gap-1.5">
+            <FormLabel>{t('profile.footballProfile.preferredDays')}</FormLabel>
+            <DaysToggle
+              selected={preferredDays as string[]}
+              onChange={(days) =>
+                setValue('preferredDays', days, {
+                  shouldDirty: true,
+                })
+              }
+              options={ALL_DAYS.map((d) => ({
+                value: d,
+                label: t(`profile.footballProfile.days.${d}`),
+              }))}
+            />
           </div>
         </div>
 
@@ -1049,6 +1125,8 @@ export function ProfilePage() {
               skillLevel: profile.skillLevel ?? '',
               preferredPosition: profile.preferredPosition ?? '',
               dominantFoot: profile.dominantFoot ?? '',
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              preferredDays: (profile as any).preferredDays ?? [],
             }}
             photoPreview={photoPreview}
             photoFile={photoFile}

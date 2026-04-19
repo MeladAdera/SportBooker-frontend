@@ -50,6 +50,18 @@ import { getRoleHomePath } from '../utils';
 
 const PHONE_RE = /^\+[1-9][\d\s\-()]{6,}$/;
 
+const DAY_VALUES = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
+] as const;
+
+type DayValue = (typeof DAY_VALUES)[number];
+
 const registerSchema = z
   .object({
     name: z.string().min(1, 'nameRequired').min(2, 'nameMin'),
@@ -68,6 +80,7 @@ const registerSchema = z
       .enum(['goalkeeper', 'defender', 'midfielder', 'forward'])
       .optional(),
     dominantFoot: z.enum(['left', 'right', 'both']).optional(),
+    preferredDays: z.array(z.enum(DAY_VALUES)).optional(),
   })
   .superRefine((data, ctx) => {
     const p = data.phone.trim();
@@ -179,6 +192,48 @@ function FootToggle({ value, onChange, options }: FootToggleProps) {
           {opt.label}
         </button>
       ))}
+    </div>
+  );
+}
+
+// ── DaysToggle ─────────────────────────────────────────────────────────────────
+
+type DaysToggleProps = {
+  selected: DayValue[];
+  onChange: (days: DayValue[]) => void;
+  options: { value: DayValue; label: string }[];
+};
+
+function DaysToggle({ selected, onChange, options }: DaysToggleProps) {
+  function toggle(day: DayValue) {
+    if (selected.includes(day)) {
+      onChange(selected.filter((d) => d !== day));
+    } else {
+      onChange([...selected, day]);
+    }
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {options.map((opt) => {
+        const active = selected.includes(opt.value);
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => toggle(opt.value)}
+            className={cn(
+              'rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all duration-150',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+              active
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-border bg-background text-muted-foreground hover:border-foreground/25 hover:text-foreground',
+            )}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -481,6 +536,7 @@ export function RegisterPage() {
       skillLevel: undefined,
       preferredPosition: undefined,
       dominantFoot: undefined,
+      preferredDays: [],
     },
   });
 
@@ -535,6 +591,9 @@ export function RegisterPage() {
         skillLevel: values.skillLevel,
         preferredPosition: values.preferredPosition,
         dominantFoot: values.dominantFoot,
+        preferredDays: values.preferredDays?.length
+          ? values.preferredDays
+          : undefined,
       });
       navigate('/check-email', {
         replace: true,
@@ -658,6 +717,11 @@ export function RegisterPage() {
     { value: 'right', label: t('registerPage.playerProfile.feet.right') },
     { value: 'both', label: t('registerPage.playerProfile.feet.both') },
   ];
+
+  const DAYS: { value: DayValue; label: string }[] = DAY_VALUES.map((d) => ({
+    value: d,
+    label: t(`registerPage.playerProfile.days.${d}`),
+  }));
 
   return (
     <div className="flex min-h-svh flex-col bg-background">
@@ -1016,6 +1080,24 @@ export function RegisterPage() {
                           }
                         }}
                         options={FEET}
+                      />
+                    </div>
+
+                    {/* Preferred Days */}
+                    <div className="flex flex-col gap-2">
+                      <span className="text-sm font-medium text-foreground">
+                        {t('registerPage.playerProfile.preferredDays')}
+                      </span>
+                      <Controller
+                        name="preferredDays"
+                        control={control}
+                        render={({ field }) => (
+                          <DaysToggle
+                            selected={(field.value ?? []) as DayValue[]}
+                            onChange={field.onChange}
+                            options={DAYS}
+                          />
+                        )}
                       />
                     </div>
 
