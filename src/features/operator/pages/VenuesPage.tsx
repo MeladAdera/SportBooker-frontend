@@ -56,13 +56,14 @@ import {
   useVenuesControllerDeactivate,
   useVenuesControllerGetById,
 } from '@/api/generated/venues/venues';
-import { UpdateVenueDtoSportTypesItem } from '@/api/generated/models/updateVenueDtoSportTypesItem';
 import { VenuesControllerListSportType } from '@/api/generated/models/venuesControllerListSportType';
 import type { VenueBrowseItemDto } from '@/api/generated/models/venueBrowseItemDto';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const SPORT_OPTIONS = Object.values(UpdateVenueDtoSportTypesItem);
+const SPORT_OPTIONS = Object.values(
+  VenuesControllerListSportType,
+) as VenuesControllerListSportType[];
 const PAGE_SIZE = 20;
 
 // ── Schema ────────────────────────────────────────────────────────────────────
@@ -294,8 +295,7 @@ function VenueFormDialog({
       name: values.name,
       address: values.address,
       mapsUrl: values.mapsUrl,
-      sportTypes:
-        values.sportTypes as (typeof UpdateVenueDtoSportTypesItem)[keyof typeof UpdateVenueDtoSportTypesItem][],
+      sportTypes: values.sportTypes as VenuesControllerListSportType[],
     };
 
     if (isEditing) {

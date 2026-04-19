@@ -1,4 +1,9 @@
 #!/usr/bin/env sh
 set -e
+if git diff --cached --name-only --diff-filter=AM | grep -qx 'package-lock.json'; then
+  printf '%s\n' '' 'Commits must not include package-lock.json (this project uses pnpm).' \
+    'Remove it from the commit: git restore --staged package-lock.json' '' >&2
+  exit 1
+fi
 npx lint-staged
 pnpm typecheck
