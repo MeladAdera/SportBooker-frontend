@@ -25,6 +25,7 @@ import {
   useTenantSettingsControllerUpdateSettings,
   getTenantSettingsControllerGetSettingsQueryKey,
 } from '@/api/generated/tenant-settings/tenant-settings';
+import { useTenantStore } from '@/stores/tenantStore';
 
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -380,6 +381,8 @@ function GeneralSettingsCard({
 function LogoUploadCard() {
   const { t } = useTranslation('operator');
   const queryClient = useQueryClient();
+  const setTenantInfo = useTenantStore((s) => s.setTenantInfo);
+  const tenantInfo = useTenantStore((s) => s.tenantInfo);
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
@@ -396,6 +399,13 @@ function LogoUploadCard() {
         body: form,
       });
       if (!res.ok) throw new Error('upload failed');
+      const json = (await res.json().catch(() => null)) as {
+        data?: { logoUrl?: string | null; name?: string; slug?: string };
+      } | null;
+      // Sync AppBar logo immediately
+      if (tenantInfo && json?.data?.logoUrl !== undefined) {
+        setTenantInfo({ ...tenantInfo, logoUrl: json.data.logoUrl ?? null });
+      }
       toast.success(t('settings.general.logoUploadSuccess'));
       queryClient.invalidateQueries({
         queryKey: getTenantSettingsControllerGetSettingsQueryKey(),

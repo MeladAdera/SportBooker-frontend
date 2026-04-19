@@ -39,6 +39,8 @@ document.documentElement.classList.toggle('dark', theme === 'dark');
 
 // Tenant slug from window.location.hostname (VITE_APP_DOMAIN + extractTenantSlug)
 useTenantStore.getState().resolveTenant();
+// Fetch tenant branding (name + logoUrl) — public endpoint, fire-and-forget
+void useTenantStore.getState().loadTenantInfo();
 
 // If persist already hydrated synchronously (Zustand v5), onFinishHydration
 // may never fire. Handle both cases.

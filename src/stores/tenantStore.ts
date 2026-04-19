@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import { extractTenantSlug } from '@/lib/tenant';
+import { resolveApiUrl } from '@/lib/api-url';
 
 export type TenantInfo = {
   slug: string;
@@ -14,6 +15,7 @@ export type TenantInfo = {
  * - `slug` — tenant label (e.g. acfc, platform) or null for apex / no match
  * - `isResolved` — true after `resolveTenant()` has run
  * - `resolveTenant()` — reads `window.location.hostname` and sets `slug`
+ * - `loadTenantInfo()` — calls `GET /tenant/info` (public) and populates `tenantInfo`
  */
 export type TenantState = {
   slug: string | null;
@@ -22,9 +24,11 @@ export type TenantState = {
   isResolved: boolean;
   resolveTenant: () => void;
   setTenantInfo: (info: TenantInfo) => void;
+  /** Fetches `GET /tenant/info` and stores the result. No-ops on platform/null slug. */
+  loadTenantInfo: () => Promise<void>;
 };
 
-export const useTenantStore = create<TenantState>()((set) => ({
+export const useTenantStore = create<TenantState>()((set, get) => ({
   slug: null,
   tenantInfo: null,
   isResolved: false,
@@ -38,5 +42,23 @@ export const useTenantStore = create<TenantState>()((set) => ({
   },
   setTenantInfo: (info: TenantInfo) => {
     set({ tenantInfo: info });
+  },
+  loadTenantInfo: async () => {
+    const { slug } = get();
+    // Public endpoint — only meaningful for real tenant subdomains
+    if (!slug || slug === 'platform') return;
+    try {
+      const res = await fetch(resolveApiUrl('/tenant/info'), {
+        headers: { 'X-Tenant-Slug': slug },
+      });
+      if (!res.ok) return;
+      const json = (await res.json()) as { data: TenantInfo };
+      const info = json?.data;
+      if (info?.name !== undefined) {
+        set({ tenantInfo: info });
+      }
+    } catch {
+      // Network errors are silently ignored — branding falls back to slug initials
+    }
   },
 }));
