@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 
+import { LegalLinks } from './LegalLinks';
 import { LocaleSwitcher } from './LocaleSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -12,12 +13,15 @@ export function PageControls({ className }: Props) {
   return (
     <div
       className={cn(
-        'flex w-full shrink-0 items-center justify-end gap-2 border-b border-border bg-background/95 px-4 py-2 backdrop-blur-sm',
+        'flex w-full shrink-0 items-center justify-between gap-2 border-b border-border bg-background/95 px-4 py-2 backdrop-blur-sm',
         className,
       )}
     >
-      <ThemeToggle />
-      <LocaleSwitcher />
+      <LegalLinks compact />
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+        <LocaleSwitcher />
+      </div>
     </div>
   );
 }

@@ -76,9 +76,14 @@ export async function loginRequest(body: LoginRequest): Promise<LoginResponse> {
   return unwrapData<LoginResponse>(json);
 }
 
+export type RegisterResponse = {
+  message: string;
+  emailVerificationRequired: boolean;
+};
+
 export async function registerRequest(
   body: RegisterRequestBody,
-): Promise<LoginResponse> {
+): Promise<RegisterResponse> {
   const payload: Record<string, string | undefined> = {
     name: body.name.trim(),
     email: body.email.trim(),
@@ -115,7 +120,51 @@ export async function registerRequest(
     });
   }
 
-  return unwrapData<LoginResponse>(json);
+  return unwrapData<RegisterResponse>(json);
+}
+
+export type VerifyEmailRequestBody = {
+  token: string;
+};
+
+export async function verifyEmailRequest(token: string): Promise<void> {
+  const res = await apiFetch('/auth/verify-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token } satisfies VerifyEmailRequestBody),
+  });
+
+  const json: unknown = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const envelope = parseApiErrorBody(json);
+    if (envelope) throw new ApiError(envelope);
+    throw new ApiError({
+      statusCode: res.status,
+      message: 'Verification failed',
+    });
+  }
+}
+
+export type ResendVerificationRequestBody = {
+  email: string;
+};
+
+/**
+ * POST /auth/resend-verification-email — anti-enumeration: always returns
+ * a generic success message whether the account exists or not. Never throws
+ * on HTTP errors so the UI always shows the same neutral copy.
+ * Only rejects on network / fetch failure.
+ */
+export async function resendVerificationRequest(email: string): Promise<void> {
+  const res = await apiFetch('/auth/resend-verification-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: email.trim(),
+    } satisfies ResendVerificationRequestBody),
+  });
+  await res.text().catch(() => '');
 }
 
 export type ForgotPasswordRequestBody = {

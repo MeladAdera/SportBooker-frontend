@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 
 import { AppBar } from '@/shared/components/AppBar';
+import { PageTransition } from '@/shared/components/PageTransition';
 import { cn } from '@/lib/utils';
 import { normalizeRole } from '@/lib/roles';
 import { useAuthStore } from '@/stores/authStore';
@@ -51,11 +52,21 @@ type NavItemProps = {
 function OperatorNavItem({ item, onClick }: NavItemProps) {
   const { t } = useTranslation('operator');
   const Icon = item.icon;
+  const navKeyByRoute: Record<string, string> = {
+    '/operator/dashboard': 'operator-dashboard',
+    '/operator/matches': 'operator-matches',
+    '/operator/venues': 'operator-venues',
+    '/operator/players': 'operator-players',
+    '/operator/settings': 'operator-settings',
+    '/operator/profile': 'operator-profile',
+  };
+  const onboardingId = navKeyByRoute[item.to];
 
   return (
     <NavLink
       to={item.to}
       onClick={onClick}
+      data-onboarding={onboardingId}
       className={({ isActive }) =>
         cn(
           'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
@@ -127,6 +138,7 @@ export function OperatorLayout({ children }: Props) {
       <div className="flex flex-1 overflow-hidden">
         {/* ── Desktop sidebar ───────────────────────────────────── */}
         <aside
+          data-onboarding="sidebar-nav"
           className="hidden md:flex md:w-56 md:shrink-0 md:flex-col md:border-e md:border-sidebar-border md:bg-sidebar lg:w-64"
           aria-label="Main navigation"
         >
@@ -159,8 +171,13 @@ export function OperatorLayout({ children }: Props) {
           </header>
 
           {/* ── Main content ──────────────────────────────────────── */}
-          <main className="flex flex-1 flex-col overflow-y-auto">
-            {children ?? <Outlet />}
+          <main
+            data-onboarding="content"
+            className="flex flex-1 flex-col overflow-y-auto"
+          >
+            <PageTransition routeKey={location.pathname}>
+              {children ?? <Outlet />}
+            </PageTransition>
           </main>
         </div>
       </div>

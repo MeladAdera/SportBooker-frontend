@@ -95,6 +95,13 @@ export function LoginPage() {
           const msg = err.message.toLowerCase();
           if (msg.includes('suspended')) {
             setServerError(t('loginPage.errors.suspended'));
+          } else if (msg.includes('verify') && msg.includes('email')) {
+            // Not logged in — send to the check-email screen so they can resend
+            const prefillEmail = values.identifier.includes('@')
+              ? values.identifier
+              : undefined;
+            navigate('/check-email', { state: { email: prefillEmail } });
+            return;
           } else {
             setServerError(t('loginPage.errors.invalidCredentials'));
           }

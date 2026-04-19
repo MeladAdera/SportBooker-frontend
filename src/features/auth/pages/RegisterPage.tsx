@@ -448,7 +448,6 @@ function PhoneInput({
 export function RegisterPage() {
   const { t } = useTranslation('auth');
   const navigate = useNavigate();
-  const login = useAuthStore((s) => s.login);
   const isSessionReady = useAuthStore((s) => s.isSessionReady);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const sessionUser = useAuthStore((s) => s.user);
@@ -525,7 +524,7 @@ export function RegisterPage() {
   const onSubmit = async (values: RegisterFormValues) => {
     setServerError(null);
     try {
-      const data = await registerRequest({
+      await registerRequest({
         name: values.name,
         email: values.email,
         password: values.password,
@@ -537,8 +536,10 @@ export function RegisterPage() {
         preferredPosition: values.preferredPosition,
         dominantFoot: values.dominantFoot,
       });
-      login(data.accessToken, data.refreshToken, data.expiresIn, data.user);
-      navigate(getRoleHomePath(data.user.role), { replace: true });
+      navigate('/check-email', {
+        replace: true,
+        state: { email: values.email },
+      });
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.statusCode === 409) {
@@ -888,7 +889,28 @@ export function RegisterPage() {
                           htmlFor="reg-terms"
                           className="text-sm leading-snug text-foreground"
                         >
-                          {t('registerPage.termsLabel')}
+                          I agree to the{' '}
+                          <Link
+                            to="/legal/terms"
+                            className="font-medium text-primary underline-offset-4 hover:underline"
+                          >
+                            Terms of Service
+                          </Link>
+                          ,{' '}
+                          <Link
+                            to="/legal/privacy"
+                            className="font-medium text-primary underline-offset-4 hover:underline"
+                          >
+                            Privacy Policy
+                          </Link>{' '}
+                          and{' '}
+                          <Link
+                            to="/legal/disclaimer"
+                            className="font-medium text-primary underline-offset-4 hover:underline"
+                          >
+                            Disclaimer
+                          </Link>
+                          .
                         </label>
                       </div>
                       {errors.acceptTerms && (

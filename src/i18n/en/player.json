@@ -2,7 +2,7 @@
   "dashboard": "Player dashboard",
   "nav": {
     "home": "Home",
-    "bookings": "My Bookings",
+    "bookings": "Bookings",
     "wallet": "Wallet",
     "profile": "Profile"
   },

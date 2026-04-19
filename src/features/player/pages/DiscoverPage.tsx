@@ -13,16 +13,26 @@ import {
   ArrowUp,
   Check,
   ChevronDown,
+  SlidersHorizontal,
   RefreshCw,
   Search,
   X,
 } from 'lucide-react';
+import { useQueries } from '@tanstack/react-query';
+import { motion, useReducedMotion } from 'framer-motion';
 import { DatePicker } from '@/components/ui/date-picker';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
   Popover,
@@ -37,7 +47,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { useMatchesControllerList } from '@/api/generated/matches/matches';
+import {
+  getMatchesControllerListQueryOptions,
+  useMatchesControllerList,
+} from '@/api/generated/matches/matches';
 import { useVenuesControllerList } from '@/api/generated/venues/venues';
 import type { MatchBrowseItemDto } from '@/api/generated/models/matchBrowseItemDto';
 import type { MatchesControllerListParams } from '@/api/generated/models/matchesControllerListParams';
@@ -250,6 +263,15 @@ type FilterBarProps = {
   onClear: () => void;
 };
 
+type FilterControlsProps = {
+  filters: FilterState;
+  onChange: (next: Partial<FilterState>) => void;
+  onClear: () => void;
+  venues: VenueOption[];
+  hasActiveFilters: boolean;
+  isMobile?: boolean;
+};
+
 /**
  * Cycles through `phrases` with a typewriter effect — types each phrase
  * character by character, pauses, then deletes before moving to the next.
@@ -302,6 +324,25 @@ function useTypewriter(
   }, [phrases, typeSpeed, deleteSpeed, pauseMs]);
 
   return displayed;
+}
+
+function useIsMobileViewport() {
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined'
+      ? window.matchMedia('(max-width: 767px)').matches
+      : false,
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const media = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(media.matches);
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+
+  return isMobile;
 }
 
 /**
@@ -429,10 +470,12 @@ function VenueCombobox({
   venues,
   value,
   onChange,
+  triggerClassName,
 }: {
   venues: VenueOption[];
   value?: string;
   onChange: (id: string | undefined) => void;
+  triggerClassName?: string;
 }) {
   const { t } = useTranslation('player');
   const [open, setOpen] = useState(false);
@@ -465,6 +508,7 @@ function VenueCombobox({
         className={cn(
           'flex h-8 min-w-[140px] items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent px-2.5 text-sm transition-colors',
           'hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          triggerClassName,
           selectedName ? 'text-foreground' : 'text-muted-foreground',
         )}
       >
@@ -534,77 +578,78 @@ function VenueCombobox({
   );
 }
 
-function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
+function FilterControls({
+  filters,
+  onChange,
+  onClear,
+  venues,
+  hasActiveFilters,
+  isMobile = false,
+}: FilterControlsProps) {
   const { t } = useTranslation('player');
-  const { data: venuesData, isLoading: isVenuesLoading } =
-    useVenuesControllerList({ limit: 100 });
-  if (isVenuesLoading) return <div>Loading...</div>;
-
-  const venues = unwrap(venuesData)?.items ?? [];
   const sportTriggerIcon = filters.sportType
     ? getSportIcon(filters.sportType)
     : ALL_SPORTS_ICON;
 
-  const hasActiveFilters =
-    !!filters.sportType ||
-    !!filters.venueId ||
-    !!filters.date ||
-    !!filters.available ||
-    !!filters.sortBy ||
-    (filters.dayOfWeek?.length ?? 0) > 0;
+  const setAvailable = (enabled: boolean) => {
+    onChange({ available: enabled ? true : undefined, page: 1 });
+  };
 
   return (
-    <div className="flex flex-col gap-3">
-      <DayChips
-        value={filters.dayOfWeek}
-        onChange={(days) =>
-          onChange({ dayOfWeek: days.length > 0 ? days : undefined, page: 1 })
+    <div
+      className={cn(
+        'items-center gap-2',
+        isMobile ? 'flex flex-col' : 'flex flex-wrap',
+      )}
+    >
+      <Select
+        value={filters.sportType ?? ''}
+        onValueChange={(v) =>
+          onChange({ sportType: (v as SportType) || undefined, page: 1 })
         }
-        sortBy={filters.sortBy}
-        onSortChange={(sort) => onChange({ sortBy: sort, page: 1 })}
-      />
-      <div className="flex flex-wrap items-center gap-2">
-        <Select
-          value={filters.sportType ?? ''}
-          onValueChange={(v) =>
-            onChange({ sportType: (v as SportType) || undefined, page: 1 })
-          }
+      >
+        <SelectTrigger
+          size={isMobile ? 'default' : 'sm'}
+          className={cn(isMobile ? 'w-full' : 'min-w-[120px]')}
         >
-          <SelectTrigger size="sm" className="min-w-[120px]">
-            {createElement(sportTriggerIcon, {
-              className: 'size-3.5 shrink-0 text-muted-foreground',
-              'aria-hidden': true,
-            })}
-            <SelectValue placeholder={t('discover.filters.allSports')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">
+          {createElement(sportTriggerIcon, {
+            className: 'size-3.5 shrink-0 text-muted-foreground',
+            'aria-hidden': true,
+          })}
+          <SelectValue placeholder={t('discover.filters.allSports')} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="">
+            <span className="flex items-center gap-1.5">
+              {createElement(ALL_SPORTS_ICON, {
+                className: 'size-3.5 shrink-0 text-muted-foreground',
+              })}
+              {t('discover.filters.allSports')}
+            </span>
+          </SelectItem>
+          {SPORT_TYPES.map((s) => (
+            <SelectItem key={s} value={s}>
               <span className="flex items-center gap-1.5">
-                {createElement(ALL_SPORTS_ICON, {
+                {createElement(getSportIcon(s), {
                   className: 'size-3.5 shrink-0 text-muted-foreground',
                 })}
-                {t('discover.filters.allSports')}
+                {t(`discover.sports.${s}`)}
               </span>
             </SelectItem>
-            {SPORT_TYPES.map((s) => (
-              <SelectItem key={s} value={s}>
-                <span className="flex items-center gap-1.5">
-                  {createElement(getSportIcon(s), {
-                    className: 'size-3.5 shrink-0 text-muted-foreground',
-                  })}
-                  {t(`discover.sports.${s}`)}
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          ))}
+        </SelectContent>
+      </Select>
 
+      <div className={cn(isMobile && 'w-full')}>
         <VenueCombobox
           venues={venues}
           value={filters.venueId}
           onChange={(id) => onChange({ venueId: id, page: 1 })}
+          triggerClassName={cn(isMobile && 'h-9 w-full')}
         />
+      </div>
 
+      <div className={cn(isMobile && 'w-full [&_button]:w-full')}>
         <DatePicker
           value={filters.date ? new Date(filters.date) : undefined}
           onChange={(d) =>
@@ -615,29 +660,167 @@ function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
           }
           placeholder={t('discover.filters.date')}
         />
+      </div>
 
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="available-filter"
-            checked={!!filters.available}
-            onCheckedChange={(checked) =>
-              onChange({ available: checked || undefined, page: 1 })
-            }
-          />
-          <label
-            htmlFor="available-filter"
-            className="cursor-pointer select-none text-sm text-foreground"
-          >
-            {t('discover.filters.availableOnly')}
-          </label>
-        </div>
-
-        {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={onClear} className="gap-1">
-            <X className="size-3.5" aria-hidden />
-            {t('discover.filters.clearFilters')}
-          </Button>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={!!filters.available}
+        onClick={() => setAvailable(!filters.available)}
+        className={cn(
+          'flex items-center justify-between gap-3 rounded-lg border border-input bg-transparent px-3 py-2 text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+          isMobile ? 'h-10 w-full' : 'h-8 min-w-[180px]',
+          filters.available && 'border-primary/40 bg-primary/6',
         )}
+      >
+        <span className="text-foreground">
+          {t('discover.filters.availableOnly')}
+        </span>
+        <Checkbox
+          checked={!!filters.available}
+          onCheckedChange={(checked) => setAvailable(Boolean(checked))}
+          className={cn('pointer-events-none', isMobile ? 'size-5' : 'size-4')}
+        />
+      </button>
+
+      {hasActiveFilters && (
+        <Button
+          variant="ghost"
+          size={isMobile ? 'default' : 'sm'}
+          onClick={onClear}
+          className={cn('gap-1', isMobile && 'w-full justify-center')}
+        >
+          <X className="size-3.5" aria-hidden />
+          {t('discover.filters.clearFilters')}
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function FilterBar({ filters, onChange, onClear }: FilterBarProps) {
+  const { t } = useTranslation('player');
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const { data: venuesData, isLoading: isVenuesLoading } =
+    useVenuesControllerList({ limit: 100 });
+  if (isVenuesLoading) return <div>Loading...</div>;
+
+  const venues = unwrap(venuesData)?.items ?? [];
+  const activeFiltersCount = [
+    Boolean(filters.sportType),
+    Boolean(filters.venueId),
+    Boolean(filters.date),
+    Boolean(filters.available),
+    Boolean(filters.sortBy),
+    (filters.dayOfWeek?.length ?? 0) > 0,
+  ].filter(Boolean).length;
+  const hasActiveFilters = activeFiltersCount > 0;
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="sticky top-2 z-20 md:hidden">
+        <Button
+          variant="outline"
+          size="default"
+          className="w-full justify-between bg-background/95 backdrop-blur-sm"
+          onClick={() => setMobileFiltersOpen(true)}
+        >
+          <span className="inline-flex items-center gap-2">
+            <SlidersHorizontal className="size-4 text-muted-foreground" />
+            {t('discover.filters.title', { defaultValue: 'Filters' })}
+          </span>
+          {hasActiveFilters ? (
+            <Badge variant="secondary" className="px-2 py-0.5 text-xs">
+              {activeFiltersCount}
+            </Badge>
+          ) : null}
+        </Button>
+
+        <Dialog open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
+          <DialogContent
+            showCloseButton={false}
+            className="flex max-h-[95dvh] max-w-[calc(100%-3rem)] flex-col overflow-hidden p-0 sm:max-w-md"
+          >
+            <DialogHeader className="border-b px-4 py-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <DialogTitle>
+                    {t('discover.filters.title', { defaultValue: 'Filters' })}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {t('discover.filters.description', {
+                      defaultValue:
+                        'Refine matches to quickly find the best game.',
+                    })}
+                  </DialogDescription>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon-sm"
+                  className="shrink-0"
+                  onClick={() => setMobileFiltersOpen(false)}
+                  aria-label={t('common.close', { defaultValue: 'Close' })}
+                  title={t('common.close', { defaultValue: 'Close' })}
+                >
+                  <X className="size-4" aria-hidden />
+                </Button>
+              </div>
+            </DialogHeader>
+
+            <div className="min-h-0 flex-1 overflow-y-auto p-4">
+              <div className="flex flex-col gap-3">
+                <DayChips
+                  value={filters.dayOfWeek}
+                  onChange={(days) =>
+                    onChange({
+                      dayOfWeek: days.length > 0 ? days : undefined,
+                      page: 1,
+                    })
+                  }
+                  sortBy={filters.sortBy}
+                  onSortChange={(sort) => onChange({ sortBy: sort, page: 1 })}
+                />
+                <FilterControls
+                  filters={filters}
+                  onChange={onChange}
+                  onClear={onClear}
+                  venues={venues}
+                  hasActiveFilters={hasActiveFilters}
+                  isMobile
+                />
+              </div>
+            </div>
+
+            <div className="border-t bg-muted/40 px-4 py-3">
+              <Button
+                variant="default"
+                onClick={() => setMobileFiltersOpen(false)}
+                className="h-10 w-full"
+              >
+                {t('common.done', { defaultValue: 'Done' })}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="hidden md:flex md:flex-col md:gap-3">
+        <DayChips
+          value={filters.dayOfWeek}
+          onChange={(days) =>
+            onChange({ dayOfWeek: days.length > 0 ? days : undefined, page: 1 })
+          }
+          sortBy={filters.sortBy}
+          onSortChange={(sort) => onChange({ sortBy: sort, page: 1 })}
+        />
+        <FilterControls
+          filters={filters}
+          onChange={onChange}
+          onClear={onClear}
+          venues={venues}
+          hasActiveFilters={hasActiveFilters}
+        />
       </div>
     </div>
   );
@@ -771,6 +954,8 @@ export function DiscoverPage() {
   const tenantTz = useTenantTimezone();
   const [searchParams, setSearchParams] = useSearchParams();
   const [spinning, setSpinning] = useState(false);
+  const isMobileViewport = useIsMobileViewport();
+  const prefersReducedMotion = useReducedMotion();
 
   const filters = useMemo(() => paramsToFilters(searchParams), [searchParams]);
   const phrases =
@@ -778,14 +963,37 @@ export function DiscoverPage() {
   const typedTitle = useTypewriter(phrases);
 
   const apiParams = useMemo(() => buildApiParams(filters), [filters]);
+  const mobileBaseApiParams = useMemo(
+    () =>
+      buildApiParams({
+        ...filters,
+        page: 1,
+      }),
+    [filters],
+  );
+  const { page } = filters;
+  const mobilePagesToLoad = useMemo(
+    () =>
+      isMobileViewport
+        ? Array.from({ length: Math.max(page, 1) }, (_, idx) => idx + 1)
+        : [],
+    [isMobileViewport, page],
+  );
+  const mobilePageQueries = useQueries({
+    queries: mobilePagesToLoad.map((pageNumber) =>
+      getMatchesControllerListQueryOptions({
+        ...mobileBaseApiParams,
+        page: pageNumber,
+      }),
+    ),
+  });
 
   const { data, isLoading, isError, refetch, isFetching } =
     useMatchesControllerList(apiParams);
   const matchesData = unwrap(data);
-  const matches = matchesData?.items ?? [];
+  const matches = useMemo(() => matchesData?.items ?? [], [matchesData?.items]);
   const total = matchesData?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
-  const { page } = filters;
 
   const handleFilterChange = useCallback(
     (next: Partial<FilterState>) => {
@@ -799,6 +1007,30 @@ export function DiscoverPage() {
   const handleClear = useCallback(() => {
     setSearchParams(filtersToParams(DEFAULT_FILTERS), { replace: true });
   }, [setSearchParams]);
+
+  const mobileMatches = useMemo(() => {
+    const seen = new Set<string>();
+    const merged: MatchBrowseItemDto[] = [];
+
+    for (const query of mobilePageQueries) {
+      const items = unwrap(query.data)?.items ?? [];
+      for (const item of items) {
+        if (seen.has(item.id)) continue;
+        seen.add(item.id);
+        merged.push(item);
+      }
+    }
+
+    return merged.length > 0 ? merged : matches;
+  }, [matches, mobilePageQueries]);
+
+  const displayedMatches = isMobileViewport ? mobileMatches : matches;
+  const isMobileInitialLoading =
+    isMobileViewport &&
+    mobilePageQueries.length > 0 &&
+    mobilePageQueries.every((query) => query.isLoading);
+  const showSkeletons =
+    displayedMatches.length === 0 && (isLoading || isMobileInitialLoading);
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
@@ -845,28 +1077,57 @@ export function DiscoverPage() {
         </p>
       )}
 
-      {isLoading ? (
+      {showSkeletons ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: PAGE_SIZE }).map((_, i) => (
             <MatchCardSkeleton key={i} />
           ))}
         </div>
-      ) : matches.length === 0 ? (
+      ) : displayedMatches.length === 0 ? (
         <EmptyState />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {matches.map((match) => (
-            <MatchCard key={match.id} match={match} tz={tenantTz} />
+          {displayedMatches.map((match, index) => (
+            <motion.div
+              key={match.id}
+              initial={
+                prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 10 }
+              }
+              animate={
+                prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 }
+              }
+              transition={{
+                duration: prefersReducedMotion ? 0 : 0.2,
+                delay: prefersReducedMotion ? 0 : Math.min(index, 11) * 0.03,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+            >
+              <MatchCard match={match} tz={tenantTz} />
+            </motion.div>
           ))}
         </div>
       )}
 
-      {!isLoading && (
+      {!isLoading && !isMobileViewport && (
         <Pagination
           page={page}
           totalPages={totalPages}
           onChange={(p) => handleFilterChange({ page: p })}
         />
+      )}
+
+      {!isLoading && isMobileViewport && page < totalPages && (
+        <Button
+          variant="outline"
+          size="lg"
+          className="w-full"
+          disabled={isFetching}
+          onClick={() => handleFilterChange({ page: page + 1 })}
+        >
+          {isFetching
+            ? t('common.loading', { defaultValue: 'Loading...' })
+            : t('discover.pagination.loadMore', { defaultValue: 'Load more' })}
+        </Button>
       )}
     </div>
   );

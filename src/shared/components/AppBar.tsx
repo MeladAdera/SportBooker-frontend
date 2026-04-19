@@ -1,4 +1,4 @@
-import { Bell, LogOut, User } from 'lucide-react';
+import { Bell, FileText, LogOut, ShieldAlert, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,7 +26,7 @@ function Branding({ isPlatform = false }: BrandingProps) {
 
   if (isPlatform) {
     return (
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2" data-onboarding="brand">
         <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-primary text-[10px] font-bold text-primary-foreground">
           PA
         </div>
@@ -43,7 +43,7 @@ function Branding({ isPlatform = false }: BrandingProps) {
   const logoUrl = tenantInfo?.logoUrl ?? null;
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2" data-onboarding="brand">
       {logoUrl ? (
         <img
           src={logoUrl}
@@ -127,6 +127,7 @@ export function AppBar({ isPlatform = false, profilePath, className }: Props) {
         {/* Notification bell — placeholder, no badge yet */}
         <button
           type="button"
+          data-onboarding="notifications"
           aria-label={t('appBar.notifications')}
           className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
@@ -136,6 +137,7 @@ export function AppBar({ isPlatform = false, profilePath, className }: Props) {
         {/* User avatar + dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger
+            data-onboarding="profile-menu"
             aria-label={t('appBar.userMenu')}
             className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
@@ -163,6 +165,30 @@ export function AppBar({ isPlatform = false, profilePath, className }: Props) {
             >
               <User className="h-4 w-4" aria-hidden />
               {t('appBar.profile')}
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => navigate('/legal/privacy')}
+            >
+              <FileText className="h-4 w-4" aria-hidden />
+              Privacy policy
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => navigate('/legal/terms')}
+            >
+              <FileText className="h-4 w-4" aria-hidden />
+              Terms of service
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => navigate('/legal/disclaimer')}
+            >
+              <ShieldAlert className="h-4 w-4" aria-hidden />
+              Disclaimer
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
