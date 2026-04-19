@@ -174,21 +174,21 @@ export function AppBar({ isPlatform = false, profilePath, className }: Props) {
               onClick={() => navigate('/legal/privacy')}
             >
               <FileText className="h-4 w-4" aria-hidden />
-              Privacy policy
+              {t('shared.links.privacy', { ns: 'legal' })}
             </DropdownMenuItem>
             <DropdownMenuItem
               className="cursor-pointer"
               onClick={() => navigate('/legal/terms')}
             >
               <FileText className="h-4 w-4" aria-hidden />
-              Terms of service
+              {t('shared.links.terms', { ns: 'legal' })}
             </DropdownMenuItem>
             <DropdownMenuItem
               className="cursor-pointer"
               onClick={() => navigate('/legal/disclaimer')}
             >
               <ShieldAlert className="h-4 w-4" aria-hidden />
-              Disclaimer
+              {t('shared.links.disclaimer', { ns: 'legal' })}
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />

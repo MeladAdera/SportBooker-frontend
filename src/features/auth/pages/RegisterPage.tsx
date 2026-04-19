@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import {
   Eye,
@@ -889,26 +889,35 @@ export function RegisterPage() {
                           htmlFor="reg-terms"
                           className="text-sm leading-snug text-foreground"
                         >
-                          I agree to the{' '}
+                          <Trans
+                            i18nKey="register.agreePrefix"
+                            ns="legal"
+                            components={{}}
+                          >
+                            {/* prefix */}
+                          </Trans>{' '}
                           <Link
                             to="/legal/terms"
                             className="font-medium text-primary underline-offset-4 hover:underline"
                           >
-                            Terms of Service
+                            <Trans i18nKey="register.termsLink" ns="legal" />
                           </Link>
-                          ,{' '}
+                          <Trans i18nKey="register.comma" ns="legal" />{' '}
                           <Link
                             to="/legal/privacy"
                             className="font-medium text-primary underline-offset-4 hover:underline"
                           >
-                            Privacy Policy
+                            <Trans i18nKey="register.privacyLink" ns="legal" />
                           </Link>{' '}
-                          and{' '}
+                          <Trans i18nKey="register.and" ns="legal" />{' '}
                           <Link
                             to="/legal/disclaimer"
                             className="font-medium text-primary underline-offset-4 hover:underline"
                           >
-                            Disclaimer
+                            <Trans
+                              i18nKey="register.disclaimerLink"
+                              ns="legal"
+                            />
                           </Link>
                           .
                         </label>

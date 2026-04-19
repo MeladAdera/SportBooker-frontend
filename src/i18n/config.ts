@@ -7,16 +7,25 @@ import { readPersistedLocale } from '@/stores/locale-persist';
 import enAdmin from './en/admin.json';
 import enAuth from './en/auth.json';
 import enCommon from './en/common.json';
+import enLegal from './en/legal.json';
 import enOperator from './en/operator.json';
 import enPlayer from './en/player.json';
 
 import arAdmin from './ar/admin.json';
 import arAuth from './ar/auth.json';
 import arCommon from './ar/common.json';
+import arLegal from './ar/legal.json';
 import arOperator from './ar/operator.json';
 import arPlayer from './ar/player.json';
 
-const NAMESPACES = ['common', 'auth', 'player', 'operator', 'admin'] as const;
+const NAMESPACES = [
+  'common',
+  'auth',
+  'player',
+  'operator',
+  'admin',
+  'legal',
+] as const;
 
 const stored = readPersistedLocale();
 
@@ -47,6 +56,7 @@ void i18n
         player: enPlayer,
         operator: enOperator,
         admin: enAdmin,
+        legal: enLegal,
       },
       ar: {
         common: arCommon,
@@ -54,6 +64,7 @@ void i18n
         player: arPlayer,
         operator: arOperator,
         admin: arAdmin,
+        legal: arLegal,
       },
     },
   });

@@ -1,0 +1,188 @@
+{
+  "shared": {
+    "lastUpdated": "Last updated: {{date}}",
+    "footer": "If you do not agree with these terms, please stop using the platform and contact your club or tenant operator.",
+    "backToLogin": "Back to login",
+    "links": {
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "disclaimer": "Disclaimer"
+    },
+    "appBar": {
+      "privacy": "Privacy policy",
+      "terms": "Terms of service",
+      "disclaimer": "Disclaimer"
+    }
+  },
+  "register": {
+    "agreePrefix": "I agree to the",
+    "termsLink": "Terms of Service",
+    "comma": ",",
+    "privacyLink": "Privacy Policy",
+    "and": "and",
+    "disclaimerLink": "Disclaimer"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "April 19, 2026",
+    "intro": [
+      "This Privacy Policy explains how SportBooker and the tenant clubs or organizations using SportBooker collect and use personal data when you create an account, browse matches, make bookings, and manage payments.",
+      "SportBooker is a multi-tenant platform. Your selected tenant (club/operator) manages its community and booking operations, while SportBooker provides the shared technical infrastructure and security controls that run the service."
+    ],
+    "sections": [
+      {
+        "title": "1. Data we collect",
+        "paragraphs": [
+          "We collect account data such as name, email, phone number, password hash, preferred language, and optional profile details (for example playing position, skill level, nationality, and date of birth if you provide them).",
+          "We also collect booking and activity data such as matches viewed, reservations, cancellations, wallet transactions, and tenant interactions required to operate scheduling and account history."
+        ]
+      },
+      {
+        "title": "2. How we use data",
+        "paragraphs": [
+          "We use your data to authenticate your account, deliver core features, prevent abuse, process support requests, send transactional messages (verification, password reset, and booking status), and maintain platform reliability.",
+          "We do not use your account data for unrelated advertising. Operational analytics may be used to improve performance, reliability, and product quality."
+        ]
+      },
+      {
+        "title": "3. Payments and financial data",
+        "paragraphs": [
+          "Top-up and payment operations are handled by integrated payment providers. SportBooker does not store full card numbers or CVV values on this application.",
+          "Payment providers process financial information under their own compliance obligations and privacy terms."
+        ]
+      },
+      {
+        "title": "4. Sharing and disclosure",
+        "paragraphs": [
+          "Data is shared only with the tenant you are using and with service providers required to operate the platform (for example cloud hosting, email delivery, and payment processors).",
+          "We may disclose data when required by law, legal process, or to protect users, tenants, and platform security."
+        ]
+      },
+      {
+        "title": "5. Security and retention",
+        "paragraphs": [
+          "We apply technical and organizational safeguards such as authenticated access controls, role-based permissions, and monitored infrastructure. No internet service can be guaranteed as 100% secure.",
+          "Personal data is retained only as long as needed for service operation, legal obligations, dispute resolution, fraud prevention, and legitimate audit needs."
+        ]
+      },
+      {
+        "title": "6. Your choices and rights",
+        "paragraphs": [
+          "You can access and update profile data from your account where available. You may request correction, deletion, or export by contacting your tenant operator or support channels provided in the app.",
+          "If local law provides additional rights (such as objection or restriction), requests will be handled in accordance with applicable data protection laws."
+        ]
+      },
+      {
+        "title": "7. International processing",
+        "paragraphs": [
+          "SportBooker services may process data in multiple regions where infrastructure or providers operate. Appropriate safeguards are applied when cross-border transfers are required."
+        ]
+      }
+    ]
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "lastUpdated": "April 19, 2026",
+    "intro": [
+      "These Terms of Service govern your use of SportBooker, including all web features provided to players, operators, and platform administrators.",
+      "By creating an account or using the service, you agree to follow these Terms and applicable laws."
+    ],
+    "sections": [
+      {
+        "title": "1. Accounts and eligibility",
+        "paragraphs": [
+          "You must provide accurate registration information and keep account credentials confidential. You are responsible for actions performed through your account.",
+          "Tenants may set additional membership requirements for their communities. Accounts may be suspended for fraud, abuse, or repeated policy violations."
+        ]
+      },
+      {
+        "title": "2. Multi-tenant service model",
+        "paragraphs": [
+          "SportBooker provides shared infrastructure and product capabilities. Each tenant operator manages local match rules, pricing, cancellations, and community moderation within the platform.",
+          "Tenant-specific policies may apply in addition to these Terms. Where tenant rules conflict with mandatory law, applicable law prevails."
+        ]
+      },
+      {
+        "title": "3. Acceptable use",
+        "paragraphs": [
+          "You agree not to misuse the service, attempt unauthorized access, disrupt availability, submit false bookings, harass users, or upload unlawful content.",
+          "Automated scraping, credential stuffing, reverse engineering for abuse, and bypassing access controls are strictly prohibited."
+        ]
+      },
+      {
+        "title": "4. Bookings, wallet, and payments",
+        "paragraphs": [
+          "Bookings and wallet balances are subject to availability, tenant configuration, and payment authorization. Confirmed actions are recorded in your account history.",
+          "Refunds, credits, and cancellation windows can vary by tenant policy and payment provider constraints."
+        ]
+      },
+      {
+        "title": "5. Service availability and changes",
+        "paragraphs": [
+          "We continuously improve the platform and may update features, UX, or security mechanisms. We may apply maintenance windows, rate limits, and anti-abuse controls to protect service quality.",
+          "Temporary interruptions can occur due to maintenance, infrastructure incidents, or third-party dependency failures."
+        ]
+      },
+      {
+        "title": "6. Intellectual property",
+        "paragraphs": [
+          "SportBooker software, branding, and platform content are protected by intellectual property laws. You may not copy, resell, or distribute protected materials except as permitted by law or written authorization."
+        ]
+      },
+      {
+        "title": "7. Termination",
+        "paragraphs": [
+          "You may stop using the service at any time. We may suspend or terminate access for serious violations, legal requirements, or risks to platform integrity and user safety."
+        ]
+      }
+    ]
+  },
+  "disclaimer": {
+    "title": "Disclaimer and Limitation of Liability",
+    "lastUpdated": "April 19, 2026",
+    "intro": [
+      "This disclaimer clarifies operational boundaries for SportBooker and tenant operators.",
+      "By using the platform, you acknowledge the following limitations."
+    ],
+    "sections": [
+      {
+        "title": "1. Informational use",
+        "paragraphs": [
+          "Match listings, schedules, pricing, and availability are provided by tenants and may change due to venue, organizer, or participant constraints.",
+          "Users should confirm critical details directly with the tenant when timing or attendance is sensitive."
+        ]
+      },
+      {
+        "title": "2. No professional advice",
+        "paragraphs": [
+          "SportBooker does not provide medical, legal, tax, financial, or coaching advice. Any in-app content is for general service operation and communication only."
+        ]
+      },
+      {
+        "title": "3. As-is service",
+        "paragraphs": [
+          "The platform is provided on an \"as is\" and \"as available\" basis. While we aim for high reliability, we do not guarantee uninterrupted operation, error-free behavior, or perfect compatibility with all devices and networks."
+        ]
+      },
+      {
+        "title": "4. Third-party services",
+        "paragraphs": [
+          "SportBooker relies on external providers for infrastructure, email delivery, and payment processing. We are not responsible for outages or data handling practices that are solely controlled by those providers."
+        ]
+      },
+      {
+        "title": "5. Liability limits",
+        "paragraphs": [
+          "To the maximum extent permitted by law, SportBooker and tenant operators are not liable for indirect, incidental, special, consequential, or punitive damages arising from use of the platform.",
+          "Where liability cannot be excluded by law, it is limited to the amount you paid for the specific affected service during the twelve months before the event giving rise to the claim."
+        ]
+      },
+      {
+        "title": "6. User responsibility",
+        "paragraphs": [
+          "You are responsible for account security, accurate profile details, lawful use of features, and compliance with tenant-specific participation rules."
+        ]
+      }
+    ]
+  }
+}

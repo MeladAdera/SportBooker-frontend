@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
@@ -7,13 +8,15 @@ type Props = {
   compact?: boolean;
 };
 
-const LEGAL_ROUTES = [
-  { to: '/legal/privacy', label: 'Privacy' },
-  { to: '/legal/terms', label: 'Terms' },
-  { to: '/legal/disclaimer', label: 'Disclaimer' },
-];
-
 export function LegalLinks({ className, compact = false }: Props) {
+  const { t } = useTranslation('legal');
+
+  const links = [
+    { to: '/legal/privacy', label: t('shared.links.privacy') },
+    { to: '/legal/terms', label: t('shared.links.terms') },
+    { to: '/legal/disclaimer', label: t('shared.links.disclaimer') },
+  ];
+
   return (
     <div
       className={cn(
@@ -23,7 +26,7 @@ export function LegalLinks({ className, compact = false }: Props) {
       )}
       aria-label="Legal links"
     >
-      {LEGAL_ROUTES.map((item, index) => (
+      {links.map((item, index) => (
         <span key={item.to} className="inline-flex items-center gap-1">
           <Link
             to={item.to}
@@ -31,7 +34,7 @@ export function LegalLinks({ className, compact = false }: Props) {
           >
             {item.label}
           </Link>
-          {index < LEGAL_ROUTES.length - 1 && (
+          {index < links.length - 1 && (
             <span className="text-muted-foreground/60">-</span>
           )}
         </span>

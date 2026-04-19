@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,6 +22,8 @@ export function LegalDocumentLayout({
   intro,
   sections,
 }: Props) {
+  const { t } = useTranslation('legal');
+
   return (
     <div className="flex min-h-svh flex-col bg-background">
       <PageControls />
@@ -32,31 +35,25 @@ export function LegalDocumentLayout({
                 {title}
               </h1>
               <p className="text-sm text-muted-foreground">
-                Last updated: {lastUpdated}
+                {t('shared.lastUpdated', { date: lastUpdated })}
               </p>
             </header>
 
             <section className="space-y-3">
-              {intro.map((paragraph) => (
-                <p
-                  key={paragraph}
-                  className="text-sm leading-6 text-foreground/95"
-                >
+              {intro.map((paragraph, i) => (
+                <p key={i} className="text-sm leading-6 text-foreground/95">
                   {paragraph}
                 </p>
               ))}
             </section>
 
-            {sections.map((section) => (
-              <section key={section.title} className="space-y-2">
+            {sections.map((section, i) => (
+              <section key={i} className="space-y-2">
                 <h2 className="text-lg font-semibold text-foreground">
                   {section.title}
                 </h2>
-                {section.paragraphs.map((paragraph) => (
-                  <p
-                    key={`${section.title}-${paragraph}`}
-                    className="text-sm leading-6 text-foreground/95"
-                  >
+                {section.paragraphs.map((paragraph, j) => (
+                  <p key={j} className="text-sm leading-6 text-foreground/95">
                     {paragraph}
                   </p>
                 ))}
@@ -65,14 +62,13 @@ export function LegalDocumentLayout({
 
             <footer className="space-y-2 border-t border-border pt-5">
               <p className="text-xs text-muted-foreground">
-                If you do not agree with these terms, please stop using the
-                platform and contact your club or tenant operator.
+                {t('shared.footer')}
               </p>
               <Link
                 to="/login"
                 className="inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
               >
-                Back to login
+                {t('shared.backToLogin')}
               </Link>
             </footer>
           </CardContent>
