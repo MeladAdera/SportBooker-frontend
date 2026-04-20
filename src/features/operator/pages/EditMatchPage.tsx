@@ -52,33 +52,44 @@ const today = () => {
 
 function buildEditMatchSchema(rosterConfirmed: number) {
   const capFloor = Math.max(CAPACITY_MIN, rosterConfirmed);
-  return z.object({
-    title: z.string().min(3, 'validation.titleMin'),
-    sportType: z.enum(
-      Object.values(UpdateMatchDtoSportType) as [string, ...string[]],
-      { error: 'validation.sportRequired' },
-    ),
-    venueId: z.string().min(1, 'validation.venueRequired'),
-    scheduledDate: z
-      .date({ error: 'validation.dateRequired' })
-      .refine((d) => d >= today(), { message: 'validation.datePast' }),
-    scheduledTime: z.string().min(1, 'validation.timeRequired'),
-    durationMins: z
-      .number({ error: 'validation.durationMin' })
-      .min(10, 'validation.durationMin')
-      .max(240, 'validation.durationMax'),
-    maxCapacity: z
-      .number({ error: 'validation.capacityMin' })
-      .min(capFloor, 'validation.capacityBelowRoster')
-      .max(CAPACITY_MAX, 'validation.capacityMax'),
-    pricePerPlayer: z
-      .number({ error: 'validation.priceMin' })
-      .min(1, 'validation.priceMin')
-      .refine((v) => Number.isInteger(v), 'validation.priceInteger'),
-  });
+  return z
+    .object({
+      title: z.string().min(3, 'validation.titleMin'),
+      sportType: z.enum(
+        Object.values(UpdateMatchDtoSportType) as [string, ...string[]],
+        { error: 'validation.sportRequired' },
+      ),
+      venueId: z.string().min(1, 'validation.venueRequired'),
+      scheduledDate: z
+        .date({ error: 'validation.dateRequired' })
+        .refine((d) => d >= today(), { message: 'validation.datePast' }),
+      scheduledTime: z.string().min(1, 'validation.timeRequired'),
+      durationMins: z
+        .number({ error: 'validation.durationMin' })
+        .min(10, 'validation.durationMin')
+        .max(240, 'validation.durationMax'),
+      maxCapacity: z
+        .number({ error: 'validation.capacityMin' })
+        .min(capFloor, 'validation.capacityBelowRoster')
+        .max(CAPACITY_MAX, 'validation.capacityMax'),
+      pricePerPlayer: z
+        .number({ error: 'validation.priceMin' })
+        .min(1, 'validation.priceMin')
+        .refine((v) => Number.isInteger(v), 'validation.priceInteger'),
+      minRealSpots: z.number().int().min(0).default(0),
+    })
+    .superRefine((data, ctx) => {
+      if (data.minRealSpots > data.maxCapacity) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['minRealSpots'],
+          message: 'validation.minRealSpotsExceedsCapacity',
+        });
+      }
+    });
 }
 
-type FormValues = z.infer<ReturnType<typeof buildEditMatchSchema>>;
+type FormValues = z.output<ReturnType<typeof buildEditMatchSchema>>;
 
 interface StepperProps {
   value: number;
@@ -142,11 +153,20 @@ function resolveFieldError(
   if (message === 'validation.capacityBelowRoster') {
     return t(`editMatch.${message}`);
   }
+  if (message === 'validation.minRealSpotsExceedsCapacity') {
+    return t(`editMatch.${message}`);
+  }
   return t(`createMatch.${message}`, { defaultValue: message });
 }
 
+type MatchDetailWithFake = MatchDetailResponseDto & {
+  isFake?: boolean;
+  minRealSpots?: number;
+  fakeBookingsCount?: number;
+};
+
 interface EditMatchFormProps {
-  match: MatchDetailResponseDto;
+  match: MatchDetailWithFake;
 }
 
 function EditMatchForm({ match }: EditMatchFormProps) {
@@ -179,7 +199,8 @@ function EditMatchForm({ match }: EditMatchFormProps) {
     reset,
     formState: { errors },
   } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(schema) as any,
   });
 
   useEffect(() => {
@@ -196,6 +217,7 @@ function EditMatchForm({ match }: EditMatchFormProps) {
       durationMins: match.durationMins,
       maxCapacity: match.maxCapacity,
       pricePerPlayer: match.pricePerPlayer,
+      minRealSpots: match.minRealSpots ?? 0,
     });
   }, [match, tenantTz, reset]);
 
@@ -242,6 +264,7 @@ function EditMatchForm({ match }: EditMatchFormProps) {
         durationMins: values.durationMins,
         maxCapacity: values.maxCapacity,
         pricePerPlayer: values.pricePerPlayer,
+        ...(match.isFake ? { minRealSpots: values.minRealSpots } : {}),
       },
     });
   }
@@ -544,6 +567,52 @@ function EditMatchForm({ match }: EditMatchFormProps) {
         </CardContent>
       </Card>
 
+      {/* ─ Section: Demo Match (only when isFake) ───────────────── */}
+      {match.isFake && (
+        <Card>
+          <CardContent className="flex flex-col gap-5 p-6">
+            <p className="text-sm font-medium text-muted-foreground">
+              {t('editMatch.sections.demo')}
+            </p>
+
+            {/* Read-only demo indicator */}
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center rounded-md border border-amber-400 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-600 dark:bg-amber-950/30 dark:text-amber-400">
+                {t('editMatch.demoLabel')}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {t('editMatch.demoHint')}
+              </span>
+            </div>
+
+            {/* minRealSpots stepper */}
+            <div className="flex flex-col gap-1.5">
+              <Label>{t('editMatch.fields.minRealSpots')}</Label>
+              <Controller
+                control={control}
+                name="minRealSpots"
+                render={({ field }) => (
+                  <Stepper
+                    value={field.value}
+                    onChange={field.onChange}
+                    min={0}
+                    max={CAPACITY_MAX}
+                    step={1}
+                    hasError={!!errors.minRealSpots}
+                  />
+                )}
+              />
+              <p className="text-xs text-muted-foreground">
+                {t('editMatch.fields.minRealSpotsHint')}
+              </p>
+              <FieldError
+                message={resolveFieldError(t, errors.minRealSpots?.message)}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex justify-end">
         <Button type="submit" disabled={mutation.isPending} size="lg">
           {mutation.isPending ? (
@@ -571,7 +640,7 @@ export function EditMatchPage() {
     isError,
   } = useMatchesControllerGetById(id ?? '', { query: { enabled: !!id } });
 
-  const match = unwrap(matchRes);
+  const match = unwrap(matchRes) as MatchDetailWithFake | undefined;
 
   if (!id) {
     return (

@@ -7,12 +7,23 @@ import {
   flexRender,
   createColumnHelper,
 } from '@tanstack/react-table';
-import { AlertCircle, RefreshCw, Search, Users } from 'lucide-react';
+import {
+  AlertCircle,
+  Loader2,
+  RefreshCw,
+  Search,
+  Trash2,
+  Users,
+  Wand2,
+} from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -20,6 +31,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { unwrap } from '@/api';
 import { cn } from '@/lib/utils';
@@ -29,6 +47,15 @@ import { useDebounce } from '@/shared/hooks';
 import { useUsersControllerListTenantUsers } from '@/api/generated/users/users';
 import { UsersControllerListTenantUsersRole } from '@/api/generated/models/usersControllerListTenantUsersRole';
 import type { TenantUserListItemDto } from '@/api/generated/models/tenantUserListItemDto';
+import {
+  bulkCreateFakePlayers,
+  deleteFakePlayer,
+  fakePlayersKeys,
+} from '@/features/operator/api';
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type TenantUserWithFake = TenantUserListItemDto & { isFake?: boolean };
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -52,6 +79,8 @@ type ActiveFilter = '' | 'active' | 'inactive';
 
 type BannedFilter = '' | 'banned' | 'notBanned';
 
+type FakeFilter = '' | 'fake' | 'real';
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(iso: string): string {
@@ -68,15 +97,182 @@ function formatDate(iso: string): string {
 
 // ── Column helper ────────────────────────────────────────────────────────────
 
-const col = createColumnHelper<TenantUserListItemDto>();
+const col = createColumnHelper<TenantUserWithFake>();
+
+// ── BulkFakeModal ─────────────────────────────────────────────────────────────
+
+interface BulkFakeModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+function BulkFakeModal({ open, onClose, onSuccess }: BulkFakeModalProps) {
+  const { t } = useTranslation('operator');
+  const [count, setCount] = useState(10);
+  const [seed, setSeed] = useState('');
+
+  const mutation = useMutation({
+    mutationFn: () =>
+      bulkCreateFakePlayers({
+        count,
+        ...(seed.trim() !== '' ? { seed: Number(seed) } : {}),
+      }),
+    onSuccess: (data) => {
+      toast.success(t('players.bulkFakeModal.success', { count: data.count }));
+      onSuccess();
+      onClose();
+    },
+    onError: () => {
+      toast.error(t('players.bulkFakeModal.error'));
+    },
+  });
+
+  function handleClose() {
+    if (mutation.isPending) return;
+    onClose();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>{t('players.bulkFakeModal.title')}</DialogTitle>
+        </DialogHeader>
+
+        <div className="flex flex-col gap-4 py-2">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="fake-count">
+              {t('players.bulkFakeModal.countLabel')}
+            </Label>
+            <Input
+              id="fake-count"
+              type="number"
+              min={1}
+              max={200}
+              value={count}
+              onChange={(e) =>
+                setCount(Math.min(200, Math.max(1, Number(e.target.value))))
+              }
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="fake-seed">
+              {t('players.bulkFakeModal.seedLabel')}
+            </Label>
+            <Input
+              id="fake-seed"
+              type="number"
+              placeholder="e.g. 12345"
+              value={seed}
+              onChange={(e) => setSeed(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={handleClose}
+            disabled={mutation.isPending}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => mutation.mutate()}
+            disabled={mutation.isPending}
+          >
+            {mutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
+                {t('players.bulkFakeModal.submitting')}
+              </>
+            ) : (
+              t('players.bulkFakeModal.submit')
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── DeleteFakeConfirmModal ─────────────────────────────────────────────────────
+
+interface DeleteFakeConfirmProps {
+  playerId: string | null;
+  playerName: string;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+function DeleteFakeConfirmModal({
+  playerId,
+  playerName,
+  onClose,
+  onSuccess,
+}: DeleteFakeConfirmProps) {
+  const { t } = useTranslation('operator');
+
+  const mutation = useMutation({
+    mutationFn: () => deleteFakePlayer(playerId!),
+    onSuccess: () => {
+      toast.success(t('players.deleteFakeConfirm.success'));
+      onSuccess();
+      onClose();
+    },
+    onError: () => {
+      toast.error(t('players.deleteFakeConfirm.error'));
+    },
+  });
+
+  return (
+    <Dialog open={!!playerId} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>{t('players.deleteFakeConfirm.title')}</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-muted-foreground">
+          {t('players.deleteFakeConfirm.body')}
+        </p>
+        <p className="text-sm font-medium">{playerName}</p>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={mutation.isPending}
+          >
+            {t('players.deleteFakeConfirm.cancel')}
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => mutation.mutate()}
+            disabled={mutation.isPending}
+          >
+            {mutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
+                {t('players.deleteFakeConfirm.confirm')}…
+              </>
+            ) : (
+              t('players.deleteFakeConfirm.confirm')
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 // ── PlayerListPage ────────────────────────────────────────────────────────────
 
 export function PlayerListPage() {
   const { t } = useTranslation('operator');
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const role = useAuthStore((s) => normalizeRole(s.user?.role ?? ''));
 
+  const canManageFake = role === 'super_admin' || role === 'tenant_admin';
   const canSeeDeleted = role === 'super_admin' || role === 'tenant_admin';
 
   const [page, setPage] = useState(1);
@@ -84,9 +280,15 @@ export function PlayerListPage() {
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('');
   const [activeFilter, setActiveFilter] = useState<ActiveFilter>('');
   const [bannedFilter, setBannedFilter] = useState<BannedFilter>('');
+  const [fakeFilter, setFakeFilter] = useState<FakeFilter>('');
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const [search, setSearch] = useState('');
   const [spinning, setSpinning] = useState(false);
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const debouncedSearch = useDebounce(search, 400);
 
   const params = useMemo(
@@ -97,6 +299,7 @@ export function PlayerListPage() {
       ...(roleFilter ? { role: roleFilter } : {}),
       ...(activeFilter !== '' ? { isActive: activeFilter === 'active' } : {}),
       ...(bannedFilter !== '' ? { isBanned: bannedFilter === 'banned' } : {}),
+      ...(fakeFilter !== '' ? { isFake: fakeFilter === 'fake' } : {}),
       ...(includeDeleted && canSeeDeleted ? { includeDeleted: true } : {}),
     }),
     [
@@ -106,6 +309,7 @@ export function PlayerListPage() {
       roleFilter,
       activeFilter,
       bannedFilter,
+      fakeFilter,
       includeDeleted,
       canSeeDeleted,
     ],
@@ -120,11 +324,16 @@ export function PlayerListPage() {
   } = useUsersControllerListTenantUsers(params);
 
   const paginated = unwrap(raw);
-  const items = paginated?.items ?? [];
+  const items = (paginated?.items ?? []) as TenantUserWithFake[];
   const total = paginated?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const rangeStart = total === 0 ? 0 : (page - 1) * limit + 1;
   const rangeEnd = Math.min(page * limit, total);
+
+  function invalidateUsers() {
+    void queryClient.invalidateQueries({ queryKey: fakePlayersKeys.all });
+    void refetch();
+  }
 
   const columns = useMemo(
     () => [
@@ -186,6 +395,14 @@ export function PlayerListPage() {
                   {t('players.status.banned')}
                 </Badge>
               )}
+              {row.isFake && (
+                <Badge
+                  variant="secondary"
+                  className="border border-amber-400 text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400"
+                >
+                  {t('players.status.fake')}
+                </Badge>
+              )}
             </div>
           );
         },
@@ -201,20 +418,36 @@ export function PlayerListPage() {
       col.display({
         id: 'actions',
         header: '',
-        cell: (info) => (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() =>
-              navigate(`/operator/players/${info.row.original.id}`)
-            }
-          >
-            {t('players.actions.view')}
-          </Button>
-        ),
+        cell: (info) => {
+          const row = info.row.original;
+          return (
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(`/operator/players/${row.id}`)}
+              >
+                {t('players.actions.view')}
+              </Button>
+              {row.isFake && canManageFake && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() =>
+                    setDeleteTarget({ id: row.id, name: row.name })
+                  }
+                >
+                  <Trash2 className="size-4" aria-hidden />
+                  <span className="sr-only">{t('players.actions.delete')}</span>
+                </Button>
+              )}
+            </div>
+          );
+        },
       }),
     ],
-    [t, navigate, includeDeleted],
+    [t, navigate, includeDeleted, canManageFake],
   );
 
   /* eslint-disable react-hooks/incompatible-library */
@@ -239,27 +472,41 @@ export function PlayerListPage() {
             {t('players.title')}
           </h1>
         </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="shrink-0"
-          onClick={() => {
-            setSpinning(true);
-            void refetch();
-          }}
-          disabled={isFetching}
-          aria-label={t('players.refreshAria')}
-          title={t('common.refresh')}
-        >
-          <RefreshCw
-            className={cn('size-4', spinning && 'animate-spin')}
-            onAnimationIteration={() => {
-              if (!isFetching) setSpinning(false);
+        <div className="flex items-center gap-2">
+          {canManageFake && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => setBulkModalOpen(true)}
+            >
+              <Wand2 className="size-4" aria-hidden />
+              {t('players.actions.generateFake')}
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="shrink-0"
+            onClick={() => {
+              setSpinning(true);
+              void refetch();
             }}
-            aria-hidden
-          />
-        </Button>
+            disabled={isFetching}
+            aria-label={t('players.refreshAria')}
+            title={t('common.refresh')}
+          >
+            <RefreshCw
+              className={cn('size-4', spinning && 'animate-spin')}
+              onAnimationIteration={() => {
+                if (!isFetching) setSpinning(false);
+              }}
+              aria-hidden
+            />
+          </Button>
+        </div>
       </div>
 
       {/* ── Filters ────────────────────────────────────────────────── */}
@@ -321,6 +568,30 @@ export function PlayerListPage() {
             </SelectItem>
           </SelectContent>
         </Select>
+
+        {/* Fake / Real filter — admin only */}
+        {canManageFake && (
+          <Select
+            value={fakeFilter}
+            onValueChange={(v) => {
+              setFakeFilter(v as FakeFilter);
+              resetPage();
+            }}
+          >
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder={t('players.filters.fakeAll')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">{t('players.filters.fakeAll')}</SelectItem>
+              <SelectItem value="real">
+                {t('players.filters.realOnly')}
+              </SelectItem>
+              <SelectItem value="fake">
+                {t('players.filters.fakeOnly')}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        )}
 
         {/* Banned filter — admin only */}
         {canSeeDeleted && (
@@ -513,6 +784,23 @@ export function PlayerListPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── Modals ─────────────────────────────────────────────────── */}
+      {canManageFake && (
+        <BulkFakeModal
+          open={bulkModalOpen}
+          onClose={() => setBulkModalOpen(false)}
+          onSuccess={invalidateUsers}
+        />
+      )}
+      {deleteTarget && (
+        <DeleteFakeConfirmModal
+          playerId={deleteTarget.id}
+          playerName={deleteTarget.name}
+          onClose={() => setDeleteTarget(null)}
+          onSuccess={invalidateUsers}
+        />
       )}
     </div>
   );

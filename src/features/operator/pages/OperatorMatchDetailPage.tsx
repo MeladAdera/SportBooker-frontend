@@ -62,6 +62,9 @@ import {
   useTenantMatchesControllerSubmitResults,
   getTenantMatchesControllerGetResultsQueryKey,
 } from '@/api/generated/tenant-—-matches/tenant-—-matches';
+import { useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { autoFillFakeMatch } from '@/features/operator/api';
 import type { MatchResultsResponseDto } from '@/api/generated/models/matchResultsResponseDto';
 import { PlayerStatEntryDtoTeamSide } from '@/api/generated/models/playerStatEntryDtoTeamSide';
 import { SubmitMatchResultsDtoWinningSide } from '@/api/generated/models/submitMatchResultsDtoWinningSide';
@@ -847,6 +850,102 @@ function SubmitResultsForm({
   );
 }
 
+// ── Type augmentation for fake fields ─────────────────────────────────────────
+
+type MatchDetailWithFake = MatchDetailResponseDto & {
+  isFake?: boolean;
+  minRealSpots?: number;
+  fakeBookingsCount?: number;
+};
+
+// ── FakeMatchPanel ────────────────────────────────────────────────────────────
+
+function FakeMatchPanel({
+  match,
+  onSuccess,
+}: {
+  match: MatchDetailWithFake;
+  onSuccess: () => void;
+}) {
+  const { t } = useTranslation('operator');
+  const quota = match.maxCapacity - (match.minRealSpots ?? 0);
+  const filled = match.fakeBookingsCount ?? 0;
+  const canFill = filled < quota;
+  const pct = quota > 0 ? Math.min((filled / quota) * 100, 100) : 0;
+
+  const mutation = useMutation({
+    mutationFn: () => autoFillFakeMatch(match.id),
+    onSuccess: (data) => {
+      toast.success(
+        t('matchDetail.fake.autoFillSuccess', { filled: data.filled }),
+      );
+      onSuccess();
+    },
+    onError: () => {
+      toast.error(t('matchDetail.fake.autoFillError'));
+    },
+  });
+
+  return (
+    <Card>
+      <CardHeader className="pb-3 pt-5">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <span className="inline-flex items-center rounded-md border border-amber-400 bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-600 dark:bg-amber-950/30 dark:text-amber-400">
+            {t('matchDetail.demo')}
+          </span>
+          {t('matchDetail.fake.title')}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4 pb-5">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">
+              {t('matchDetail.fake.progress', { filled, quota })}
+            </span>
+            <span className="tabular-nums font-medium text-amber-600 dark:text-amber-400">
+              {filled} / {quota}
+            </span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-amber-400 transition-all"
+              style={{ width: `${pct}%` }}
+              role="progressbar"
+              aria-valuenow={filled}
+              aria-valuemin={0}
+              aria-valuemax={quota}
+            />
+          </div>
+          {(match.minRealSpots ?? 0) > 0 && (
+            <p className="text-xs text-muted-foreground">
+              {t('matchDetail.fake.minRealSpots', {
+                count: match.minRealSpots,
+              })}
+            </p>
+          )}
+        </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-fit"
+          disabled={!canFill || mutation.isPending}
+          onClick={() => mutation.mutate()}
+        >
+          {mutation.isPending ? (
+            <>
+              <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
+              {t('matchDetail.fake.autoFilling')}
+            </>
+          ) : (
+            t('matchDetail.fake.autoFill')
+          )}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 function MatchResultsSection({
   matchId,
   roster,
@@ -952,7 +1051,14 @@ export function OperatorMatchDetailPage() {
     isError,
   } = useMatchesControllerGetById(id ?? '', { query: { enabled: !!id } });
 
-  const match = unwrap(matchData);
+  const match = unwrap(matchData) as MatchDetailWithFake | undefined;
+  const qc = useQueryClient();
+
+  function refetchMatch() {
+    void qc.invalidateQueries({
+      queryKey: getMatchesControllerGetByIdQueryKey(id ?? ''),
+    });
+  }
 
   const isCancelled = match?.status === MatchDetailResponseDtoStatus.cancelled;
 
@@ -1038,7 +1144,16 @@ export function OperatorMatchDetailPage() {
             </div>
 
             <div className="flex shrink-0 flex-col items-end gap-2">
-              {match && <StatusBadge status={match.status} />}
+              {match && (
+                <div className="flex flex-wrap items-center gap-1">
+                  <StatusBadge status={match.status} />
+                  {match.isFake && (
+                    <span className="inline-flex items-center rounded-md border border-amber-400 bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-600 dark:bg-amber-950/30 dark:text-amber-400">
+                      {t('matchDetail.demo')}
+                    </span>
+                  )}
+                </div>
+              )}
               {match && !isCancelled && (
                 <div className="flex gap-2">
                   <Button
@@ -1155,6 +1270,11 @@ export function OperatorMatchDetailPage() {
             </h2>
             <OperatorWaitlistSection matchId={match.id} canKick={canCancel} />
           </div>
+
+          {/* Demo match controls — only for fake matches */}
+          {match.isFake && (
+            <FakeMatchPanel match={match} onSuccess={refetchMatch} />
+          )}
 
           {/* Match results — only shown for completed matches */}
           {match.status === MatchDetailResponseDtoStatus.completed && (

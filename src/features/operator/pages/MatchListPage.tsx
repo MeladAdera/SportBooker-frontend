@@ -408,12 +408,20 @@ function FilterBar({
   );
 }
 
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type OperatorMatchItemWithFake = OperatorMatchItemDto & {
+  isFake?: boolean;
+  fakeBookingsCount?: number;
+  minRealSpots?: number;
+};
+
 // ── Desktop table ─────────────────────────────────────────────────────────────
 
-const colHelper = createColumnHelper<OperatorMatchItemDto>();
+const colHelper = createColumnHelper<OperatorMatchItemWithFake>();
 
 interface DesktopTableProps {
-  matches: OperatorMatchItemDto[];
+  matches: OperatorMatchItemWithFake[];
   canCancel: boolean;
   tz: string;
   onView: (id: string) => void;
@@ -463,7 +471,19 @@ function DesktopTable({
       }),
       colHelper.accessor('status', {
         header: t('matches.table.status'),
-        cell: (info) => <StatusBadge status={info.getValue()} />,
+        cell: (info) => {
+          const row = info.row.original;
+          return (
+            <div className="flex flex-wrap items-center gap-1">
+              <StatusBadge status={info.getValue()} />
+              {row.isFake && (
+                <span className="inline-flex items-center rounded-md border border-amber-400 bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-600 dark:bg-amber-950/30 dark:text-amber-400">
+                  {t('matches.demo')}
+                </span>
+              )}
+            </div>
+          );
+        },
       }),
       colHelper.accessor('confirmedCount', {
         header: t('matches.table.players'),
@@ -477,6 +497,22 @@ function DesktopTable({
                   (+{m.waitlistCount} wl)
                 </span>
               )}
+            </span>
+          );
+        },
+      }),
+      colHelper.display({
+        id: 'fakeBookings',
+        header: t('matches.table.fakeBookings'),
+        cell: (info) => {
+          const m = info.row.original;
+          if (!m.isFake) {
+            return <span className="text-muted-foreground">—</span>;
+          }
+          const quota = m.maxCapacity - (m.minRealSpots ?? 0);
+          return (
+            <span className="text-sm tabular-nums text-amber-600 dark:text-amber-400">
+              {m.fakeBookingsCount ?? 0} / {quota}
             </span>
           );
         },
@@ -556,7 +592,7 @@ function DesktopTable({
 // ── Mobile card ───────────────────────────────────────────────────────────────
 
 interface MobileCardProps {
-  match: OperatorMatchItemDto;
+  match: OperatorMatchItemWithFake;
   canCancel: boolean;
   tz: string;
   onView: (id: string) => void;
@@ -592,7 +628,14 @@ function MobileMatchCard({
               })}
             </p>
           </div>
-          <StatusBadge status={match.status} />
+          <div className="flex flex-wrap items-center gap-1">
+            <StatusBadge status={match.status} />
+            {match.isFake && (
+              <span className="inline-flex items-center rounded-md border border-amber-400 bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-600 dark:bg-amber-950/30 dark:text-amber-400">
+                {t('matches.demo')}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
@@ -785,8 +828,10 @@ export function MatchListPage() {
   const paginated = unwrap(data);
   const total: number = paginated?.total ?? 0;
 
-  const matches = useMemo<OperatorMatchItemDto[]>(() => {
-    const items = [...(paginated?.items ?? [])];
+  const matches = useMemo<OperatorMatchItemWithFake[]>(() => {
+    const items = [
+      ...((paginated?.items ?? []) as OperatorMatchItemWithFake[]),
+    ];
     if (sortBy === 'price-asc')
       return items.sort((a, b) => a.pricePerPlayer - b.pricePerPlayer);
     if (sortBy === 'price-desc')
