@@ -44,6 +44,13 @@ export type AutoFillFakeMatchResponse = {
   spotsRemaining: number;
 };
 
+export type ClearFakesMatchResponse = {
+  removed: number;
+  confirmedCount: number;
+  fakeBookingsCount: number;
+  spotsRemaining: number;
+};
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 async function parseResponse<T>(res: Response): Promise<T> {
@@ -114,4 +121,13 @@ export async function autoFillFakeMatch(
     body: JSON.stringify(dto ?? {}),
   });
   return parseResponse<AutoFillFakeMatchResponse>(res);
+}
+
+export async function clearFakesMatch(
+  matchId: string,
+): Promise<ClearFakesMatchResponse> {
+  const res = await apiFetch(`/tenant/matches/${matchId}/clear-fakes`, {
+    method: 'POST',
+  });
+  return parseResponse<ClearFakesMatchResponse>(res);
 }

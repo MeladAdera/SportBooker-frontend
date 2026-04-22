@@ -129,6 +129,16 @@
       "autoFilling": "Filling…",
       "autoFillSuccess": "{{filled}} fake player(s) added.",
       "autoFillError": "Failed to auto-fill fake players. Please try again.",
+      "clear": "Remove all fake players",
+      "clearSuccess": "Removed {{removed}} fake player(s). {{spots}} spot now available.",
+      "clearSuccess_other": "Removed {{removed}} fake player(s). {{spots}} spots now available.",
+      "clearErrorFallback": "Failed to remove fake players. Please try again.",
+      "clearConfirm": {
+        "title": "Remove Fake Players",
+        "body": "Remove all {{count}} fake player(s) from this match? Seats freed will be automatically offered to real waitlisted players.",
+        "confirm": "Remove fakes",
+        "cancel": "Cancel"
+      },
       "autoFillNoQuota": "No fake quota remaining or no fake players available.",
       "autoFillBadMatch": "Match is not available for auto-fill."
     },
