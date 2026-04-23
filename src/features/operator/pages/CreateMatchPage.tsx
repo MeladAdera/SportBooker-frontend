@@ -46,32 +46,51 @@ const today = () => {
   return d;
 };
 
-const createMatchSchema = z.object({
-  title: z.string().min(3, 'validation.titleMin'),
-  sportType: z.enum(
-    Object.values(CreateMatchDtoSportType) as [string, ...string[]],
-    { error: 'validation.sportRequired' },
-  ),
-  venueId: z.string().min(1, 'validation.venueRequired'),
-  scheduledDate: z
-    .date({ error: 'validation.dateRequired' })
-    .refine((d) => d >= today(), { message: 'validation.datePast' }),
-  scheduledTime: z.string().min(1, 'validation.timeRequired'),
-  durationMins: z
-    .number({ error: 'validation.durationMin' })
-    .min(10, 'validation.durationMin')
-    .max(240, 'validation.durationMax'),
-  maxCapacity: z
-    .number({ error: 'validation.capacityMin' })
-    .min(CAPACITY_MIN, 'validation.capacityMin')
-    .max(CAPACITY_MAX, 'validation.capacityMax'),
-  pricePerPlayer: z
-    .number({ error: 'validation.priceMin' })
-    .min(1, 'validation.priceMin')
-    .refine((v) => Number.isInteger(v), 'validation.priceInteger'),
-});
+const createMatchSchema = z
+  .object({
+    title: z.string().min(3, 'validation.titleMin'),
+    sportType: z.enum(
+      Object.values(CreateMatchDtoSportType) as [string, ...string[]],
+      { error: 'validation.sportRequired' },
+    ),
+    venueId: z.string().min(1, 'validation.venueRequired'),
+    scheduledDate: z
+      .date({ error: 'validation.dateRequired' })
+      .refine((d) => d >= today(), { message: 'validation.datePast' }),
+    scheduledTime: z.string().min(1, 'validation.timeRequired'),
+    durationMins: z
+      .number({ error: 'validation.durationMin' })
+      .min(10, 'validation.durationMin')
+      .max(240, 'validation.durationMax'),
+    maxCapacity: z
+      .number({ error: 'validation.capacityMin' })
+      .min(CAPACITY_MIN, 'validation.capacityMin')
+      .max(CAPACITY_MAX, 'validation.capacityMax'),
+    pricePerPlayer: z
+      .number({ error: 'validation.priceMin' })
+      .min(1, 'validation.priceMin')
+      .refine((v) => Number.isInteger(v), 'validation.priceInteger'),
+    isFake: z.boolean().default(false),
+    minRealSpots: z.number().int().min(0).default(0),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.isFake && data.minRealSpots > 0) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['minRealSpots'],
+        message: 'validation.minRealSpotsOnReal',
+      });
+    }
+    if (data.minRealSpots > data.maxCapacity) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['minRealSpots'],
+        message: 'validation.minRealSpotsExceedsCapacity',
+      });
+    }
+  });
 
-type FormValues = z.infer<typeof createMatchSchema>;
+type FormValues = z.output<typeof createMatchSchema>;
 
 // ── Stepper ───────────────────────────────────────────────────────────────────
 
@@ -161,15 +180,21 @@ export function CreateMatchPage() {
     register,
     handleSubmit,
     control,
+    watch,
     formState: { errors },
   } = useForm<FormValues>({
-    resolver: zodResolver(createMatchSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(createMatchSchema) as any,
     defaultValues: {
       durationMins: 60,
       maxCapacity: 10,
       pricePerPlayer: 1,
+      isFake: false,
+      minRealSpots: 0,
     },
   });
+
+  const isFakeValue = watch('isFake');
 
   const mutation = useMatchesControllerCreate({
     mutation: {
@@ -207,6 +232,9 @@ export function CreateMatchPage() {
         durationMins: values.durationMins,
         maxCapacity: values.maxCapacity,
         pricePerPlayer: values.pricePerPlayer,
+        ...(values.isFake
+          ? { isFake: true, minRealSpots: values.minRealSpots }
+          : {}),
       },
     });
   }
@@ -540,6 +568,77 @@ export function CreateMatchPage() {
                 />
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* ─ Section: Demo Match ────────────────────────────────── */}
+        <Card>
+          <CardContent className="flex flex-col gap-5 p-6">
+            <p className="text-sm font-medium text-muted-foreground">
+              {t('createMatch.sections.demo')}
+            </p>
+
+            {/* isFake toggle */}
+            <Controller
+              control={control}
+              name="isFake"
+              render={({ field }) => (
+                <label className="flex cursor-pointer items-start gap-3">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={field.value}
+                    onClick={() => field.onChange(!field.value)}
+                    className={cn(
+                      'relative mt-0.5 inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      field.value ? 'bg-primary' : 'bg-input',
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'pointer-events-none inline-block size-4 rounded-full bg-background shadow-lg ring-0 transition-transform',
+                        field.value ? 'translate-x-4' : 'translate-x-0',
+                      )}
+                    />
+                  </button>
+                  <span className="flex flex-col gap-0.5">
+                    <span className="text-sm font-medium leading-none">
+                      {t('createMatch.fields.isFake')}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {t('createMatch.fields.isFakeHint')}
+                    </span>
+                  </span>
+                </label>
+              )}
+            />
+
+            {/* minRealSpots — only when isFake is on */}
+            {isFakeValue && (
+              <div className="flex flex-col gap-1.5">
+                <Label>{t('createMatch.fields.minRealSpots')}</Label>
+                <Controller
+                  control={control}
+                  name="minRealSpots"
+                  render={({ field }) => (
+                    <Stepper
+                      value={field.value}
+                      onChange={field.onChange}
+                      min={0}
+                      max={CAPACITY_MAX}
+                      step={1}
+                      hasError={!!errors.minRealSpots}
+                    />
+                  )}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t('createMatch.fields.minRealSpotsHint')}
+                </p>
+                <FieldError
+                  message={resolveError(t, errors.minRealSpots?.message)}
+                />
+              </div>
+            )}
           </CardContent>
         </Card>
 

@@ -37,12 +37,14 @@
         "spotsDesc": "Spots"
       }
     },
+    "demo": "Demo",
     "table": {
       "date": "Date",
       "venue": "Venue",
       "sport": "Sport",
       "status": "Status",
       "players": "Players",
+      "fakeBookings": "Fake bookings",
       "actions": "Actions"
     },
     "actions": {
@@ -118,6 +120,28 @@
     }
   },
   "matchDetail": {
+    "demo": "Demo",
+    "fake": {
+      "title": "Demo Match Controls",
+      "progress": "{{filled}} / {{quota}} fake spots filled",
+      "minRealSpots": "{{count}} real spots reserved",
+      "autoFill": "Auto-fill fake players",
+      "autoFilling": "Filling…",
+      "autoFillSuccess": "{{filled}} fake player(s) added.",
+      "autoFillError": "Failed to auto-fill fake players. Please try again.",
+      "clear": "Remove all fake players",
+      "clearSuccess": "Removed {{removed}} fake player(s). {{spots}} spot now available.",
+      "clearSuccess_other": "Removed {{removed}} fake player(s). {{spots}} spots now available.",
+      "clearErrorFallback": "Failed to remove fake players. Please try again.",
+      "clearConfirm": {
+        "title": "Remove Fake Players",
+        "body": "Remove all {{count}} fake player(s) from this match? Seats freed will be automatically offered to real waitlisted players.",
+        "confirm": "Remove fakes",
+        "cancel": "Cancel"
+      },
+      "autoFillNoQuota": "No fake quota remaining or no fake players available.",
+      "autoFillBadMatch": "Match is not available for auto-fill."
+    },
     "back": "Back to Matches",
     "viewPlayerProfile": "View player profile",
     "edit": "Edit Match",
@@ -182,7 +206,8 @@
     "sections": {
       "details": "Match Details",
       "schedule": "Schedule",
-      "pricing": "Capacity & Pricing"
+      "pricing": "Capacity & Pricing",
+      "demo": "Demo Match"
     },
     "fields": {
       "title": "Title",
@@ -205,7 +230,11 @@
       "maxCapacity": "Max players",
       "price": "Price per player",
       "currency": "AED",
-      "perPlayer": "/ player"
+      "perPlayer": "/ player",
+      "isFake": "This is a demo match",
+      "isFakeHint": "Demo matches use fake players to fill spots. Players see them as real matches.",
+      "minRealSpots": "Reserved real-player seats",
+      "minRealSpotsHint": "Minimum seats always available for real players (0 = no reservation)"
     },
     "submit": "Create Match",
     "submitting": "Creating…",
@@ -227,7 +256,9 @@
       "capacityMin": "At least 2 players are required.",
       "capacityMax": "Capacity cannot exceed 100.",
       "priceMin": "Price must be at least 1.",
-      "priceInteger": "Price must be a whole number."
+      "priceInteger": "Price must be a whole number.",
+      "minRealSpotsOnReal": "Reserved seats can only be set on demo matches.",
+      "minRealSpotsExceedsCapacity": "Reserved seats cannot exceed total capacity."
     }
   },
   "editMatch": {
@@ -246,8 +277,18 @@
       "overlap": "This venue already has a match overlapping that time slot. Please choose a different time."
     },
     "validation": {
-      "capacityBelowRoster": "Capacity cannot be less than the number of confirmed players."
-    }
+      "capacityBelowRoster": "Capacity cannot be less than the number of confirmed players.",
+      "minRealSpotsExceedsCapacity": "Reserved seats cannot exceed total capacity."
+    },
+    "fields": {
+      "minRealSpots": "Reserved real-player seats",
+      "minRealSpotsHint": "Minimum seats always available for real players"
+    },
+    "sections": {
+      "demo": "Demo Match"
+    },
+    "demoLabel": "Demo match",
+    "demoHint": "This match was created as a demo match. The demo flag cannot be changed after creation."
   },
   "cancelMatch": {
     "title": "Cancel match",
@@ -371,7 +412,8 @@
       "deleted": "Deleted",
       "banned": "Banned",
       "bannedUntil": "Banned until {{date}}",
-      "bannedPermanent": "Permanently banned"
+      "bannedPermanent": "Permanently banned",
+      "fake": "Fake"
     },
     "role": {
       "super_admin": "Super Admin",
@@ -386,7 +428,10 @@
       "includeDeleted": "Include deleted",
       "bannedAll": "All (banned / not)",
       "bannedOnly": "Banned only",
-      "notBanned": "Not banned"
+      "notBanned": "Not banned",
+      "fakeAll": "All players",
+      "fakeOnly": "Fake only",
+      "realOnly": "Real only"
     },
     "table": {
       "name": "Name",
@@ -396,7 +441,26 @@
       "registered": "Registered"
     },
     "actions": {
-      "view": "View"
+      "view": "View",
+      "delete": "Delete",
+      "generateFake": "Generate fake players"
+    },
+    "bulkFakeModal": {
+      "title": "Generate Fake Players",
+      "countLabel": "Number of players (1–200)",
+      "seedLabel": "Seed (optional — for repeatable results)",
+      "submit": "Generate",
+      "submitting": "Generating…",
+      "success": "{{count}} fake player(s) created",
+      "error": "Failed to generate fake players"
+    },
+    "deleteFakeConfirm": {
+      "title": "Delete Fake Player",
+      "body": "This will permanently delete the fake player and all their bookings.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "success": "Fake player deleted.",
+      "error": "Failed to delete fake player"
     },
     "pagination": {
       "range": "{{from}}–{{to}} of {{total}} players",
