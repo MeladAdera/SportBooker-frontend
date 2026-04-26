@@ -10,6 +10,7 @@ import enCommon from './en/common.json';
 import enLegal from './en/legal.json';
 import enOperator from './en/operator.json';
 import enPlayer from './en/player.json';
+import enTenantPublic from './en/tenant-public.json';
 
 import arAdmin from './ar/admin.json';
 import arAuth from './ar/auth.json';
@@ -17,6 +18,7 @@ import arCommon from './ar/common.json';
 import arLegal from './ar/legal.json';
 import arOperator from './ar/operator.json';
 import arPlayer from './ar/player.json';
+import arTenantPublic from './ar/tenant-public.json';
 
 const NAMESPACES = [
   'common',
@@ -25,6 +27,7 @@ const NAMESPACES = [
   'operator',
   'admin',
   'legal',
+  'tenant-public',
 ] as const;
 
 const stored = readPersistedLocale();
@@ -57,6 +60,7 @@ void i18n
         operator: enOperator,
         admin: enAdmin,
         legal: enLegal,
+        'tenant-public': enTenantPublic,
       },
       ar: {
         common: arCommon,
@@ -65,6 +69,7 @@ void i18n
         operator: arOperator,
         admin: arAdmin,
         legal: arLegal,
+        'tenant-public': arTenantPublic,
       },
     },
   });

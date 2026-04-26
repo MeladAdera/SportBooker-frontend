@@ -1,0 +1,171 @@
+{
+  "meta": {
+    "titleSuffix": "{{name}} - SportBooker",
+    "description": "{{name}} on SportBooker. Browse upcoming matches, book your spot in seconds, and play with players at your level."
+  },
+  "header": {
+    "signIn": "Sign in",
+    "createAccount": "Create account",
+    "openApp": "Open app",
+    "skipToContent": "Skip to main content"
+  },
+  "hero": {
+    "eyebrow": "Welcome to {{name}}",
+    "headline": "Game on.",
+    "headlineAccent": "Book your next match.",
+    "subheadline": "Real-time availability, fair waitlists, and a wallet that just works. Everything you need to get on the pitch — for the players, run by the club.",
+    "primaryCta": "Create your account",
+    "secondaryCta": "Sign in",
+    "scrollCue": "Scroll to explore",
+    "stats": {
+      "matches": "Live matches",
+      "venues": "Venues",
+      "sports": "Sports"
+    }
+  },
+  "sports": {
+    "eyebrow": "What's on",
+    "heading": "All the sports you love, one membership",
+    "subheading": "Whether you're chasing a ball, a smash, or a wicket — your spot is one tap away.",
+    "items": {
+      "football": {
+        "title": "Football",
+        "tagline": "5-a-side, 7-a-side, 11s. Show up, play, repeat."
+      },
+      "padel": {
+        "title": "Padel",
+        "tagline": "Singles or doubles. Glass-walled, fast-paced, addictive."
+      },
+      "cricket": {
+        "title": "Cricket",
+        "tagline": "Tape-ball nights and weekend leagues, all bookable."
+      },
+      "generic": {
+        "title": "More sports",
+        "tagline": "Whatever your club runs next, you'll find it here."
+      }
+    }
+  },
+  "howItWorks": {
+    "eyebrow": "How it works",
+    "heading": "From discovery to first whistle, in under a minute",
+    "steps": {
+      "browse": {
+        "title": "Browse",
+        "body": "See every upcoming match across the club's venues, with real-time spots remaining."
+      },
+      "book": {
+        "title": "Book",
+        "body": "One tap to confirm. Pay from your in-app wallet — no card juggling, no surprises."
+      },
+      "play": {
+        "title": "Play",
+        "body": "Get reminders, your roster, and venue directions, right when you need them."
+      },
+      "compete": {
+        "title": "Compete",
+        "body": "Goals, assists, MVP — the stats that matter, automatically tracked match after match."
+      }
+    }
+  },
+  "features": {
+    "eyebrow": "Why members stay",
+    "heading": "Built for players, run by the club",
+    "subheading": "The fundamentals, done right — so you can focus on the game.",
+    "items": {
+      "instant": {
+        "title": "Instant confirmation",
+        "body": "Spot available? You're confirmed in real time. No waiting on a callback, no double-bookings."
+      },
+      "waitlist": {
+        "title": "Fair, transparent waitlist",
+        "body": "Match full? Join the queue with a prepaid hold — fully refunded if you don't get promoted or you cancel in time."
+      },
+      "wallet": {
+        "title": "Secure in-app wallet",
+        "body": "Top up once, book all season. Refunds are automatic. No chasing receipts, no awkward Venmo requests."
+      },
+      "cancelWindow": {
+        "title": "Honest cancellation policy",
+        "body": "Plans change. Cancel before the cutoff and your seat goes to the next player on the list — no questions asked."
+      },
+      "stats": {
+        "title": "Stats that matter",
+        "body": "Goals, assists, win rate, MVP awards. Every match builds your player profile."
+      },
+      "club": {
+        "title": "Run by your club",
+        "body": "All bookings stay with your club. The platform fades into the background — the badge stays yours."
+      }
+    }
+  },
+  "testimonials": {
+    "eyebrow": "Word on the pitch",
+    "heading": "Players who already made the move",
+    "items": {
+      "1": {
+        "quote": "I used to chase three group chats to find a Sunday game. Now I open the app, hit confirm, and turn up. That's it.",
+        "author": "Omar K.",
+        "sport": "Football"
+      },
+      "2": {
+        "quote": "Waitlist actually works. I joined the queue Monday, got promoted Wednesday, refunded the same day when my schedule changed. Zero drama.",
+        "author": "Lina S.",
+        "sport": "Padel"
+      },
+      "3": {
+        "quote": "Stats per match is the part I didn't know I needed. Tracking goals from rec games made me actually take training seriously.",
+        "author": "Ravi P.",
+        "sport": "Cricket"
+      }
+    }
+  },
+  "faq": {
+    "eyebrow": "FAQ",
+    "heading": "Quick answers",
+    "items": {
+      "1": {
+        "q": "Do I need an account to browse matches?",
+        "a": "Yes — booking is members-only, but creating an account takes under a minute. Just an email or phone number to get started."
+      },
+      "2": {
+        "q": "How does the waitlist work?",
+        "a": "If a match is full, you can join the waitlist with a prepaid hold equal to the match price. The moment a spot opens up, you're promoted automatically and your hold becomes your booking. If you never get promoted, or you cancel before the cutoff, the full amount is refunded to your wallet."
+      },
+      "3": {
+        "q": "Can I get a refund if I can't make it?",
+        "a": "Cancel before the club's cutoff window and your spot goes back into the pool for the next player. Match cancelled by the club? You're refunded automatically — money lands in your wallet within the same day."
+      },
+      "4": {
+        "q": "How do I top up my wallet?",
+        "a": "Once you're logged in, head to your wallet and pick a top-up amount. Payment runs through a secure provider — your card details never touch our servers."
+      },
+      "5": {
+        "q": "Is this club running this whole thing?",
+        "a": "Yes. SportBooker provides the platform, but the schedule, venues, pricing and rules are all owned by your club."
+      }
+    }
+  },
+  "cta": {
+    "heading": "Your next match is waiting",
+    "body": "Join {{name}} on SportBooker. Five minutes to set up, a lifetime of better Sunday games.",
+    "primary": "Create your account",
+    "secondary": "I already have an account"
+  },
+  "footer": {
+    "tagline": "Run by {{name}}.",
+    "poweredBy": "Powered by SportBooker",
+    "rights": "© {{year}} {{name}}. All rights reserved.",
+    "sections": {
+      "product": {
+        "title": "Get started",
+        "signIn": "Sign in",
+        "createAccount": "Create account",
+        "openApp": "Open app"
+      },
+      "legal": {
+        "title": "Legal"
+      }
+    }
+  }
+}

@@ -3,6 +3,7 @@
  */
 export { ForbiddenPage } from './ForbiddenPage';
 export { RoleBasedRouter } from './RoleBasedRouter';
+export { RootRouter } from './RootRouter';
 export {
   ProtectedRoute,
   PlayerRoute,

@@ -13,7 +13,7 @@ import {
   PlayerRoute,
   ProtectedRoute,
 } from '@/routes/guards';
-import { RoleBasedRouter } from '@/routes/RoleBasedRouter';
+import { RootRouter } from '@/routes/RootRouter';
 import { OnboardingTour } from '@/shared/components/OnboardingTour';
 
 function lazyNamed<T extends ComponentType<unknown>>(
@@ -370,11 +370,15 @@ function App() {
           <Route path="/403" element={<ForbiddenPage />} />
           <Route path="/discover" element={<Navigate to="/home" replace />} />
 
+          {/*
+           * "/" is public on tenant subdomains so visitors land on the
+           * tenant marketing page. Authed users still get auto-redirected to
+           * their role home from inside RootRouter.
+           */}
+          <Route index element={<RootRouter />} />
+
           {/* ── Protected routes ───────────────────────────────────── */}
           <Route element={<ProtectedRoute />}>
-            {/* "/" redirects each role to their appropriate home path */}
-            <Route index element={<RoleBasedRouter />} />
-
             {/* ── Player routes ─────────────────────────────────────── */}
             <Route element={<PlayerRoute />}>
               <Route path="home" element={<DiscoverPage />} />

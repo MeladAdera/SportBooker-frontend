@@ -211,6 +211,126 @@ html body[data-scroll-locked] {
   margin-right: 0 !important;
 }
 
+/* ───────────────────────────────────────────────────────────────────────────
+ * Tenant landing page — animated mesh gradient + scroll cue
+ *
+ * Three radial-gradient blobs that drift slowly behind the hero. Defined here
+ * (instead of inline in the component) so the keyframes live alongside the
+ * theme tokens they reference, and so `prefers-reduced-motion` cleanly
+ * disables motion via the global block above.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+.landing-mesh {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+}
+
+.landing-mesh::before,
+.landing-mesh::after,
+.landing-mesh > .landing-mesh-blob {
+  content: '';
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: 0.55;
+  will-change: transform;
+}
+
+.landing-mesh::before {
+  top: -10%;
+  inset-inline-start: -8%;
+  width: 55vmin;
+  height: 55vmin;
+  background: radial-gradient(closest-side, var(--accent), transparent 70%);
+  animation: landing-mesh-drift-a 22s ease-in-out infinite alternate;
+}
+
+.landing-mesh::after {
+  bottom: -15%;
+  inset-inline-end: -10%;
+  width: 60vmin;
+  height: 60vmin;
+  background: radial-gradient(closest-side, var(--primary), transparent 70%);
+  animation: landing-mesh-drift-b 28s ease-in-out infinite alternate;
+}
+
+.landing-mesh > .landing-mesh-blob {
+  top: 30%;
+  left: 35%;
+  width: 45vmin;
+  height: 45vmin;
+  background: radial-gradient(closest-side, var(--chart-4), transparent 70%);
+  opacity: 0.4;
+  animation: landing-mesh-drift-c 26s ease-in-out infinite alternate;
+}
+
+.dark .landing-mesh::before,
+.dark .landing-mesh::after,
+.dark .landing-mesh > .landing-mesh-blob {
+  opacity: 0.35;
+}
+
+@keyframes landing-mesh-drift-a {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(8%, 12%, 0) scale(1.15);
+  }
+}
+
+@keyframes landing-mesh-drift-b {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(-10%, -8%, 0) scale(1.1);
+  }
+}
+
+@keyframes landing-mesh-drift-c {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.95);
+  }
+  100% {
+    transform: translate3d(-12%, 10%, 0) scale(1.2);
+  }
+}
+
+@keyframes landing-scroll-cue {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+}
+
+.landing-scroll-cue {
+  animation: landing-scroll-cue 1.8s ease-in-out infinite;
+}
+
+/* Subtle entrance for sections — disabled by the global prefers-reduced-motion
+ * block. IntersectionObserver toggles the data-revealed attribute. */
+.landing-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity var(--motion-duration-slow) var(--motion-ease-standard),
+    transform var(--motion-duration-slow) var(--motion-ease-standard);
+}
+
+.landing-reveal[data-revealed='true'] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
