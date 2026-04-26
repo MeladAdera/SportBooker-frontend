@@ -9,12 +9,6 @@ function applyTheme(theme: Theme): void {
   document.documentElement.classList.toggle('dark', theme === 'dark');
 }
 
-function resolveSystemTheme(): Theme {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light';
-}
-
 type ThemeState = {
   theme: Theme;
   setTheme: (theme: Theme) => void;
@@ -24,7 +18,7 @@ type ThemeState = {
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set, get) => ({
-      theme: resolveSystemTheme(),
+      theme: 'light',
 
       setTheme: (theme) => {
         applyTheme(theme);
