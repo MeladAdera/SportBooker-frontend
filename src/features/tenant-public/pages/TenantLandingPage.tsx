@@ -13,6 +13,7 @@ import { HowItWorksSection } from '../components/HowItWorksSection';
 import { LandingFooter } from '../components/LandingFooter';
 import { LandingHeader } from '../components/LandingHeader';
 import { SportsSection } from '../components/SportsSection';
+import { StatsSection } from '../components/StatsSection';
 import { TestimonialsSection } from '../components/TestimonialsSection';
 
 /**
@@ -20,13 +21,14 @@ import { TestimonialsSection } from '../components/TestimonialsSection';
  *
  * Composition order is intentional — it follows the visitor's journey:
  *   1. Hero          → "what is this place"
- *   2. Sports        → "what's offered"
- *   3. How it works  → "what's the workflow"
- *   4. Features      → "why it's worth signing up"
- *   5. Testimonials  → social proof
- *   6. FAQ           → addresses last-mile friction
- *   7. CTA banner    → final ask
- *   8. Footer        → legal + powered-by
+ *   2. Stats & Cities → "we're active across Syria"
+ *   3. Sports        → "what's offered"
+ *   4. How it works  → "what's the workflow"
+ *   5. Features      → "why it's worth signing up"
+ *   6. Testimonials  → social proof
+ *   7. FAQ           → addresses last-mile friction
+ *   8. CTA banner    → final ask
+ *   9. Footer        → legal + powered-by
  *
  * ──────────────────────────────────────────────────────────────────────────
  *  ⚙️  Extension points (not wired yet — backend support pending)
@@ -113,6 +115,8 @@ export function TenantLandingPage() {
           logoUrl={logoUrl}
           appHomePath={appHomePath}
         />
+
+        <StatsSection />
 
         <SportsSection />
 

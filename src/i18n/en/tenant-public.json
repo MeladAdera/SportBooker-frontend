@@ -20,7 +20,8 @@
     "stats": {
       "matches": "Live matches",
       "venues": "Venues",
-      "sports": "Sports"
+      "sports": "Sports",
+      "cities": "Cities across Syria"
     }
   },
   "sports": {
@@ -105,21 +106,21 @@
   },
   "testimonials": {
     "eyebrow": "Word on the pitch",
-    "heading": "Players who already made the move",
+    "heading": "Players from across Syria making the move",
     "items": {
       "1": {
-        "quote": "I used to chase three group chats to find a Sunday game. Now I open the app, hit confirm, and turn up. That's it.",
-        "author": "Omar K.",
+        "quote": "Used to waste hours coordinating matches on WhatsApp. Now I just open the app Sunday morning, book my spot in Damascus, and go. Simple.",
+        "author": "Omar K., Damascus",
         "sport": "Football"
       },
       "2": {
-        "quote": "Waitlist actually works. I joined the queue Monday, got promoted Wednesday, refunded the same day when my schedule changed. Zero drama.",
-        "author": "Lina S.",
+        "quote": "The waitlist is fair and transparent. Got promoted to my match in Aleppo within days. No more wondering if spots are actually available.",
+        "author": "Lina S., Aleppo",
         "sport": "Basketball"
       },
       "3": {
-        "quote": "Stats per match is the part I didn't know I needed. Tracking my performance from matches made me take my game seriously.",
-        "author": "Ravi P.",
+        "quote": "Playing consistently in Homs finally pays off. I can track my stats match after match and watch myself improve. That motivation is real.",
+        "author": "Ravi P., Homs",
         "sport": "Tennis"
       }
     }

@@ -64,7 +64,7 @@ export function HeroSection({ displayName, logoUrl, appHomePath }: Props) {
 
         <h1 className="text-balance text-4xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl">
           <span className="block">{t('hero.headline')}</span>
-          <span className="mt-1 block bg-linear-to-br from-primary via-primary to-accent bg-clip-text text-transparent">
+          <span className="mt-1 block bg-linear-to-r from-red-600 via-primary to-accent bg-clip-text text-transparent">
             {t('hero.headlineAccent')}
           </span>
         </h1>

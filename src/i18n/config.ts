@@ -37,7 +37,7 @@ void i18n
   .use(initReactI18next)
   .init({
     lng: stored ?? undefined,
-    fallbackLng: 'en',
+    fallbackLng: 'ar',
     supportedLngs: ['en', 'ar'],
     load: 'languageOnly',
     ns: [...NAMESPACES],
