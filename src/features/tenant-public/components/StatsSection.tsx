@@ -55,10 +55,10 @@ export function StatsSection() {
             <div className="mb-8 text-center">
               <h3 className="flex items-center justify-center gap-2 text-lg font-semibold text-foreground">
                 <MapPin className="h-5 w-5 text-primary" />
-                Playing in Syria
+                {t('stats.eyebrow')}
               </h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Connect with players across major Syrian cities
+                {t('stats.subheading')}
               </p>
             </div>
 
