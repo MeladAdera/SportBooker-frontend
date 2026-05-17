@@ -89,7 +89,7 @@ export const PHONE_CODES: readonly PhoneCode[] = [
 ] as const;
 
 /** UAE is the default country code. */
-export const DEFAULT_PHONE_CODE = PHONE_CODES.find((c) => c.iso === 'AE')!;
+export const DEFAULT_PHONE_CODE = PHONE_CODES.find((c) => c.iso === 'SY')!;
 
 /**
  * Given a full E.164-like value (e.g. "+97152 855 6635"), returns the

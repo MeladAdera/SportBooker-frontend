@@ -1,7 +1,7 @@
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat(undefined, {
     style: 'currency',
-    currency: 'AED',
+    currency: 'SYP',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);
