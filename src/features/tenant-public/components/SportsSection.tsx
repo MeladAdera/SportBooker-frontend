@@ -1,4 +1,4 @@
-import { Activity, Goal, ShieldCheck, Trophy } from 'lucide-react';
+import { Activity, Goal, Rocket, ShieldCheck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 
 import { useReveal } from '../hooks/useReveal';
 
-type SportKey = 'football' | 'padel' | 'cricket' | 'generic';
+type SportKey = 'football' | 'basketball' | 'tennis' | 'volleyball' | 'generic';
 
 type Sport = {
   key: SportKey;
@@ -16,7 +16,7 @@ type Sport = {
 };
 
 /**
- * The four sport buckets the API supports today (see `MatchBrowseItemDto.sportType`).
+ * The five sport buckets the API supports today (see VenueSportType in backend).
  * Icons stay monochrome on the card surface; the tint is reserved for the icon
  * tile + a subtle ring glow on hover.
  */
@@ -27,14 +27,19 @@ const SPORTS: Sport[] = [
     tint: 'from-primary/20 to-primary/5 text-primary',
   },
   {
-    key: 'padel',
+    key: 'basketball',
     icon: Activity,
     tint: 'from-accent/25 to-accent/5 text-accent',
   },
   {
-    key: 'cricket',
-    icon: Trophy,
+    key: 'tennis',
+    icon: Rocket,
     tint: 'from-chart-4/20 to-chart-4/5 text-chart-4',
+  },
+  {
+    key: 'volleyball',
+    icon: Goal,
+    tint: 'from-chart-2/20 to-chart-2/5 text-chart-2',
   },
   {
     key: 'generic',
@@ -71,7 +76,7 @@ export function SportsSection() {
 
         <ul
           role="list"
-          className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5"
         >
           {SPORTS.map((sport) => {
             const Icon = sport.icon;

@@ -51,7 +51,7 @@ const ALL_TIMEZONES: string[] = (() => {
       'America/Los_Angeles',
       'America/New_York',
       'Asia/Baghdad',
-      'Asia/Dubai',
+      'Asia/Damascus',
       'Asia/Kolkata',
       'Asia/Riyadh',
       'Asia/Tokyo',

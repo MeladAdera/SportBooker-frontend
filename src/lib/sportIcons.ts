@@ -2,8 +2,8 @@ import type { IconType } from 'react-icons';
 import {
   GiSoccerBall,
   GiTennisBall,
-  GiCricketBat,
   GiBasketballBall,
+  GiVolleyballBall,
   GiWeightLiftingUp,
 } from 'react-icons/gi';
 import { IoGridOutline } from 'react-icons/io5';
@@ -11,11 +11,10 @@ import { IoGridOutline } from 'react-icons/io5';
 /** react-icons IconType keyed by API `sportType` string. */
 const SPORT_ICON_MAP: Record<string, IconType> = {
   football: GiSoccerBall,
-  padel: GiTennisBall,
-  cricket: GiCricketBat,
-  generic: GiWeightLiftingUp,
   basketball: GiBasketballBall,
   tennis: GiTennisBall,
+  volleyball: GiVolleyballBall,
+  generic: GiWeightLiftingUp,
 };
 
 export function getSportIcon(sport: string | undefined | null): IconType {

@@ -60,11 +60,10 @@
     },
     "sport": {
       "football": "Football",
-      "padel": "Padel",
-      "cricket": "Cricket",
-      "generic": "Generic",
       "basketball": "Basketball",
-      "tennis": "Tennis"
+      "tennis": "Tennis",
+      "volleyball": "Volleyball",
+      "generic": "Generic"
     },
     "empty": "No matches found",
     "error": "Failed to load matches. Please try again.",
@@ -339,9 +338,9 @@
     },
     "fields": {
       "name": "Name",
-      "namePlaceholder": "e.g. Pitch 1 – Al Quoz",
+      "namePlaceholder": "e.g. Main Court",
       "address": "Address",
-      "addressPlaceholder": "e.g. Al Quoz Industrial Area, Dubai",
+      "addressPlaceholder": "e.g. Downtown, Damascus",
       "mapsUrl": "Google Maps URL",
       "sportTypes": "Sport Types",
       "pictureUrl": "Photo URL",

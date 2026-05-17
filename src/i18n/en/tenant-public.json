@@ -26,19 +26,23 @@
   "sports": {
     "eyebrow": "What's on",
     "heading": "All the sports you love, one membership",
-    "subheading": "Whether you're chasing a ball, a smash, or a wicket — your spot is one tap away.",
+    "subheading": "Whether you're on the pitch, the court, or the grass — your spot is one tap away.",
     "items": {
       "football": {
         "title": "Football",
         "tagline": "5-a-side, 7-a-side, 11s. Show up, play, repeat."
       },
-      "padel": {
-        "title": "Padel",
-        "tagline": "Singles or doubles. Glass-walled, fast-paced, addictive."
+      "basketball": {
+        "title": "Basketball",
+        "tagline": "Fast-paced courts, competitive leagues, all year round."
       },
-      "cricket": {
-        "title": "Cricket",
-        "tagline": "Tape-ball nights and weekend leagues, all bookable."
+      "tennis": {
+        "title": "Tennis",
+        "tagline": "Singles or doubles. Book your court and elevate your game."
+      },
+      "volleyball": {
+        "title": "Volleyball",
+        "tagline": "Team sports that bring communities together on the net."
       },
       "generic": {
         "title": "More sports",
@@ -111,12 +115,12 @@
       "2": {
         "quote": "Waitlist actually works. I joined the queue Monday, got promoted Wednesday, refunded the same day when my schedule changed. Zero drama.",
         "author": "Lina S.",
-        "sport": "Padel"
+        "sport": "Basketball"
       },
       "3": {
-        "quote": "Stats per match is the part I didn't know I needed. Tracking goals from rec games made me actually take training seriously.",
+        "quote": "Stats per match is the part I didn't know I needed. Tracking my performance from matches made me take my game seriously.",
         "author": "Ravi P.",
-        "sport": "Cricket"
+        "sport": "Tennis"
       }
     }
   },

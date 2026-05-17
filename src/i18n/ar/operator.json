@@ -60,11 +60,10 @@
     },
     "sport": {
       "football": "كرة القدم",
-      "padel": "بادل",
-      "cricket": "كريكيت",
-      "generic": "عام",
       "basketball": "كرة السلة",
-      "tennis": "تنس"
+      "tennis": "تنس",
+      "volleyball": "كرة طائرة",
+      "generic": "عام"
     },
     "empty": "لا توجد مباريات",
     "error": "فشل تحميل المباريات. حاول مجدداً.",
@@ -322,9 +321,9 @@
     },
     "fields": {
       "name": "الاسم",
-      "namePlaceholder": "مثال: ملعب 1 – القوز",
+      "namePlaceholder": "مثال: الملعب الرئيسي",
       "address": "العنوان",
-      "addressPlaceholder": "مثال: المنطقة الصناعية، القوز، دبي",
+      "addressPlaceholder": "مثال: وسط البلد، دمشق",
       "mapsUrl": "رابط خرائط جوجل",
       "sportTypes": "أنواع الرياضة",
       "pictureUrl": "رابط الصورة",

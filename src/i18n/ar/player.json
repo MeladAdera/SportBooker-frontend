@@ -336,8 +336,9 @@
     },
     "sports": {
       "football": "كرة القدم",
-      "padel": "بادل",
-      "cricket": "كريكيت",
+      "basketball": "كرة السلة",
+      "tennis": "تنس",
+      "volleyball": "كرة طائرة",
       "generic": "أخرى"
     },
     "card": {

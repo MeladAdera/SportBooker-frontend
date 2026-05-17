@@ -145,7 +145,7 @@ function VenueCombobox({
     >
       <PopoverTrigger
         className={cn(
-          'flex h-9 min-w-[140px] items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent px-2.5 text-sm transition-colors',
+          'flex h-9 min-w-35 items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent px-2.5 text-sm transition-colors',
           'hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
           selectedName ? 'text-foreground' : 'text-muted-foreground',
         )}
@@ -380,7 +380,7 @@ function FilterBar({
           value={sortBy ?? ''}
           onValueChange={(v) => onSortChange((v as SortOption) || undefined)}
         >
-          <SelectTrigger size="sm" className="min-w-[130px]">
+          <SelectTrigger size="sm" className="min-w-32.5">
             <span className="flex items-center gap-1.5 text-sm">
               {activeSort ? (
                 <>
@@ -716,7 +716,7 @@ function TableSkeleton() {
             <tr key={i} className="bg-card">
               {Array.from({ length: 6 }).map((_, j) => (
                 <td key={j} className="px-4 py-3">
-                  <Skeleton className="h-4 w-full max-w-[120px]" />
+                  <Skeleton className="h-4 w-full max-w-30" />
                 </td>
               ))}
             </tr>

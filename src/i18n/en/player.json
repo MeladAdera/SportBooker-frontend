@@ -347,8 +347,9 @@
     },
     "sports": {
       "football": "Football",
-      "padel": "Padel",
-      "cricket": "Cricket",
+      "basketball": "Basketball",
+      "tennis": "Tennis",
+      "volleyball": "Volleyball",
       "generic": "Other"
     },
     "card": {
