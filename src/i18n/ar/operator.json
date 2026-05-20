@@ -462,7 +462,7 @@
       "phone": "الهاتف",
       "whatsappChat": "فتح المحادثة في واتساب",
       "wallet": "رصيد المحفظة",
-      "walletValue": "{{amount}} درهم",
+      "walletValue": "{{amount}} ل.س",
       "registered": "تاريخ التسجيل",
       "roleSection": "تعيين الدور",
       "roleSelfHint": "لا يمكنك تغيير دورك الخاص.",

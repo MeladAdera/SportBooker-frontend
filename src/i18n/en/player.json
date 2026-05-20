@@ -261,10 +261,10 @@
     },
     "topUp": {
       "title": "Top Up Wallet",
-      "amountLabel": "Amount (AED)",
+      "amountLabel": "Amount (SYP)",
       "amountPlaceholder": "e.g. 100",
-      "min": "Minimum top-up is AED 10",
-      "max": "Maximum top-up is AED 5,000",
+      "min": "Minimum top-up is SYP 10",
+      "max": "Maximum top-up is SYP 5,000",
       "submit": "Top Up",
       "submitting": "Redirecting…",
       "success": {
