@@ -74,7 +74,7 @@ function buildEditMatchSchema(rosterConfirmed: number) {
         .max(CAPACITY_MAX, 'validation.capacityMax'),
       pricePerPlayer: z
         .number({ error: 'validation.priceMin' })
-        .min(1, 'validation.priceMin')
+        .min(0, 'validation.priceMin')
         .refine((v) => Number.isInteger(v), 'validation.priceInteger'),
       minRealSpots: z.number().int().min(0).default(0),
     })
@@ -549,7 +549,7 @@ function EditMatchForm({ match }: EditMatchFormProps) {
                 <input
                   id="edit-match-price"
                   type="number"
-                  min={1}
+                  min={0}
                   step={1}
                   className="h-full w-full bg-transparent px-2.5 text-sm outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   placeholder="0"
