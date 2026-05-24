@@ -99,7 +99,7 @@ const BACKEND_FIELD_MAP: Record<string, keyof CreateFormValues> = {
 
 function CreateTenantDialog({ open, onOpenChange }: CreateTenantDialogProps) {
   const { t } = useTranslation('admin');
-  console.log('CreateTenantDialog', open);
+  console.log('CreateTenantDialogs', open);
   const queryClient = useQueryClient();
 
   const {
