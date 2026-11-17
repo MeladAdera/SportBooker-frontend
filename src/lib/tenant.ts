@@ -10,6 +10,9 @@
  * Localhost:
  * - `localhost` / `127.0.0.1` → `VITE_DEV_TENANT_SLUG` if set, else `null`
  * - `acfc.localhost` → `acfc` (local multi-tenant dev)
+ *
+ * Other hosts (not under `VITE_APP_DOMAIN`, e.g. `my-demo.vercel.app`)
+ * → `VITE_DEFAULT_TENANT_SLUG` if set, else `null`.
  */
 
 const RESERVED_SUBDOMAINS = new Set(['app', 'platform', 'api', 'www']);
@@ -52,14 +55,17 @@ export function extractTenantSlug(hostname: string): string | null {
   }
 
   const appDomain = getAppDomain();
-  if (!appDomain) return null;
+  // Hosts outside the app domain (e.g. a `*.vercel.app` demo deployment) can't
+  // carry a tenant subdomain, so fall back to an optional fixed tenant.
+  const fallback = import.meta.env.VITE_DEFAULT_TENANT_SLUG?.trim() || null;
+  if (!appDomain) return fallback;
 
   if (host === appDomain || host === `www.${appDomain}`) {
     return null;
   }
 
   const suffix = `.${appDomain}`;
-  if (!host.endsWith(suffix)) return null;
+  if (!host.endsWith(suffix)) return fallback;
 
   const label = host.slice(0, -suffix.length);
   if (!label || label.endsWith('.') || RESERVED_SUBDOMAINS.has(label)) {

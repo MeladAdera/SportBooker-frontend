@@ -19,6 +19,8 @@ interface ImportMetaEnv {
    * When hostname is localhost / 127.0.0.1 (no subdomain), optional default slug for dev.
    */
   readonly VITE_DEV_TENANT_SLUG?: string;
+  /** Tenant slug used on hosts outside VITE_APP_DOMAIN (e.g. a *.vercel.app demo). */
+  readonly VITE_DEFAULT_TENANT_SLUG?: string;
 }
 
 interface ImportMeta {
