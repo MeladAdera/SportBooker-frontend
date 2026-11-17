@@ -25,5 +25,6 @@
   "sample": {
     "title": "Welcome",
     "description": "Arabic / RTL is supported from day one."
-  }
+  },
+  "demoBanner": "Demo version — payments are simulated and emails are not sent."
 }

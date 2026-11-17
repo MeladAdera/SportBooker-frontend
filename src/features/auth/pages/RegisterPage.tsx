@@ -38,6 +38,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { isDemoMode } from '@/lib/demo';
 import { NATIONALITY_OPTIONS } from '@/lib/nationalities';
 import { PHONE_CODES, parsePhone, type PhoneCode } from '@/lib/phone-codes';
 import { useAuthStore } from '@/stores/authStore';
@@ -764,6 +765,17 @@ export function RegisterPage() {
               {step === 2 && (
                 <p className="text-xs text-muted-foreground">
                   {t('registerPage.playerProfile.subtitle')}
+                </p>
+              )}
+              {isDemoMode() && (
+                <p className="rounded-md border border-dashed border-amber-400/60 bg-amber-50/50 px-3 py-2 text-xs text-amber-700 dark:bg-amber-900/10 dark:text-amber-300">
+                  {t('loginPage.demo.registerNote')}{' '}
+                  <Link
+                    to="/login"
+                    className="font-medium underline underline-offset-4"
+                  >
+                    {t('loginPage.demo.title')}
+                  </Link>
                 </p>
               )}
               {serverError && (

@@ -21,6 +21,7 @@ import { ApiError } from '@/api/client';
 import { PageControls } from '@/shared/components/PageControls';
 import { loginRequest } from '../api';
 import { getRoleHomePath } from '../utils';
+import { DEMO_ACCOUNTS, DEMO_PASSWORD, isDemoMode } from '@/lib/demo';
 
 const E164_RE = /^\+[1-9]\d{6,14}$/;
 
@@ -61,18 +62,13 @@ export function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
-  const DEV_ACCOUNTS = import.meta.env.DEV
-    ? [
-        { label: 'super-admin', email: 'super-admin@acfc.test' },
-        { label: 'admin', email: 'admin@acfc.test' },
-        { label: 'player', email: 'player@acfc.test' },
-        { label: 'staff', email: 'staff@acfc.test' },
-      ]
-    : null;
+  // Shown in local dev and in the public demo build (VITE_DEMO_MODE=true).
+  const showDemoAccounts =
+    (import.meta.env.DEV || isDemoMode()) && !isPlatformAdmin;
 
-  const fillDevAccount = (email: string) => {
+  const fillDemoAccount = (email: string) => {
     setValue('identifier', email, { shouldValidate: true });
-    setValue('password', 'Password123!', { shouldValidate: true });
+    setValue('password', DEMO_PASSWORD, { shouldValidate: true });
   };
 
   const resolveFieldError = (key: string | undefined): string | undefined => {
@@ -195,19 +191,23 @@ export function LoginPage() {
                 noValidate
                 className="flex flex-col gap-4"
               >
-                {DEV_ACCOUNTS && (
+                {showDemoAccounts && (
                   <div className="flex flex-wrap gap-1.5 rounded-md border border-dashed border-amber-400/60 bg-amber-50/50 p-2 dark:bg-amber-900/10">
-                    <span className="w-full text-[10px] font-medium uppercase tracking-wide text-amber-600/70 dark:text-amber-400/60">
-                      Dev accounts
+                    <span className="w-full text-xs font-semibold text-amber-700 dark:text-amber-300">
+                      {t('loginPage.demo.title')}
                     </span>
-                    {DEV_ACCOUNTS.map(({ label, email }) => (
+                    <span className="w-full text-[11px] text-amber-700/80 dark:text-amber-300/70">
+                      {t('loginPage.demo.hint')}
+                    </span>
+                    {DEMO_ACCOUNTS.map(({ role, email }) => (
                       <button
                         key={email}
                         type="button"
-                        onClick={() => fillDevAccount(email)}
+                        title={email}
+                        onClick={() => fillDemoAccount(email)}
                         className="rounded-full border border-amber-300 bg-white px-2.5 py-0.5 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-600/40 dark:bg-amber-900/20 dark:text-amber-300 dark:hover:bg-amber-900/40"
                       >
-                        {label}
+                        {t(`loginPage.demo.roles.${role}`)}
                       </button>
                     ))}
                   </div>

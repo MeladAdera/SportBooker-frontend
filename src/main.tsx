@@ -8,6 +8,7 @@ import i18n from '@/i18n/config';
 import App from './App.tsx';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { HtmlLangDir } from '@/components/HtmlLangDir';
+import { DemoBanner } from '@/shared/components/DemoBanner';
 import { useLocaleStore } from '@/stores/localeStore';
 import { useTenantStore } from '@/stores/tenantStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -66,6 +67,7 @@ createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <HtmlLangDir />
+      <DemoBanner />
       <App />
       <Toaster richColors position="top-right" />
       {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}

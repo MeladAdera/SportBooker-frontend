@@ -21,6 +21,8 @@ interface ImportMetaEnv {
   readonly VITE_DEV_TENANT_SLUG?: string;
   /** Tenant slug used on hosts outside VITE_APP_DOMAIN (e.g. a *.vercel.app demo). */
   readonly VITE_DEFAULT_TENANT_SLUG?: string;
+  /** "true" → public demo: demo banner + demo accounts on the login page. */
+  readonly VITE_DEMO_MODE?: string;
 }
 
 interface ImportMeta {
